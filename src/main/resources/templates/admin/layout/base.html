@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="base">
+  <head>
+    <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" />
+    <link
+      th:href="@{/assets/font-awesome/css/font-awesome.css}"
+      rel="stylesheet"
+    />
+    <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
+
+    <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      th,
+      td {
+        text-align: center;
+        vertical-align: middle;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <th:block
+        th:replace="admin/layout/fragments/sidebar :: sidebar"
+      ></th:block>
+      <div id="page-wrapper" class="gray-bg">
+        <th:block
+          th:replace="admin/layout/fragments/header :: header"
+        ></th:block>
+        <div class="wrapper wrapper-content animated fadeInRight">
+          <main>
+            <div th:replace="~{::content}"></div>
+          </main>
+        </div>
+        <th:block
+          th:replace="admin/layout/fragments/footer :: footer"
+        ></th:block>
+      </div>
+    </div>
+    <th:block th:replace="admin/layout/fragments/scripts :: scripts"></th:block>
+    <div th:replace="~{::script}"></div>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+<th:block th:fragment="table">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Mã Người Dùng</th>
+        <th>Tên Đăng Nhập</th>
+        <th>Email</th>
+        <th>Họ Tên</th>
+        <th>Địa Chỉ</th>
+        <th>SĐT</th>
+        <th>Vai Trò</th>
+        <th>Trạng Thái</th>
+        <th>Hành Động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each=" item : ${listUsers}">
+        <td th:text="${item.id}"></td>
+        <td th:text="${item.userCode}"></td>
+        <td th:text="${item.userName}"></td>
+        <td th:text="${item.email}"></td>
+        <td th:text="${item.fullName}"></td>
+        <td th:text="${item.address}"></td>
+        <td th:text="${item.phone}"></td>
+        <td th:text="${item.roleName}"></td>
+        <td th:switch="${item.isActive}">
+          <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+          <span th:case="false" class="badge badge-danger">Ngừng</span>
+        </td>
+        <td>
+          <button class="btn btn-default dim" type="button">
+            <i class="fa fa-info"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</th:block>

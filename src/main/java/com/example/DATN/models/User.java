@@ -57,4 +57,7 @@ public class User {
 	@Column(name = "CreateAt")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createAt;
+
+	@Column(name = "isActive")
+	private Boolean isActive;
 }

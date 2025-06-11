@@ -1,5 +1,7 @@
 package com.example.DATN.models;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -45,7 +47,7 @@ public class ProductVariant {
 	private String sku;
 
 	@Column(name = "Price", nullable = false, precision = 10, scale = 2)
-	private Double price;
+	private BigDecimal price;
 
 	@Column(name = "Quantity", nullable = false)
 	private Integer quantity;
