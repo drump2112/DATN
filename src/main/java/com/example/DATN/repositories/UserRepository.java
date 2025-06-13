@@ -8,12 +8,15 @@ import com.example.DATN.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
 
 	Page<User> findByRoleId(Integer roleId, Pageable pageable);
 
 	Page<User> findByRoleIdNot(int roleId, Pageable pageable);
 
 	Optional<User> findByUserName(String userName);
+
+	long countByRoleId(Integer roleId);
 }

@@ -67,7 +67,7 @@
 		
 		<script>
 		function toggleStatus(userId, isActive) {
-		
+			
 			 const title = isActive
 				? 'Bạn có chắc muốn vô hiệu hóa tài khoản này?'
 				: 'Bạn có chắc muốn kích hoạt tài khoản này?';
@@ -82,7 +82,7 @@
 			cancelButtonText: 'Hủy'
 			}).then((result) => {
 			if (result.isConfirmed) {
-				fetch(`/admin/user/customers/${userId}/toggle-status`, {
+				fetch(`/admin/customers/${userId}/toggle-status`, {
 				method: 'PUT'
 				})
 				.then(res => {

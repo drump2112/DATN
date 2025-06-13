@@ -10,4 +10,9 @@ public class HomeController {
 	public String showHomePage() {
 		return "admin/dashboard";
 	}
+
+	@GetMapping
+	public String showShopPage() {
+		return "shop/index";
+	}
 }
