@@ -9,6 +9,8 @@
         <th>Họ Tên</th>
         <th>Địa Chỉ</th>
         <th>SĐT</th>
+        <th>Giới Tính</th>
+        <th>Ngày Sinh</th>
         <th>Vai Trò</th>
         <th>Trạng Thái</th>
         <th>Hành Động</th>
@@ -23,6 +25,11 @@
         <td th:text="${item.fullName}"></td>
         <td th:text="${item.address}"></td>
         <td th:text="${item.phone}"></td>
+        <td th:switch="${item.gender}">
+          <span th:case="true">Nam</span>
+          <span th:case="false">Nữ</span>
+        </td>
+        <td th:text="${item.dateOfBirth}"></td>
         <td th:text="${item.roleName}"></td>
         <td th:switch="${item.isActive}">
           <span th:case="true" class="badge badge-primary">Hoạt Động</span>

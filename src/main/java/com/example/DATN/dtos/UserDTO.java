@@ -1,5 +1,6 @@
 package com.example.DATN.dtos;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import com.example.DATN.models.Role;
@@ -40,6 +41,10 @@ public class UserDTO {
 	private String roleName;
 
 	private Boolean isActive;
+
+	private Boolean gender;
+
+	private LocalDate dateOfBirth;
 
 	private Date createAt;
 

@@ -1,5 +1,6 @@
 package com.example.DATN.models;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -60,4 +61,10 @@ public class User {
 
 	@Column(name = "isActive")
 	private Boolean isActive;
+
+	@Column(name = "Gender")
+	private boolean gender;
+
+	@Column(name = "DateOfBirth")
+	private LocalDate dateOfBirth;
 }

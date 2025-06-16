@@ -99,6 +99,11 @@
 										class="form-control">
 									<span class="text-danger" id="error-sdt"></span>
 								</div>
+								<div class="form-group">
+									<label>Ngày Sinh</label>
+									<input type="date" id="dob" name="dob" class="form-control">
+									<span class="text-danger" id="error-dob"></span>
+								</div>
 							</div>
 							<div class="col-sm-6">
 								<div class="form-group">
@@ -113,6 +118,7 @@
 										class="form-control">
 									<span class="text-danger" id="error-matKhau"></span>
 								</div>
+
 								<div class="form-group">
 									<label>Vai Trò</label>
 									<select class="form-control m-b" id="vaiTro" name="vaiTro">
@@ -124,9 +130,26 @@
 								<div class="form-group">
 									<label>Địa Chỉ</label>
 									<input type="text" id="diaChi" name="diaChi" placeholder="Nhập Địa Chỉ" class="form-control">
-								</div>
 									<span class="text-danger" id="error-diaChi"></span>
-
+								</div>
+								<div class="form-group">
+									<label>Giới Tính</label>
+									<div class="row" style="display: flex;margin-left: 2px">
+										<div class="i-checks"><label class=""> <div class="iradio_square-green" style="position: relative;">
+											<input type="radio" value="0" name="gender" style="position: absolute; opacity: 0;">
+											<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
+											</ins>
+										</div> <i></i>Nam</label></div>
+										<div class="i-checks m-l">
+											<label class="">
+											<div class="iradio_square-green" style="position: relative;">
+												<input type="radio" value="1" name="gender" style="position: absolute; opacity: 0;">
+												<ins class="iCheck-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;">
+												</ins>
+											</div><i></i>Nữ</label>
+										</div>
+									</div>
+								</div>
 							</div>
 							<div style="margin-right: 14px">
 								<button id="btnUpdate" class="btn btn-sm btn-success pull-right m-t-n-xs" type="button">
@@ -144,6 +167,5 @@
 		</div>
 	</div>
 		<script th:src="@{/js/employee.js}"></script>
-
 </th:block>
 </html>

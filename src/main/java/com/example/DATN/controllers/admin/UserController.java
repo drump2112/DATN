@@ -83,9 +83,10 @@ public class UserController {
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) Boolean isActive,
 			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size,
 			Model model) {
 
-		Pageable pageable = PageRequest.of(page, 10, Sort.by("id").descending());
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
 		Page<UserDTO> usersPage = userService.searchUsers(keyword, isActive, pageable);
 
 		model.addAttribute("listUsers", usersPage);

@@ -1,10 +1,16 @@
 package com.example.DATN.services.impl;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import com.example.DATN.configs.email.EmailService;
 import com.example.DATN.dtos.UserDTO;
 import com.example.DATN.models.Role;
 import com.example.DATN.models.User;
+import com.example.DATN.models.VerificationToken;
 import com.example.DATN.repositories.RoleRepository;
 import com.example.DATN.repositories.UserRepository;
+import com.example.DATN.repositories.VerificationTokenRepository;
 import com.example.DATN.services.UserService;
 import com.example.DATN.specifications.UserSpecification;
 
@@ -35,6 +41,12 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private VerificationTokenRepository tokenRepository;
+
+	@Autowired
+	private EmailService emailService;
 
 	@Override
 	public Page<UserDTO> findAll(int page, int size) {
@@ -101,8 +113,19 @@ public class UserServiceImpl implements UserService {
 		try {
 
 			User employee = fromDto(dto);
-			System.out.println(employee.toString());
+
 			userRepository.save(employee);
+
+			String token = UUID.randomUUID().toString();
+			VerificationToken verificationToken = new VerificationToken();
+			verificationToken.setToken(token);
+			verificationToken.setUser(employee);
+			verificationToken.setExpiryDate(LocalDateTime.now().plusDays(1));
+
+			tokenRepository.save(verificationToken);
+
+			emailService.sendVerificationEmail(employee, token);
+			System.out.println(employee.toString());
 
 			return true;
 		} catch (Exception e) {
@@ -142,6 +165,8 @@ public class UserServiceImpl implements UserService {
 		user.setEmail(dto.getEmail());
 		user.setPhone(dto.getPhone());
 		user.setAddress(dto.getAddress());
+		// user.setGender(dto.getGender());
+		// user.setDateOfBirth(dto.getDateOfBirth());
 		user.setPassword(!dto.getPassword().isEmpty() ? passwordEncoder.encode(dto.getPassword()) : null);
 		Role role = roleRepository.findById(dto.getRoleId()).orElse(null);
 		user.setRole(role);
@@ -150,11 +175,11 @@ public class UserServiceImpl implements UserService {
 
 			if (dto.getRoleId() == 1) {
 				prefix = "AD";
-				user.setIsActive(true);
+				user.setIsActive(false);
 
 			} else if (dto.getRoleId() == 2) {
 				prefix = "NV";
-				user.setIsActive(true);
+				user.setIsActive(false);
 
 			} else if (dto.getRoleId() == 3) {
 				prefix = "KH";

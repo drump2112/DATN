@@ -5,13 +5,13 @@
             <li class="nav-header">
                 <div class="dropdown profile-element">
                     <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-						<!--                   <span class="clear" -->
-						<!--                         th:if="${#authorization.expression('isAuthenticated()') and #authentication.principal.nhanVien != null}" -->
-						<!--                         th:text="${#authentication.principal.nhanVien.ho + ' ' + #authentication.principal.nhanVien.tenDem + ' ' + #authentication.principal.nhanVien.ten}"> -->
-						<!-- </span> -->
-						<!--                   <span class="clear" -->
-						<!--                         th:if="${#authorization.expression('isAuthenticated()') and #authentication.principal.nhanVien == null}" -->
-						<!--                         th:text="'Tên nhân viên không khả dụng'"> -->
+						<span class="clear"
+						      th:if="${#authorization.expression('isAuthenticated()') and #authentication.principal.user != null}"
+						      th:text="${#authentication.principal.user.fullName}">
+						 </span> 
+						<span class="clear"
+						      th:if="${#authorization.expression('isAuthenticated()') and #authentication.principal.user == null}"
+						      th:text="'Tên nhân viên không khả dụng'">
 						</span>
                        <span class="text-muted text-xs block">Art Director <b
                                         class="caret"></b></span> </span> </a>
@@ -20,7 +20,7 @@
                         <li><a href="contacts.html">Contacts</a></li>
                         <li><a href="mailbox.html">Mailbox</a></li>
                         <li class="divider"></li>
-                        <li><a href="">Logout</a></li>
+						<li><a th:href="@{/logout}">Đăng Xuất</a></li>
                     </ul>
                 </div>
                 <div class="logo-element">

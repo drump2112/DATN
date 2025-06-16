@@ -123,6 +123,8 @@ $(document).ready(function () {
           password: $("#matKhau").val(),
           address: $("#diaChi").val(),
           roleId: $("#vaiTro").val(),
+          gender: parseInt($("input[name='gender']:checked").val()),
+          dob: $("#dob").val(),
         };
         console.log(userData);
         $.ajax({
