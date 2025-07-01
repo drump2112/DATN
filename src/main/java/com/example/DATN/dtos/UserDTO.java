@@ -48,4 +48,5 @@ public class UserDTO {
 
 	private Date createAt;
 
+	private String avatar;
 }

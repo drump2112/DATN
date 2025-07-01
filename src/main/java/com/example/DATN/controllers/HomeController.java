@@ -11,7 +11,7 @@ public class HomeController {
 		return "admin/dashboard";
 	}
 
-	@GetMapping
+	@GetMapping("/")
 	public String showShopPage() {
 		return "shop/index";
 	}

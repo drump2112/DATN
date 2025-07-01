@@ -80,6 +80,7 @@ public class UserController {
 
 	@GetMapping("/search")
 	public String searchUsers(
+
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) Boolean isActive,
 			@RequestParam(defaultValue = "0") int page,

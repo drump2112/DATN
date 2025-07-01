@@ -29,7 +29,7 @@ public class SecurityConfig {
 		http
 				.csrf().disable()
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/login", "/register", "/verify/**", "/assets/**", "/js/**").permitAll()
+						.requestMatchers("/", "/login", "/register", "/verify/**", "/assets/**", "/js/**").permitAll()
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers("/seller/**").hasRole("SELLER")
 						.requestMatchers("/customer/**").hasRole("CUSTOMER")

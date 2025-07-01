@@ -67,4 +67,7 @@ public class User {
 
 	@Column(name = "DateOfBirth")
 	private LocalDate dateOfBirth;
+
+	@Column(name = "avatar")
+	private String avatar;
 }

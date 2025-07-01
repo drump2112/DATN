@@ -1,5 +1,22 @@
+Dropzone.autoDiscover = false;
+var avatarDropzone = null;
+
 $(document).ready(function () {
+  if (!avatarDropzone) {
+    avatarDropzone = new Dropzone("#avatarDropzone", {
+      url: "/dummy-upload", // dummy, không upload
+      autoProcessQueue: false,
+      clickable: true,
+      maxFiles: 1,
+      acceptedFiles: "image/*",
+      addRemoveLinks: true,
+      dictDefaultMessage: "Kéo ảnh vào đây hoặc click để chọn",
+      previewsContainer: "#avatarDropzone",
+    });
+  }
+
   // Mở modal thêm
+
   function openAddModal() {
     $("#modalTitle").text("Thêm Nhân Viên");
     $("#employeeForm")[0].reset();
@@ -7,12 +24,12 @@ $(document).ready(function () {
       .prop("readonly", false)
       .prop("disabled", false);
     $("#employeeForm #maNv").prop("readonly", true).prop("disabled", true);
-
     $("#btnAdd").show();
     $("#btnUpdate").hide();
+
+    avatarDropzone.removeAllFiles(true);
     $("#myModal").modal("show");
   }
-
   // Mở modal chi tiết / cập nhật
   function openEditModal(data, isEditable) {
     $("#maNv").val(data.userCode).prop("readonly", true);
@@ -27,6 +44,7 @@ $(document).ready(function () {
     $("#modalTitle").text("Chi Tiết Và Cập Nhật Thông Tin Nhân Viên");
     $("#btnAdd").hide();
     $("#btnUpdate").toggle(isEditable);
+
     $("#myModal").modal("show");
   }
 
@@ -123,8 +141,8 @@ $(document).ready(function () {
           password: $("#matKhau").val(),
           address: $("#diaChi").val(),
           roleId: $("#vaiTro").val(),
-          gender: parseInt($("input[name='gender']:checked").val()),
-          dob: $("#dob").val(),
+          gender: $("input[name='gender']:checked").val(),
+          dateOfBirth: $("#dob").val(),
         };
         console.log(userData);
         $.ajax({
@@ -207,7 +225,6 @@ $(document).ready(function () {
     });
   };
 
-  // Cho phép gọi openAddModal từ HTML
   window.openAddModal = openAddModal;
   window.searchUser = searchUser;
 });

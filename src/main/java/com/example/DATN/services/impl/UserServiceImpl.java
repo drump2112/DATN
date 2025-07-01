@@ -141,20 +141,16 @@ public class UserServiceImpl implements UserService {
 				.and(UserSpecification.hasRoleIn(1, 2)); // Chỉ lấy roleId 1 hoặc 2
 
 		Page<User> users = userRepository.findAll(spec, pageable);
-		return users.map(user -> {
-			UserDTO dto = new UserDTO();
-			dto.setId(user.getId());
-			dto.setUserCode(user.getUserCode());
-			dto.setUserName(user.getUserName());
-			dto.setEmail(user.getEmail());
-			dto.setFullName(user.getFullName());
-			dto.setAddress(user.getAddress());
-			dto.setPhone(user.getPhone());
-			dto.setRoleId(user.getRole().getId());
-			dto.setRoleName(user.getRole().getNameRole());
-			dto.setIsActive(user.getIsActive());
+
+		return users.map(entity -> {
+			UserDTO dto = modelMapper.map(entity, UserDTO.class);
+			if (entity.getRole() != null) {
+				dto.setRoleId(entity.getRole().getId());
+				dto.setRoleName(entity.getRole().getNameRole());
+			}
 			return dto;
 		});
+
 	}
 
 	public User fromDto(UserDTO dto) {
@@ -165,8 +161,8 @@ public class UserServiceImpl implements UserService {
 		user.setEmail(dto.getEmail());
 		user.setPhone(dto.getPhone());
 		user.setAddress(dto.getAddress());
-		// user.setGender(dto.getGender());
-		// user.setDateOfBirth(dto.getDateOfBirth());
+		user.setGender(dto.getGender());
+		user.setDateOfBirth(dto.getDateOfBirth());
 		user.setPassword(!dto.getPassword().isEmpty() ? passwordEncoder.encode(dto.getPassword()) : null);
 		Role role = roleRepository.findById(dto.getRoleId()).orElse(null);
 		user.setRole(role);
