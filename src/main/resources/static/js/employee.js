@@ -133,23 +133,36 @@ $(document).ready(function () {
       cancelButtonText: "Hủy",
     }).then((result) => {
       if (result.isConfirmed) {
-        const userData = {
-          fullName: $("#hoTen").val(),
-          email: $("#email").val(),
-          phone: $("#sdt").val(),
-          userName: $("#tenDangNhap").val(),
-          password: $("#matKhau").val(),
-          address: $("#diaChi").val(),
-          roleId: $("#vaiTro").val(),
-          gender: $("input[name='gender']:checked").val(),
-          dateOfBirth: $("#dob").val(),
-        };
-        console.log(userData);
+        const dz = Dropzone.forElement("#avatarDropzone");
+        const files = dz.getAcceptedFiles();
+        const avatarFile = files.length > 0 ? files[0] : null;
+
+        const formData = new FormData();
+
+        formData.append("fullName", $("#hoTen").val());
+        formData.append("email", $("#email").val());
+        formData.append("phone", $("#sdt").val());
+        formData.append("userName", $("#tenDangNhap").val());
+        formData.append("password", $("#matKhau").val());
+        formData.append("address", $("#diaChi").val());
+        formData.append("roleId", $("#vaiTro").val());
+        formData.append("gender", $("input[name='gender']:checked").val());
+        formData.append("dateOfBirth", $("#dob").val());
+
+        if (avatarFile) {
+          formData.append("avatar", avatarFile);
+        }
+
+        for (let [key, value] of formData.entries()) {
+          console.log(key, value);
+        }
+
         $.ajax({
           url: "/admin/employee/add",
           method: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(userData),
+          processData: false,
+          contentType: false,
+          data: formData,
           success: function (response) {
             Swal.fire("Thành công!", response.message, "success");
             $("#myModal").modal("hide");

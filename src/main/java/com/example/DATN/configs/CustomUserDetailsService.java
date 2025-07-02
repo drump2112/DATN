@@ -25,7 +25,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 		}
 
 		User user = userOpt.get();
-		System.out.println(user.toString());
 
 		return new CustomUserDetails(user); // chứa logic phân quyền
 	}

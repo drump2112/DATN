@@ -11,6 +11,7 @@ import com.example.DATN.models.VerificationToken;
 import com.example.DATN.repositories.RoleRepository;
 import com.example.DATN.repositories.UserRepository;
 import com.example.DATN.repositories.VerificationTokenRepository;
+import com.example.DATN.services.ImageService;
 import com.example.DATN.services.UserService;
 import com.example.DATN.specifications.UserSpecification;
 
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import groovy.util.logging.Log4j2;
 
@@ -47,6 +49,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private EmailService emailService;
+
+	@Autowired
+	private ImageService imageService;
 
 	@Override
 	public Page<UserDTO> findAll(int page, int size) {
@@ -109,10 +114,15 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean addEmployee(UserDTO dto) {
+	public boolean addEmployee(UserDTO dto, MultipartFile avatar) {
 		try {
 
 			User employee = fromDto(dto);
+
+			if (avatar != null && !avatar.isEmpty()) {
+				String avatarPath = imageService.saveImage(avatar, "user");
+				employee.setAvatar(avatarPath);
+			}
 
 			userRepository.save(employee);
 
@@ -125,7 +135,6 @@ public class UserServiceImpl implements UserService {
 			tokenRepository.save(verificationToken);
 
 			emailService.sendVerificationEmail(employee, token);
-			System.out.println(employee.toString());
 
 			return true;
 		} catch (Exception e) {
