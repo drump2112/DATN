@@ -7,5 +7,4 @@ import org.springframework.data.domain.Page;
 public interface ColorService {
 
 	Page<ColorDTO> findAll(int page, int size);
-
 }

@@ -70,6 +70,10 @@ public class UserController {
 			@ModelAttribute UserDTO employee,
 			@RequestParam(value = "avatar", required = false) MultipartFile avatar) {
 		try {
+			if (avatar != null) {
+				System.out.println("Avatar original filename: " + avatar.getOriginalFilename());
+				System.out.println("Avatar size: " + avatar.getSize());
+			}
 			boolean success = userService.addEmployee(employee, avatar);
 			if (success) {
 				return ResponseEntity.ok(Map.of("message", "Thêm Thành Công"));

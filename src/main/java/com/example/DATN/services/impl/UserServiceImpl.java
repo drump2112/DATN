@@ -116,7 +116,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public boolean addEmployee(UserDTO dto, MultipartFile avatar) {
 		try {
-
 			User employee = fromDto(dto);
 
 			if (avatar != null && !avatar.isEmpty()) {

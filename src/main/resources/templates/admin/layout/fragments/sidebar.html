@@ -42,9 +42,16 @@
 			<li>
                 <a href="index.html"><i class="fa fa-th-large"></i><span class="nav-label">Quản Lý Sản Phẩm</span>
                     <span class="fa arrow"></span></a>
-                <ul class="nav nav-second-level">
+				<ul class="nav nav-second-level">
+                    <li><a th:href="@{/admin/brand/}">Quản Lý Thương Hiệu</a></li>
+                </ul>
+				                <ul class="nav nav-second-level">
+                    <li><a th:href="@{/admin/category/}">Quản Lý Danh Mục</a></li>
+                </ul>
+				<ul class="nav nav-second-level">
                     <li><a th:href="@{/admin/color/}">Quản Lý Màu Sắc</a></li>
                 </ul>
+
             </li>
         </ul>
     </div>
