@@ -3,7 +3,6 @@ package com.example.DATN.controllers.admin;
 import java.util.Map;
 
 import com.example.DATN.dtos.UserDTO;
-import com.example.DATN.models.User;
 import com.example.DATN.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
