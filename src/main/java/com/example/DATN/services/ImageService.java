@@ -26,9 +26,13 @@ public class ImageService {
 				folder.mkdirs();
 				log.info("Tạo thư mục: {}", folderPath);
 			}
+
 			String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+
 			File dest = new File(folderPath, uniqueFileName);
+
 			log.info("Chuẩn bị lưu tệp vào: {}", dest.getAbsolutePath());
+
 			file.transferTo(dest);
 			if (!dest.exists()) {
 				throw new IOException("Tệp không được lưu tại: " + dest.getAbsolutePath());
