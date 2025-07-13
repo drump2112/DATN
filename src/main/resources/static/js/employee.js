@@ -151,6 +151,9 @@ $(document).ready(function () {
 
         if (avatarFile) {
           formData.append("avatar", avatarFile);
+          console.log("Name File:", avatarFile.name);
+        } else {
+          console.log("No file select");
         }
 
         for (let [key, value] of formData.entries()) {
