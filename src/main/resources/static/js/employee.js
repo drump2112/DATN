@@ -84,6 +84,22 @@ $(document).ready(function () {
     $("#vaiTro").val(data.role).prop("disabled", !isEditable);
     $("#diaChi").val(data.address).prop("readonly", !isEditable);
 
+    $("#dob").val(data.dateOfBirth).prop("readonly", !isEditable);
+
+    console.log(data.gender);
+
+    if (data.gender === true || data.gender === "true") {
+      $("#genderNam").iCheck("check");
+    } else {
+      $("#genderNu").iCheck("check");
+    }
+
+    if (!isEditable) {
+      $('input[name="gender"]').iCheck("disable");
+    } else {
+      $('input[name="gender"]').iCheck("enable");
+    }
+
     $("#modalTitle").text("Chi Tiết Và Cập Nhật Thông Tin Nhân Viên");
     $("#btnAdd").hide();
     $("#btnUpdate").toggle(isEditable);
@@ -124,6 +140,8 @@ $(document).ready(function () {
       address: $(button).data("address"),
       role: $(button).data("role"),
       avatar: $(button).data("avatar"),
+      gender: $(button).data("gender"),
+      dateOfBirth: $(button).data("dob"),
     };
     openEditModal(user, true);
   };
