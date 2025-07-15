@@ -1,0 +1,42 @@
+<th:block th:fragment="scripts">
+  <script th:src="@{/assets/js/jquery-3.1.1.min.js}"></script>
+  <script th:src="@{/assets/js/bootstrap.min.js}"></script>
+  <script th:src="@{/assets/js/plugins/metisMenu/jquery.metisMenu.js}"></script>
+  <script
+    th:src="@{/assets/js/plugins/slimscroll/jquery.slimscroll.min.js}"
+  ></script>
+
+  <!-- Peity -->
+  <script th:src="@{/assets/js/plugins/peity/jquery.peity.min.js}"></script>
+
+  <!-- Custom and plugin javascript -->
+  <script th:src="@{/assets/js/inspinia.js}"></script>
+  <script th:src="@{/assets/js/plugins/pace/pace.min.js}"></script>
+
+  <!-- iCheck -->
+  <script th:src="@{/assets/js/plugins/iCheck/icheck.min.js}"></script>
+
+  <!-- Peity -->
+  <script th:src="@{/assets/js/demo/peity-demo.js}"></script>
+
+  <!-- sweetalert2 -->
+  <script th:src="'https://cdn.jsdelivr.net/npm/sweetalert2@11'"></script>
+
+  <!-- select2 -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"
+  ></script>
+
+  <!-- dropzone -->
+  <script th:src="@{/assets/js/plugins/dropzone/dropzone.js}"></script>
+  <script th:src="@{/assets/js/plugins/dataTables/datatables.min.js}"></script>
+  <script th:src="@{/assets/js/plugins/iCheck/icheck.min.js}"></script>
+  <script>
+    $(document).ready(function () {
+      $(".i-checks").iCheck({
+        checkboxClass: "icheckbox_square-green",
+        radioClass: "iradio_square-green",
+      });
+    });
+  </script>
+</th:block>

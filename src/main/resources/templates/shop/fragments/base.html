@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="base">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>INSPINIA - Landing Page</title>
+
+    <!-- Bootstrap core CSS -->
+    <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" />
+
+    <!-- Animation CSS -->
+    <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
+    <link
+      th:href="@{/assets/font-awesome/css/font-awesome.min.css}"
+      rel="stylesheet"
+    />
+    <!-- Custom styles for this template -->
+    <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
+  </head>
+  <body id="page-top" class="landing-page no-skin-config">
+    <th:block th:replace="shop/fragments/header :: header"> </th:block>
+    <th:block th:replace="shop/fragments/slide :: slide"></th:block>
+    <th:block th:replace="~{::content}"></th:block>
+    <th:block th:replace="shop/fragments/footer :: footer"></th:block>
+    <th:block th:replace="shop/fragments/script :: script"></th:block>
+  </body>
+</html>

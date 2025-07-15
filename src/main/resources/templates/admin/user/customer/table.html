@@ -1,0 +1,54 @@
+<th:block th:fragment="table">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Mã Khách Hàng</th>
+        <th>Tên Đăng Nhập</th>
+        <th>Email</th>
+        <th>Họ Tên</th>
+        <th>Địa Chỉ</th>
+        <th>SĐT</th>
+        <th>Giới Tính</th>
+        <th>Ngày Sinh</th>
+        <th>Vai Trò</th>
+        <th>Trạng Thái</th>
+        <th>Hành Động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each=" item : ${listUsers}">
+        <td th:text="${item.id}"></td>
+        <td th:text="${item.userCode}"></td>
+        <td th:text="${item.userName}"></td>
+        <td th:text="${item.email}"></td>
+        <td th:text="${item.fullName}"></td>
+        <td th:text="${item.address}"></td>
+        <td th:text="${item.phone}"></td>
+        <td th:switch="${item.gender}">
+          <span th:case="true">Nam</span>
+          <span th:case="false">Nữ</span>
+        </td>
+        <td th:text="${item.dateOfBirth}"></td>
+        <td th:text="${item.roleName}"></td>
+        <td th:switch="${item.isActive}">
+          <span th:case="true">Hoạt Động</span>
+          <span th:case="false">Ngừng</span>
+        </td>
+        <td>
+          <button class="btn btn-info dim" type="button">
+            <i class="fa fa-paste"></i>
+          </button>
+          <button
+            th:id="'btn-status-' + ${item.id}"
+            th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+            th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
+            th:title="${item.isActive} ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'"
+          >
+            <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</th:block>

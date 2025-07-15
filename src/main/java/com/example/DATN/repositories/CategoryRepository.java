@@ -9,5 +9,5 @@ import com.example.DATN.models.Category;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
-	Optional<Category> findById();
+
 }

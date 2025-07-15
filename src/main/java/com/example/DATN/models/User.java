@@ -1,5 +1,6 @@
 package com.example.DATN.models;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -35,7 +36,7 @@ public class User {
 	@Column(name = "UserName", nullable = false, unique = true, length = 100)
 	private String userName;
 
-	@Column(name = "Password", nullable = false, unique = true, length = 100)
+	@Column(name = "Password", nullable = false, length = 100)
 	private String password;
 
 	@Column(name = "Email", length = 100)
@@ -57,4 +58,16 @@ public class User {
 	@Column(name = "CreateAt")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createAt;
+
+	@Column(name = "isActive")
+	private Boolean isActive;
+
+	@Column(name = "Gender")
+	private boolean gender;
+
+	@Column(name = "DateOfBirth")
+	private LocalDate dateOfBirth;
+
+	@Column(name = "avatar")
+	private String avatar;
 }

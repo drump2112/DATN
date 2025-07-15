@@ -24,7 +24,7 @@ public class Category {
 	private Integer id;
 
 	@Column(name = "CateCode", nullable = false, unique = true, length = 10)
-	private String CateCode;
+	private String cateCode;
 
 	@Column(name = "Name", nullable = false, length = 100)
 	private String name;
