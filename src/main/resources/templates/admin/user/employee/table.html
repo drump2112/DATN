@@ -85,24 +85,26 @@
     th:if="${totalPages > 0}"
     style="text-align: right"
   >
-    <ul class="pagination">
-      <!-- Previous -->
+    <ul
+      class="pagination"
+      id="paginationContainer"
+      th:attr="data-total-pages=${totalPages}, data-current-page=${currentPage}"
+    >
+      <!-- Nút Previous -->
       <li
-        id="DataTables_Table_0_previous"
         class="paginate_button previous"
         th:classappend="${currentPage == 0} ? ' disabled'"
       >
         <a
           href="#"
-          aria-controls="DataTables_Table_0"
-          th:attr="data-dt-idx=${currentPage}"
           tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage} - 1) + ')'"
-          >Previous</a
+          th:onclick="'searchUser(' + (${currentPage - 1}) + ')'"
         >
+          Previous
+        </a>
       </li>
 
-      <!-- Pages 1..totalPages -->
+      <!-- Nút số trang 1..totalPages -->
       <li
         class="paginate_button"
         th:each="i : ${#numbers.sequence(1, totalPages)}"
@@ -110,28 +112,35 @@
       >
         <a
           href="#"
-          aria-controls="DataTables_Table_0"
-          th:attr="data-dt-idx=${i}"
           tabindex="0"
           th:text="${i}"
           th:onclick="'searchUser(' + (${i} - 1) + ')'"
-        ></a>
+        >
+        </a>
       </li>
 
-      <!-- Next -->
+      <!-- Nút Next -->
+      <li class="paginate_button next" th:if="${currentPage + 1 < totalPages}">
+        <a
+          href="#"
+          tabindex="0"
+          th:onclick="'searchUser(' + (${currentPage + 1}) + ')'"
+        >
+          Next
+        </a>
+      </li>
+
       <li
-        id="DataTables_Table_0_next"
-        class="paginate_button next"
-        th:classappend="${currentPage + 1 == totalPages} ? ' disabled'"
+        class="paginate_button next disabled"
+        th:unless="${currentPage + 1 < totalPages}"
       >
         <a
           href="#"
-          aria-controls="DataTables_Table_0"
-          th:attr="data-dt-idx=${currentPage + 2}"
           tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage} + 1) + ')'"
-          >Next</a
+          th:onclick="'searchUser(' + (${totalPages - 1}) + ')'"
         >
+          Next
+        </a>
       </li>
     </ul>
   </div>

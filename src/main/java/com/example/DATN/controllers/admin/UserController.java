@@ -51,6 +51,7 @@ public class UserController {
 
 	@GetMapping("/table")
 	public String getTableFragment(
+
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size,
 			Model model) {
@@ -91,10 +92,10 @@ public class UserController {
 			@RequestParam(defaultValue = "5") int size,
 			Model model) {
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 		Page<UserDTO> usersPage = userService.searchUsers(keyword, isActive, pageable);
 
-		model.addAttribute("listUsers", usersPage);
+		model.addAttribute("listUsers", usersPage.getContent());
 		model.addAttribute("currentPage", usersPage.getNumber());
 		model.addAttribute("totalPages", usersPage.getTotalPages());
 		model.addAttribute("totalItems", usersPage.getTotalElements());

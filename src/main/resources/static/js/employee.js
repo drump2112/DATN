@@ -286,7 +286,7 @@ $(document).ready(function () {
         $("#employeeTableContainer").html(response); // Cập nhật nội dung fragment
       },
       error: function () {
-        alert("Đã xảy ra lỗi khi tìm kiếm!");
+        searchUser(0);
       },
     });
   }

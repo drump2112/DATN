@@ -12,6 +12,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -45,7 +47,16 @@ public class SecurityConfig {
 				.logout(logout -> logout
 						.logoutUrl("/logout")
 						.logoutSuccessUrl("/login?logout")
-						.permitAll());
+						.permitAll())
+				.exceptionHandling()
+				.authenticationEntryPoint((request, response, authException) -> {
+					String ajaxHeader = request.getHeader("X-Requested-With");
+					if ("XMLHttpRequest".equals(ajaxHeader)) {
+						response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session expired");
+					} else {
+						response.sendRedirect("/login");
+					}
+				});
 
 		return http.build();
 	}
