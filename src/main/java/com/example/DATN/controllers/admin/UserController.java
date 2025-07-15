@@ -3,6 +3,7 @@ package com.example.DATN.controllers.admin;
 import java.util.Map;
 
 import com.example.DATN.dtos.UserDTO;
+import com.example.DATN.request.EmployeeRequest;
 import com.example.DATN.services.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,11 +67,10 @@ public class UserController {
 
 	@PostMapping("/add")
 	public ResponseEntity<?> addEmployee(
-			@ModelAttribute UserDTO employee,
-			@RequestParam(value = "avatar", required = false) MultipartFile avatar) {
+			@ModelAttribute EmployeeRequest employee) {
 		try {
-
-			boolean success = userService.addEmployee(employee, avatar);
+			System.out.println("===Controller Call===");
+			boolean success = userService.addEmployee(employee);
 			if (success) {
 				return ResponseEntity.ok(Map.of("message", "Thêm Thành Công"));
 			} else {

@@ -1,6 +1,7 @@
 package com.example.DATN.services;
 
 import com.example.DATN.dtos.UserDTO;
+import com.example.DATN.request.EmployeeRequest;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +17,7 @@ public interface UserService {
 
 	boolean toggleStatus(Integer id);
 
-	boolean addEmployee(UserDTO dto, MultipartFile avatar);
+	boolean addEmployee(EmployeeRequest employeeRequest);
 
 	Page<UserDTO> searchUsers(String keyword, Boolean isActive, Pageable pageable);
 }

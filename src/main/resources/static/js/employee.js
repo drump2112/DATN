@@ -13,10 +13,54 @@ $(document).ready(function () {
       dictDefaultMessage: "Kéo ảnh vào đây hoặc click để chọn",
       previewsContainer: "#avatarDropzone",
     });
+
+    avatarDropzone.on("addedfile", function (file) {
+      if (this.files.length > 1) {
+        // Giữ lại file vừa thêm (file) và remove file cũ
+        this.removeFile(this.files[0]);
+      }
+      // Đồng bộ input file (để gửi backend nếu muốn)
+      if (file instanceof File) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById("avatarInput").files = dt.files;
+      }
+    });
   }
 
-  // Mở modal thêm
+  $("#myModal").on("hidden.bs.modal", function () {
+    if (avatarDropzone) {
+      avatarDropzone.destroy();
+      avatarDropzone = null;
+    }
+    $("#avatarInput").val("");
 
+    // Init lại Dropzone
+    avatarDropzone = new Dropzone("#avatarDropzone", {
+      url: "/dummy-upload",
+      autoProcessQueue: false,
+      clickable: true,
+      maxFiles: 1,
+      acceptedFiles: "image/*",
+      addRemoveLinks: true,
+      dictDefaultMessage: "Kéo ảnh vào đây hoặc click để chọn",
+      previewsContainer: "#avatarDropzone",
+    });
+
+    avatarDropzone.on("addedfile", function (file) {
+      if (this.files.length > 1) {
+        this.removeFile(this.files[0]);
+      }
+
+      if (file instanceof File) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById("avatarInput").files = dt.files;
+      }
+    });
+  });
+
+  // Mở modal thêm
   function openAddModal() {
     $("#modalTitle").text("Thêm Nhân Viên");
     $("#employeeForm")[0].reset();
@@ -27,7 +71,6 @@ $(document).ready(function () {
     $("#btnAdd").show();
     $("#btnUpdate").hide();
 
-    avatarDropzone.removeAllFiles(true);
     $("#myModal").modal("show");
   }
   // Mở modal chi tiết / cập nhật
@@ -45,6 +88,27 @@ $(document).ready(function () {
     $("#btnAdd").hide();
     $("#btnUpdate").toggle(isEditable);
 
+    if (avatarDropzone) {
+      avatarDropzone.removeAllFiles(true);
+    }
+
+    if (avatarDropzone && data.avatar) {
+      const avatarUrl = data.avatar.startsWith("/")
+        ? `${window.location.origin}${data.avatar}`
+        : data.avatar;
+
+      const mockFile = {
+        name: avatarUrl.split("/").pop(),
+        size: 12345,
+        type: "image/jpeg",
+      };
+
+      avatarDropzone.emit("addedfile", mockFile);
+      avatarDropzone.emit("complete", mockFile);
+      avatarDropzone.createThumbnailFromUrl(mockFile, avatarUrl);
+
+      avatarDropzone.files.push(mockFile);
+    }
     $("#myModal").modal("show");
   }
 
@@ -59,12 +123,12 @@ $(document).ready(function () {
       phone: $(button).data("phone"),
       address: $(button).data("address"),
       role: $(button).data("role"),
+      avatar: $(button).data("avatar"),
     };
     openEditModal(user, true);
   };
 
   // Validate dữ liệu
-
   function validateForm() {
     let isValid = true;
 
@@ -135,6 +199,7 @@ $(document).ready(function () {
       if (result.isConfirmed) {
         const dz = Dropzone.forElement("#avatarDropzone");
         const files = dz.getAcceptedFiles();
+        console.log(files[0]);
         const avatarFile = files.length > 0 ? files[0] : null;
 
         const formData = new FormData();
@@ -150,7 +215,7 @@ $(document).ready(function () {
         formData.append("dateOfBirth", $("#dob").val());
 
         if (avatarFile) {
-          formData.append("avatar", avatarFile);
+          formData.append("avatar", avatarFile, avatarFile.name);
           console.log("Name File:", avatarFile.name);
         } else {
           console.log("No file select");
@@ -183,6 +248,27 @@ $(document).ready(function () {
       }
     });
   });
+
+  // function searchUser(page) {
+  //   var keyword = $("#searchInput").val().trim();
+  //   var isActive = $("#statusFilter").val();
+  //
+  //   $.ajax({
+  //     url: "/admin/employee/search",
+  //     type: "GET",
+  //     data: {
+  //       page: page,
+  //       keyword: keyword,
+  //       isActive: isActive,
+  //     },
+  //     success: function (response) {
+  //       $("#employeeTableContainer").html(response); // Cập nhật nội dung fragment
+  //     },
+  //     error: function () {
+  //       searchUser(0);
+  //     },
+  //   });
+  // }
 
   function searchUser(page) {
     var keyword = $("#searchInput").val().trim();

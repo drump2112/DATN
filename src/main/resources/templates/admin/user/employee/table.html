@@ -3,6 +3,7 @@
     <thead>
       <tr>
         <th>ID</th>
+        <th>Ảnh Đại Diện</th>
         <th>Mã Nhân viên</th>
         <th>Tên Đăng Nhập</th>
         <th>Email</th>
@@ -19,6 +20,18 @@
     <tbody>
       <tr th:each=" item : ${listUsers}">
         <td th:text="${item.id}"></td>
+        <td>
+          <img
+            th:src="@{${item.avatar}}"
+            alt="Avatar"
+            style="
+              width: 50px;
+              height: 50px;
+              object-fit: cover;
+              border-radius: 50%;
+            "
+          />
+        </td>
         <td th:text="${item.userCode}"></td>
         <td th:text="${item.userName}"></td>
         <td th:text="${item.email}"></td>
@@ -46,7 +59,9 @@
                   data-username=${item.userName}, 
                   data-phone=${item.phone}, 
                   data-address=${item.address}, 
-                  data-role=${item.roleId}"
+                  data-role=${item.roleId},
+				  data-avatar=${item.avatar}
+						"
             onclick="handleDetailClick(this)"
           >
             <i class="fa fa-paste"></i>

@@ -1,5 +1,6 @@
 package com.example.DATN.services.impl;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import com.example.DATN.models.VerificationToken;
 import com.example.DATN.repositories.RoleRepository;
 import com.example.DATN.repositories.UserRepository;
 import com.example.DATN.repositories.VerificationTokenRepository;
+import com.example.DATN.request.EmployeeRequest;
 import com.example.DATN.services.ImageService;
 import com.example.DATN.services.UserService;
 import com.example.DATN.specifications.UserSpecification;
@@ -114,14 +116,9 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean addEmployee(UserDTO dto, MultipartFile avatar) {
+	public boolean addEmployee(EmployeeRequest employeeRequest) {
 		try {
-			User employee = fromDto(dto);
-
-			if (avatar != null && !avatar.isEmpty()) {
-				String avatarPath = imageService.saveImage(avatar, "user");
-				employee.setAvatar(avatarPath);
-			}
+			User employee = fromRequest(employeeRequest);
 
 			userRepository.save(employee);
 
@@ -161,42 +158,56 @@ public class UserServiceImpl implements UserService {
 
 	}
 
-	public User fromDto(UserDTO dto) {
+	public User fromRequest(EmployeeRequest employeeRequest) {
 		User user = new User();
 
-		user.setUserName(dto.getUserName());
-		user.setFullName(dto.getFullName());
-		user.setEmail(dto.getEmail());
-		user.setPhone(dto.getPhone());
-		user.setAddress(dto.getAddress());
-		user.setGender(dto.getGender());
-		user.setDateOfBirth(dto.getDateOfBirth());
-		user.setPassword(!dto.getPassword().isEmpty() ? passwordEncoder.encode(dto.getPassword()) : null);
-		Role role = roleRepository.findById(dto.getRoleId()).orElse(null);
+		user.setUserName(employeeRequest.getUserName());
+		user.setFullName(employeeRequest.getFullName());
+		user.setEmail(employeeRequest.getEmail());
+		user.setPhone(employeeRequest.getPhone());
+		user.setAddress(employeeRequest.getAddress());
+		user.setGender(employeeRequest.getGender());
+		user.setDateOfBirth(employeeRequest.getDateOfBirth());
+		user.setPassword(
+				!employeeRequest.getPassword().isEmpty() ? passwordEncoder.encode(employeeRequest.getPassword())
+						: null);
+		Role role = roleRepository.findById(employeeRequest.getRoleId()).orElse(null);
 		user.setRole(role);
 		if (role != null) {
 			String prefix = "";
 
-			if (dto.getRoleId() == 1) {
+			if (employeeRequest.getRoleId() == 1) {
 				prefix = "AD";
 				user.setIsActive(false);
 
-			} else if (dto.getRoleId() == 2) {
+			} else if (employeeRequest.getRoleId() == 2) {
 				prefix = "NV";
 				user.setIsActive(false);
 
-			} else if (dto.getRoleId() == 3) {
+			} else if (employeeRequest.getRoleId() == 3) {
 				prefix = "KH";
 				user.setIsActive(false);
 
 			}
 
 			if (!prefix.isEmpty()) {
-				long count = userRepository.countByRoleId(dto.getRoleId());
+				long count = userRepository.countByRoleId(employeeRequest.getRoleId());
 				String code = String.format("%s-%03d", prefix, count + 1);
 				user.setUserCode(code);
 			}
 		}
+
+		if (employeeRequest.getAvatar() != null && !employeeRequest.getAvatar().isEmpty()) {
+			try {
+				String avatarPath = imageService.saveImage(employeeRequest.getAvatar(), "user");
+				user.setAvatar(avatarPath);
+			} catch (IOException e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+			}
+		}
+
 		return user;
 	}
 }
