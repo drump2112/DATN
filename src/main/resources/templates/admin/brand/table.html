@@ -1,24 +1,58 @@
 <th:block th:fragment="table">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Mã Màu</th>
-        <th>Tên</th>
-        <th>Hành Động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr th:each="item : ${colors}">
-        <td th:text="${item.id}"></td>
-        <td th:text="${item.colorCode}"></td>
-        <td th:text="${item.colorName}"></td>
-        <td>
-          <button class="btn btn-default dim" type="button">
-            <i class="fa fa-info"></i>
+  <div class="row">
+    <div class="col-sm-3 m-b-xs"></div>
+    <div class="col-sm-4 m-b-xs"></div>
+    <div class="col-sm-5">
+      <div class="input-group">
+        <span class="input-group-btn">
+          <button
+            type="button"
+            class="btn btn-sm btn-primary pull-right"
+            id="btnAdd"
+            onclick="openAddModal()"
+          >
+            <i class="fa fa-plus-circle"></i> Thêm
           </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Ảnh</th>
+          <th>Mã Thương Hiệu</th>
+          <th>Tên</th>
+          <th>Hành Động</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${brands}">
+          <td th:text="${item.id}"></td>
+          <td>
+            <img
+              th:src="@{${item.logoUrl}}"
+              alt="Avatar"
+              style="
+                width: 50px;
+                height: 50px;
+                object-fit: cover;
+                border-radius: 50%;
+              "
+            />
+          </td>
+
+          <td th:text="${item.brandCode}"></td>
+          <td th:text="${item.name}"></td>
+          <td>
+            <button class="btn btn-default dim" type="button">
+              <i class="fa fa-info"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </th:block>

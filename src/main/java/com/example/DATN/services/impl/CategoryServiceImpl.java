@@ -1,5 +1,8 @@
 package com.example.DATN.services.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.example.DATN.dtos.CategoryDTO;
 import com.example.DATN.models.Category;
 import com.example.DATN.repositories.CategoryRepository;
@@ -29,6 +32,25 @@ public class CategoryServiceImpl implements CategoryService {
 		Page<Category> category = categoryRepository.findAll(pageable);
 
 		return category.map(entity -> modelMapper.map(entity, CategoryDTO.class));
+	}
+
+	@Override
+	public List<CategoryDTO> getCategories(String keyword) {
+		List<Category> categoriess;
+
+		if (keyword != null && !keyword.isBlank()) {
+			categoriess = categoryRepository.findByNameContainingIgnoreCase(keyword);
+		} else {
+			categoriess = categoryRepository.findAll();
+		}
+
+		return categoriess.stream()
+				.map(category -> CategoryDTO.builder()
+						.id(category.getId())
+						.cateCode(category.getCateCode())
+						.name(category.getName())
+						.build())
+				.collect(Collectors.toList());
 	}
 
 }

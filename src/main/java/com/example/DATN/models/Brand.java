@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "Brands")
-@Builder
+@Builder(toBuilder = true)
 public class Brand {
 
 	@Id
@@ -26,9 +26,9 @@ public class Brand {
 	@Column(name = "BrandCode", nullable = false, unique = true, length = 10)
 	private String brandCode;
 
-	@Column(name = "Name", length = 100)
+	@Column(name = "name")
 	private String name;
 
-	@Column(name = "LogoUrl", length = 255)
+	@Column(name = "LogoUrl")
 	private String logoUrl;
 }

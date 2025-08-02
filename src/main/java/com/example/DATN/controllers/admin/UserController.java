@@ -22,8 +22,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
+@Slf4j
 @RequestMapping("/admin/employee")
 public class UserController {
 
@@ -32,7 +36,6 @@ public class UserController {
 
 	@GetMapping("/")
 	public String getAllEmployee(
-
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size,
 			Model model) {
@@ -56,6 +59,7 @@ public class UserController {
 			Model model) {
 		Page<UserDTO> usersPage = userService.getAllEmployee(page, size);
 
+		log.info("Record" + usersPage.getContent().size());
 		model.addAttribute("listUsers", usersPage.getContent());
 		model.addAttribute("currentPage", usersPage.getNumber());
 		model.addAttribute("totalPages", usersPage.getTotalPages());
@@ -65,20 +69,50 @@ public class UserController {
 		return "admin/user/employee/table :: table";
 	}
 
+	@GetMapping("/count")
+	@ResponseBody
+	public long countEmployees(@RequestParam(required = false) String keyword) {
+		return userService.countUsersByRoles(keyword, 1, 2);
+	}
+
 	@PostMapping("/add")
-	public ResponseEntity<?> addEmployee(
-			@ModelAttribute EmployeeRequest employee) {
+	public ResponseEntity<?> addEmployee(@ModelAttribute EmployeeRequest employee) {
+		userService.addEmployee(employee);
+		return ResponseEntity.ok(Map.of("message", "Thêm thành công"));
+	}
+	// @PostMapping("/add")
+	// public ResponseEntity<?> addEmployee(
+	// @ModelAttribute EmployeeRequest employee) {
+	// try {
+	// boolean result = userService.addEmployee(employee);
+	// if (result) {
+	// return ResponseEntity.ok(Map.of("message", "Thêm Thành Công"));
+	// } else {
+	// return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message",
+	// "Thêm thất bại"));
+	// }
+	// } catch (Exception e) {
+	// return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	// .body(Map.of("message", "Lỗi server: " + e.getMessage()));
+	// }
+	// }
+
+	@PutMapping("/{id}")
+	public ResponseEntity<?> updateEmployee(
+			@PathVariable Integer id,
+			@ModelAttribute EmployeeRequest employeeRequest) {
 		try {
-			System.out.println("===Controller Call===");
-			boolean success = userService.addEmployee(employee);
-			if (success) {
-				return ResponseEntity.ok(Map.of("message", "Thêm Thành Công"));
+			boolean result = userService.updateEmployee(id, employeeRequest);
+			if (result) {
+				return ResponseEntity.ok(Map.of("message", "Update Thành Công"));
 			} else {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Thêm thất bại"));
 			}
+
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body(Map.of("message", "Lỗi server: " + e.getMessage()));
+
 		}
 	}
 

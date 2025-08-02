@@ -23,14 +23,16 @@
   <script th:src="'https://cdn.jsdelivr.net/npm/sweetalert2@11'"></script>
 
   <!-- select2 -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"
-  ></script>
+  <!-- <script -->
+  <!--   src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" -->
+  <!-- ></script> -->
 
+  <script th:src="@{/assets/js/plugins/select2/select2.full.min.js}"></script>
   <!-- dropzone -->
   <script th:src="@{/assets/js/plugins/dropzone/dropzone.js}"></script>
   <script th:src="@{/assets/js/plugins/dataTables/datatables.min.js}"></script>
   <script th:src="@{/assets/js/plugins/iCheck/icheck.min.js}"></script>
+  <script th:src="@{/assets/js/plugins/toastr/toastr.min.js}"></script>
   <script th:src="@{/js/main.js}"></script>
   <script>
     $(document).ready(function () {

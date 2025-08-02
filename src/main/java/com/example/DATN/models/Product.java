@@ -22,11 +22,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "Products")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Table(name = "Products")
+@Builder(toBuilder = true)
 public class Product {
 
 	@Id
@@ -58,5 +58,8 @@ public class Product {
 	private Boolean isActive;
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-	private List<ProductImage> images;
+	private List<ProductVariant> variants;
+
+	@Column(name = "Thumbnail")
+	private String thumbnail;
 }

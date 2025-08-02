@@ -19,6 +19,9 @@ import jakarta.servlet.http.HttpServletResponse;
 public class SecurityConfig {
 
 	@Autowired
+	private CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
+
+	@Autowired
 	private CustomUserDetailsService userDetailsService;
 
 	@Bean
@@ -31,18 +34,21 @@ public class SecurityConfig {
 		http
 				.csrf().disable()
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/", "/login", "/register", "/verify/**", "/assets/**", "/js/**").permitAll()
+						.requestMatchers("/", "/login", "/register", "/verify/**", "/assets/**",
+								"/js/**")
+						.permitAll()
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers("/seller/**").hasRole("SELLER")
 						.requestMatchers("/customer/**").hasRole("CUSTOMER")
 						.anyRequest().authenticated())
 				.formLogin(form -> form
 						.loginPage("/login")
+						.defaultSuccessUrl("/home", true)
 						.loginProcessingUrl("/do-login")
 						.usernameParameter("username")
 						.passwordParameter("password")
 						.successHandler(customSuccessHandler())
-						.failureHandler(customFailureHandler())
+						.failureHandler(customAuthenticationFailureHandler)
 						.permitAll())
 				.logout(logout -> logout
 						.logoutUrl("/logout")

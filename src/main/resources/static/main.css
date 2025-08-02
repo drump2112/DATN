@@ -1,7 +1,15 @@
 .swal-popup-zindex {
-  z-index: 3000 !important;
+  z-index: 4000 !important;
 }
 
 .swal2-container {
-  z-index: 3000 !important;
+  z-index: 4000 !important;
+}
+
+.select2-container--open {
+  z-index: 3999 !important;
+}
+
+.text-danger {
+  margin-top: 4px;
 }

@@ -42,7 +42,7 @@
           <span th:case="true">Nam</span>
           <span th:case="false">Nữ</span>
         </td>
-        <td th:text="${item.dateOfBirth}"></td>
+        <td th:text="${#temporals.format(item.dateOfBirth, 'dd/MM/yyyy')}"></td>
         <td th:text="${item.roleName}"></td>
         <td th:switch="${item.isActive}">
           <span th:case="true" class="badge badge-primary">Hoạt Động</span>
@@ -64,6 +64,7 @@
 				  data-gender=${item.gender},
 			      data-dob=${item.dateOfBirth}
 						"
+            th:title="'Thông tin và cập nhật'"
             onclick="handleDetailClick(this)"
           >
             <i class="fa fa-paste"></i>

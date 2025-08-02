@@ -20,8 +20,9 @@
 			<div class="ibox-content">
 				<div class="row">
 					<div class="col-sm-2 m-b-xs">
-						<select class="input-sm form-control input-s-sm inline">
-							<option value="1">Hoạt Động</option>
+						<select class="input-sm form-control input-s-sm inline" id="statusFilter">
+							<option value="">Chọn Trang Thái</option>
+							<option value="1">Hoạt Động</option>		
 							<option value="0">Ngừng Hoạt Động</option>
 						</select>
 					</div>
@@ -36,8 +37,8 @@
 						</div>
 					</div>
 					<div class="col-sm-7 m-b-xs">
-						<button type="button" class="btn btn-w-m btn-primary pull-right" onclick="openAddModal()">Thêm
-							Nhân Viên</button>
+						<button type="button" class="btn btn-w-m btn-primary pull-right" onclick="openAddModal()">
+							<i class="fa fa-plus-circle"></i> Thêm Nhân Viên</button>
 					</div>
 				</div>
 			</div>
@@ -64,7 +65,8 @@
 			</div>
 		</div>
 	</div>
-	<div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" style="padding-right: 15px;">
+	<div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" style="padding-right: 15px;" data-backdrop="static"
+     data-keyboard="false">
 		<div class="modal-dialog" style="width: 1200px;	">
 			<div class="modal-content animated bounceInRight">
 				<div class="modal-header">
@@ -75,7 +77,8 @@
 				<div class="modal-body">
 					<div class="row">
 						<form id="employeeForm" role="form">
-							<div class="col-sm-6 b-r">
+							<div class="col-sm-6 b-r">	
+								<input type="hidden" id="userId" name="userId">
 								<div class="form-group">
 									<label>Mã NV</label>
 										<input type="text" id="maNv" name="maNv" placeholder="{-Mã Nhân Viên được tạo tự động có dạng : NV-XXX -}"
@@ -99,26 +102,13 @@
 										class="form-control">
 									<span class="text-danger" id="error-sdt"></span>
 								</div>
-								<div class="form-group">
+								<div class="form-group" id="ngaySinhGroup">
 									<label>Ngày Sinh</label>
 									<input type="date" id="dob" name="dob" class="form-control">
 									<span class="text-danger" id="error-dob"></span>
 								</div>
 							</div>
 							<div class="col-sm-6">
-								<div class="form-group">
-									<label>Tên Đăng Nhập</label>
-									<input type="text" id="tenDangNhap" name="tenDangNhap"
-										placeholder="Nhập Tên Đăng Nhập" class="form-control">
-											<span class="text-danger" id="error-tenDangNhap"></span>
-								</div>
-								<div class="form-group">
-									<label>Mật Khẩu</label>
-									<input type="password" id="matKhau" name="matKhau" placeholder="Nhập Mất Khẩu"
-										class="form-control">
-									<span class="text-danger" id="error-matKhau"></span>
-								</div>
-
 								<div class="form-group">
 									<label>Vai Trò</label>
 									<select class="form-control m-b" id="vaiTro" name="vaiTro">
@@ -133,7 +123,7 @@
 									<span class="text-danger" id="error-diaChi"></span>
 								</div>
 								<div class="form-group">
-									<label>Giới Tính</label>
+									<label style="margin-top: 7px;">Giới Tính</label>
 									<div class="row" style="display: flex; margin-left: 2px">
 										<div class="i-checks">
 										<label>
@@ -146,8 +136,20 @@
 										</label>
 										</div>
 									</div>
+									<span class="text-danger" id="error-gioiTinh"></span>
 								</div>
-
+								<div class="form-group" id="usernameGroup">
+									<label>Tên Đăng Nhập</label>
+									<input type="text" id="tenDangNhap" name="tenDangNhap"
+										placeholder="Nhập Tên Đăng Nhập" class="form-control">
+											<span class="text-danger" id="error-tenDangNhap"></span>
+								</div>
+								<div class="form-group" id="passwordGroup">
+									<label>Mật Khẩu</label>
+									<input type="password" id="matKhau" name="matKhau" placeholder="Nhập Mật Khẩu"
+										class="form-control">
+									<span class="text-danger" id="error-matKhau"></span>
+								</div>
 							</div>
 							<div class="col-sm-12">
 								<div class="form-group">

@@ -8,7 +8,9 @@ import com.example.DATN.repositories.UserRepository;
 import com.example.DATN.repositories.VerificationTokenRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -36,7 +38,18 @@ public class AuthController {
 	}
 
 	@GetMapping("/login")
-	public String showLoginPage() {
+	public String showLoginPage(@RequestParam(value = "error", required = false) String error,
+			Model model,
+			Authentication authentication) {
+		if (authentication != null && authentication.isAuthenticated()) {
+			return "redirect:/home";
+		}
+
+		if ("disabled".equals(error)) {
+			model.addAttribute("errorMsg", "Tài khoản của bạn chưa được kích hoạt.");
+		} else if ("bad".equals(error)) {
+			model.addAttribute("errorMsg", "Sai tên đăng nhập hoặc mật khẩu.");
+		}
 		return "admin/auth/login";
 	}
 }
