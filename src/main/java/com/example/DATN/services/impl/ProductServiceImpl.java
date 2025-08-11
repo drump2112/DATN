@@ -1,9 +1,11 @@
 package com.example.DATN.services.impl;
 
 import java.io.IOException;
-import java.time.LocalTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.ProductDTO;
 import com.example.DATN.models.Brand;
@@ -170,6 +172,40 @@ public class ProductServiceImpl implements ProductService {
 		} catch (IOException e) {
 			throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public List<ProductDTO> getProducts(String keyword) {
+		List<Product> products;
+
+		if (keyword != null && !keyword.isBlank()) {
+			products = productRepository.findByNameContainingIgnoreCase(keyword);
+		} else {
+			products = productRepository.findAll();
+		}
+
+		return products.stream()
+				.map(Product -> ProductDTO.builder()
+						.id(Product.getId())
+						.productCode(Product.getProductCode())
+						.name(Product.getName())
+						.build())
+				.collect(Collectors.toList());
+
+	}
+
+	@Override
+	public List<ProductDTO> getProductActive() {
+		return productRepository.findByIsActive(true).stream()
+				.map(product -> modelMapper.map(product, ProductDTO.class))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public ProductDTO getById(Integer id) {
+		Product product = productRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+		return modelMapper.map(product, ProductDTO.class);
 	}
 
 }

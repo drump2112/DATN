@@ -33,9 +33,6 @@ public class ProductVariantImage {
 	@Column(name = "ImageUrl", nullable = false, length = 255)
 	private String imageUrl;
 
-	@Column(name = "isPrimary")
-	private Boolean isPrimary;
-
 	@Column(name = "SortOrder")
 	private Integer sortOrder;
 }

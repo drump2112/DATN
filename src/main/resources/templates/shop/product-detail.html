@@ -1,0 +1,84 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="shop/fragments/base :: base"
+>
+  <section class="container features" th:fragment="content">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="navy-line"></div>
+        <h1 class="text-center">
+          Chi Tiết Sản Phẩm<br />
+          <!-- <span class="navy"> with many custom components</span> -->
+        </h1>
+        <div class="ibox product-detail">
+          <div class="ibox-content">
+            <div class="row">
+              <div class="col-md-5">
+                <div class="product-images"></div>
+              </div>
+              <div class="col-md-7">
+                <h2 class="font-bold m-b-xs" th:text="${product.name}">
+                  Desktop publishing software
+                </h2>
+                <small th:text="${product.categoryName}"
+                  >Many desktop publishing packages and web page editors
+                  now.</small
+                >
+                <div class="m-t-md">
+                  <h2 class="product-main-price" id="variant-price">
+                    $406,602 <small class="text-muted">VNĐ</small>
+                  </h2>
+                </div>
+                <hr />
+                <h4>Màu Sắc</h4>
+                <div class="small text-muted" id="color">
+                  <div class="color"></div>
+                </div>
+                <br />
+                <h4>Kích Cỡ</h4>
+                <div class="small text-muted" id="size">
+                  <div class="size"></div>
+                </div>
+
+                <dl class="small m-t-md">
+                  <dt>Số Lượng</dt>
+                  <br />
+                  <dd id="variant-quantity"></dd>
+                </dl>
+                <hr />
+                <div>
+                  <div class="btn-group">
+                    <button class="btn btn-primary btn-sm details">
+                      <i class="fa fa-cart-plus"></i> Thêm Giỏ Hàng
+                    </button>
+                    <button class="btn btn-white btn-sm">
+                      <i class="fa fa-star"></i> Add to wishlist
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ibox-footer">
+            <div id="variant-data" th:data-variants="${variants}"></div>
+          </div>
+        </div>
+        <div class="ibox float-e-margins">
+          <div class="ibox-title" style="border: none">
+            <h5>Mô Tả</h5>
+            <div class="ibox-tools">
+              <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+              </a>
+            </div>
+          </div>
+          <div class="ibox-content">
+            <!-- <h2>This is standard IN+ Panel<br /></h2> -->
+            <p th:text="${product.description}"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</html>

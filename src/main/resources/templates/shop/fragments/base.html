@@ -14,12 +14,52 @@
 
     <!-- Animation CSS -->
     <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
+    <link th:href="@{/assets/css/plugins/slick/slick.css}" rel="stylesheet" />
+    <link
+      th:href="@{/assets/css/plugins/slick/slick-theme.css}"
+      rel="stylesheet"
+    />
+    <link
+      th:href="@{/assets/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css}"
+      rel="stylesheet"
+      class="__web-inspector-hide-shortcut__"
+    />
     <link
       th:href="@{/assets/font-awesome/css/font-awesome.min.css}"
       rel="stylesheet"
     />
     <!-- Custom styles for this template -->
     <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
+    <style>
+      /* Ẩn radio gốc */
+      .size input[type="radio"],
+      .color input[type="radio"] {
+        display: none;
+      }
+
+      /* Label styled như button */
+      .size label,
+      .color label {
+        display: inline-block;
+        font-weight: 400;
+        padding: 7px 14px;
+        background-color: #f0f0f0;
+        color: #333;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        margin: 5px;
+      }
+
+      /* Khi radio được chọn */
+      .size input[type="radio"]:checked + label,
+      .color input[type="radio"]:checked + label {
+        background-color: #1bb394;
+        color: white;
+        border-color: #1bb394;
+      }
+    </style>
   </head>
   <body id="page-top" class="landing-page no-skin-config">
     <th:block th:replace="shop/fragments/header :: header"> </th:block>

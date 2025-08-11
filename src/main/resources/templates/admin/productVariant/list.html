@@ -1,0 +1,164 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="admin/layout/base :: base"
+>
+<th:block th:fragment="content">
+    <div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h5>Danh Sách Sản Phẩm</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">
+					<div class="row">
+						<div class="col-sm-1 sm-b-xs">
+							<select class="input-sm form-control input-s-sm inline" id="colorFilter">
+							</select>
+						</div>
+						<div class="col-sm-1 m-b-xs">
+							<select class="input-sm form-control input-s-sm inline" id="sizeFilter">
+							</select>
+						</div>
+						<div class="col-sm-2 m-b-xs">
+							<select class="input-sm form-control input-s-sm inline" id="cateFilter">
+							</select>
+						</div>
+						<div class="col-sm-2 m-b-xs">
+							<select class="input-sm form-control input-s-sm inline" id="statusFilter">
+								<option value="1">Đang Kinh Doanh</option>
+								<option value="0">Ngừng Kinh Doanh</option>
+							</select>
+						</div>
+						<div class="col-sm-2 m-b-xs">
+							<div class="input-group"><input type="text" placeholder="Tìm Kiếm (Mã SP, Tên SP, Thương Hiệu)" class="input-sm form-control" id="searchInput" style="height: 34px;border-radius: 5px 0 0 5px;">
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-sm btn-primary" onclick="searchProductVariants(0)" style="height: 34px;border-radius:0 5px 5px 0;"><i class="fa fa-search"></i></button>
+								</span>
+							</div>
+						</div>
+						<div class="col-sm-1"> 
+							<button id="resetFilterBtn" class="btn btn-info" type="button"><i class="fa fa-mail-reply-all"></i></button>
+						</div>
+						<div class="col-sm-3">
+							<span class="input-group-btn">
+								<button
+									type="button"
+									class="btn btn-sm btn-primary pull-right"
+									id="btnOpenAddModal"
+									style="height: 34px;"
+								>
+									<i class="fa fa-plus-circle"></i> Thêm
+								</button>
+							</span>
+						</div>
+					</div>
+					<div class="table-responsive" id="productTableContainer">
+						<th:block th:replace="admin/productVariant/table :: table"></th:block>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" data-focus="false" style="padding-right: 15px;" data-backdrop="static"
+     data-keyboard="false">
+		<div class="modal-dialog" style="width: 1200px;	">
+			<div class="modal-content animated bounceInRight">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+							class="sr-only">Close</span></button>
+					<h4 class="modal-title" id="modalTitle">Modal title</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<form id="productForm" role="form"> 
+							<div class="row">
+								<div class="col-sm-6 b-r">	
+									<input type="hidden" id="productId" name="productId">
+									<div class="form-group">
+										<label>Mã SP</label>
+										<input type="text" id="maSp" name="maSp" placeholder="{-Mã sản phẩm được tạo tự động có dạng : SP-XXX -}"
+										class="form-control" style="border-radius: 6px;" readonly>
+									</div>
+									<div class="form-group">
+										<label>Sản Phẩm</label>
+										<select id="sanPham" class="form-control select2" style="width: 100%;">
+											<option></option>
+										</select>
+										<span class="text-danger" id="error-sp"></span>
+									</div>
+									<div class="form-group">
+										<label>Màu Sắc</label>
+										<select id="mauSac" class="form-control select2" style="width: 100%;">
+											<option></option>
+										</select>
+										<span class="text-danger" id="error-color"></span>
+									</div>
+									<div class="form-group">
+										<label>Kích Cỡ</label>
+										<select id="kichCo" class="form-control select2" style="width: 100%;">
+										</select>
+										<span class="text-danger" id="error-size"></span>
+									</div>
+								</div>
+								<div class="col-sm-6">
+									<div class="form-group">
+										<label>Số Lượng</label>
+										<div class="input-group bootstrap-touchspin">
+											<input class="touchspin1 form-control" type="text" value="" name="demo1" style="display: block;">
+										</div>
+									</div>
+									<div class="form-group">
+										<label>Giá</label>
+										<div class="input-group bootstrap-touchspin">
+											<input class="touchspin2 form-control" type="text" value="" name="demo1" style="display: block;">
+										</div>
+									</div>
+									<div class="form-group">
+										<label>SKU</label>
+										<input type="text" id="sku" name="sku" class="form-control" style="border-radius: 6px;">
+									</div>
+									<div class="form-group">
+										<label>Trạng Thái </label>
+										<select class="form-control select2" id="status" style="width: 100%;">
+											<option value="1">Kinh Doanh</option>		
+											<option value="0">Ngừng Kinh Doanh</option>
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="row"> 
+								<div class="col-sm-12">
+									<div class="form-group">
+										<label for="">Ảnh Sản Phẩm</label>
+										<div id="avatarDropzone" class="dropzone dz-clickable"></div>
+										<input type="file" id="avatarInput" name="avatar" style="display:none;">
+										<span class="text-danger" id="error-avatar"></span>
+									</div>
+								</div>
+							</div>
+							<div style="margin-right: 14px">
+								<button id="btnUpdateProduct" class="btn btn-sm btn-success pull-right m-t-n-xs" type="button">
+									<strong>Cập Nhật</strong>
+								</button>
+								<button id="btnAddProduct" class="btn btn-sm btn-primary pull-right m-t-n-xs" type="button"
+									style="margin-right:6px;">
+									<strong>Thêm</strong>
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<th:block th:fragment="script">
+		<script th:src="@{/js/productVariant.js}"></script>
+	</th:block>
+</th:block>
+</html>

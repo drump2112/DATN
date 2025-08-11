@@ -34,6 +34,7 @@ public class CategoryController {
 			Model model) {
 		Page<CategoryDTO> catePage = categoryService.findAll(page, size);
 
+		model.addAttribute("pageTitle", "Danh sách danh mục");
 		model.addAttribute("Categories", catePage.getContent());
 		model.addAttribute("currentPage", catePage.getNumber());
 		model.addAttribute("totalPages", catePage.getTotalPages());

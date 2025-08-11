@@ -1,7 +1,9 @@
 package com.example.DATN.repositories;
 
+import java.util.List;
 import java.util.Optional;
 
+import com.example.DATN.dtos.ProductDTO;
 import com.example.DATN.models.Product;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +14,10 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
 	Optional<Product> findTopByOrderByIdDesc();
 
 	boolean existsByProductCode(String productCode);
+
+	Optional<Product> findByid(Integer Id);
+
+	List<Product> findByNameContainingIgnoreCase(String name);
+
+	List<Product> findByIsActive(Boolean isActive);
 }

@@ -26,6 +26,7 @@ public class RoleController {
 
 		Page<RoleDTO> rolesPage = roleService.findAll(page, size);
 
+		model.addAttribute("pageTitle", "Danh sách vai trò");
 		model.addAttribute("roles", rolesPage.getContent());
 		model.addAttribute("currentPage", rolesPage.getNumber());
 		model.addAttribute("totalPages", rolesPage.getTotalPages());

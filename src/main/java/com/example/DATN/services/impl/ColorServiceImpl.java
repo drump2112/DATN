@@ -1,5 +1,8 @@
 package com.example.DATN.services.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.example.DATN.dtos.ColorDTO;
 import com.example.DATN.models.Color;
 import com.example.DATN.repositories.ColorRepoSitory;
@@ -29,6 +32,25 @@ public class ColorServiceImpl implements ColorService {
 		Page<Color> color = colorRepository.findAll(pageable);
 
 		return color.map(entity -> modelMapper.map(entity, ColorDTO.class));
+	}
+
+	@Override
+	public List<ColorDTO> getColors(String keyword) {
+		List<Color> colors;
+
+		if (keyword != null && !keyword.isBlank()) {
+			colors = colorRepository.findByNameContainingIgnoreCase(keyword);
+		} else {
+			colors = colorRepository.findAll();
+		}
+
+		return colors.stream()
+				.map(color -> ColorDTO.builder()
+						.id(color.getId())
+						.colorCode(color.getColorCode())
+						.colorName(color.getName())
+						.build())
+				.collect(Collectors.toList());
 	}
 
 }

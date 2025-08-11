@@ -42,6 +42,7 @@ public class UserController {
 
 		Page<UserDTO> usersPage = userService.getAllEmployee(page, size);
 
+		model.addAttribute("pageTitle", "Danh sách nhân viên");
 		model.addAttribute("listUsers", usersPage.getContent());
 		model.addAttribute("currentPage", usersPage.getNumber());
 		model.addAttribute("totalPages", usersPage.getTotalPages());

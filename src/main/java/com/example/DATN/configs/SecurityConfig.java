@@ -35,7 +35,7 @@ public class SecurityConfig {
 				.csrf().disable()
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/", "/login", "/register", "/verify/**", "/assets/**",
-								"/js/**")
+								"/js/**", "/uploads/**", "/details/**")
 						.permitAll()
 						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers("/seller/**").hasRole("SELLER")
@@ -43,7 +43,7 @@ public class SecurityConfig {
 						.anyRequest().authenticated())
 				.formLogin(form -> form
 						.loginPage("/login")
-						.defaultSuccessUrl("/home", true)
+						.defaultSuccessUrl("/admin/home", true)
 						.loginProcessingUrl("/do-login")
 						.usernameParameter("username")
 						.passwordParameter("password")
@@ -75,10 +75,10 @@ public class SecurityConfig {
 
 			switch (role) {
 				case "ROLE_ADMIN":
-					response.sendRedirect("/home");
+					response.sendRedirect("/admin/home");
 					break;
 				case "ROLE_SELLER":
-					response.sendRedirect("/home");
+					response.sendRedirect("/admin/home");
 					break;
 				default:
 					response.sendRedirect("/customer/home");

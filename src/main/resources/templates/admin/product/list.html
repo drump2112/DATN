@@ -17,20 +17,21 @@
 				</div>
 				<div class="ibox-content">
 					<div class="row">
-						<div class="col-sm-3 m-b-xs"><select class="input-sm form-control input-s-sm inline" id="statusFilter">
-							<option value="">Chọn trạng thái</option>
-							<option value="1">Đang Kinh Doanh</option>
-							<option value="0">Ngừng Kinh Doanh</option>
-						</select>
+						<div class="col-sm-2 m-b-xs">
+							<select class="input-sm form-control input-s-sm inline" id="statusFilter">
+								<option value="">Chọn trạng thái</option>
+								<option value="1">Đang Kinh Doanh</option>
+								<option value="0">Ngừng Kinh Doanh</option>
+							</select>
 						</div>
-						<div class="col-sm-4 m-b-xs">
+						<div class="col-sm-3 m-b-xs">
 							<div class="input-group"><input type="text" placeholder="Tìm Kiếm" class="input-sm form-control" id="searchInput">
 								<span class="input-group-btn">
 									<button type="button" class="btn btn-sm btn-primary" onclick="searchProduct(0)"><i class="fa fa-search"></i></button>
 								</span>
 							</div>
 						</div>
-						<div class="col-sm-5">        
+						<div class="col-sm-7">
 							<span class="input-group-btn">
 								<button
 									type="button"
@@ -62,7 +63,7 @@
 				<div class="modal-body">
 					<div class="row">
 						<form id="productForm" role="form">
-							<div class="col-sm-6 b-r">	
+							<div class="col-sm-6 b-r">
 								<input type="hidden" id="productId" name="productId">
 								<div class="form-group">
 									<label>Mã SP</label>

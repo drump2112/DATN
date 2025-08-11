@@ -3,6 +3,7 @@ package com.example.DATN.models;
 import java.math.BigDecimal;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -57,7 +58,7 @@ public class ProductVariant {
 	@Column(name = "Status")
 	private Boolean status;
 
-	@OneToMany
+	@OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<ProductVariantImage> images;
 
 }

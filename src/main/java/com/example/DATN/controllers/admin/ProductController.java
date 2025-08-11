@@ -1,6 +1,9 @@
-package com.example.DATN.controllers;
+package com.example.DATN.controllers.admin;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.ProductDTO;
 import com.example.DATN.request.ProductRequest;
@@ -42,6 +45,7 @@ public class ProductController {
 
 		Page<ProductDTO> productsPage = productService.getAllProducts(page, size);
 
+		model.addAttribute("pageTitle", "Danh sách sản phẩm");
 		model.addAttribute("listProducts", productsPage.getContent());
 		model.addAttribute("currentPage", productsPage.getNumber());
 		model.addAttribute("totalPages", productsPage.getTotalPages());
@@ -60,7 +64,7 @@ public class ProductController {
 		Page<ProductDTO> productsPage = productService.getAllProducts(page, size);
 
 		log.info("Record" + productsPage.getContent().size());
-		model.addAttribute("listUsers", productsPage.getContent());
+		model.addAttribute("listProducts", productsPage.getContent());
 		model.addAttribute("currentPage", productsPage.getNumber());
 		model.addAttribute("totalPages", productsPage.getTotalPages());
 		model.addAttribute("totalItems", productsPage.getTotalElements());
@@ -126,4 +130,16 @@ public class ProductController {
 		return "admin/product/table :: table"; // Trả về fragment
 	}
 
+	@GetMapping("/select2")
+	@ResponseBody
+	public List<Map<String, Object>> getProductForSelect2(@RequestParam(required = false) String q) {
+		List<ProductDTO> products = productService.getProducts(q);
+		return products.stream().map(
+				product -> {
+					Map<String, Object> item = new HashMap<>();
+					item.put("id", product.getId());
+					item.put("text", product.getName());
+					return item;
+				}).collect(Collectors.toList());
+	}
 }

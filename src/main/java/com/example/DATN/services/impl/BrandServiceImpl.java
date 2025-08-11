@@ -101,7 +101,6 @@ public class BrandServiceImpl implements BrandService {
 			try {
 				nextNumber = Integer.parseInt(numberStr) + 1;
 			} catch (NumberFormatException ignored) {
-				// TODO: handle exception
 			}
 		}
 		return String.format("B-%03d", nextNumber);

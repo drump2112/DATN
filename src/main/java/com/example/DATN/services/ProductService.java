@@ -1,6 +1,9 @@
 package com.example.DATN.services;
 
+import java.util.List;
+
 import com.example.DATN.dtos.ProductDTO;
+import com.example.DATN.models.Product;
 import com.example.DATN.request.ProductRequest;
 
 import org.springframework.data.domain.Page;
@@ -19,4 +22,10 @@ public interface ProductService {
 	Page<ProductDTO> searchProducts(String keyword, Boolean isActive, Pageable pageable);
 
 	ProductDTO getProductDTOById(Integer id);
+
+	List<ProductDTO> getProducts(String keyword);
+
+	List<ProductDTO> getProductActive();
+
+	ProductDTO getById(Integer id);
 }

@@ -334,7 +334,7 @@ $(document).ready(function () {
     });
   });
 
-  // Tìm kiếm nhân viên
+  // Tìm kiếm nhân; viên
   function searchUser(page) {
     var keyword = $("#searchInput").val().trim();
     var isActive = $("#statusFilter").val() || null;

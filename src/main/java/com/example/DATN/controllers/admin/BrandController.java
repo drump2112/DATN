@@ -37,6 +37,7 @@ public class BrandController {
 
 		Page<BrandDTO> brandsPage = brandService.findAll(page, size);
 
+		model.addAttribute("pageTitle", "Danh sách thương hiệu");
 		model.addAttribute("brands", brandsPage.getContent());
 		model.addAttribute("currentPage", brandsPage.getNumber());
 		model.addAttribute("totalPages", brandsPage.getTotalPages());

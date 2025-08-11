@@ -8754,3 +8754,28 @@ body.md-skin {
     margin: 0;
   }
 }
+
+.btn-primary.btn-outline.no-landing-style {
+  color: #1ab394;
+  border-color: #1ab394;
+  background-color: transparent;
+  transition: all 0.5s;
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+  font-weight: 400;
+}
+
+.btn-primary.details {
+  height: 30px;
+  font-size: 12px;
+  font-weight: 400;
+  justify-content: center;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
