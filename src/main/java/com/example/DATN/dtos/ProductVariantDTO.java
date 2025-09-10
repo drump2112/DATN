@@ -17,6 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProductVariantDTO {
+
 	private Integer id;
 	private String variantCode;
 	private String sku;
@@ -28,7 +29,10 @@ public class ProductVariantDTO {
 	private String productName;
 
 	private String productDescription;
+	private Integer brandId;
 	private String brandName;
+	private Integer categoryId;
+
 	private String categoryName;
 
 	private Integer sizeId;
@@ -38,4 +42,5 @@ public class ProductVariantDTO {
 	private String colorName;
 
 	private List<String> imageUrls;
+
 }

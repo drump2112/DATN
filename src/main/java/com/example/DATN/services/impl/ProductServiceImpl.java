@@ -66,7 +66,11 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public boolean toggleStatus(Integer id) {
-		return true;
+		Product product = productRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+		product.setIsActive(!product.getIsActive());
+		productRepository.save(product);
+		return product.getIsActive();
 	}
 
 	@Override

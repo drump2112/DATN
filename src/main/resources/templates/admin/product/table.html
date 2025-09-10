@@ -55,6 +55,7 @@
           <button
             th:id="'btn-status-' + ${item.id}"
             th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+            th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
             th:title="${item.isActive} ? 'Khóa sản phẩm' : 'Mở khóa sản phẩm'"
           >
             <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>

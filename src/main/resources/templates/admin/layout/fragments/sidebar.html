@@ -27,19 +27,19 @@
                 </div>
             </li>
             <li>
-                <a href=""><i class="fa fa-diamond"></i> <span class="nav-label">Bán hàng tại quầy</span></a>
+                <a href=""><i class="fa fa-laptop"></i> <span class="nav-label"> Bán hàng tại quầy</span></a>
             </li>
             <li>
-                <a href="index.html"><i class="fa fa-address-card-o"></i><span class="nav-label">Quản Lý Người Dùng</span>
+                <a href="index.html"><i class="fa fa-address-card-o"></i><span class="nav-label"> Quản Lý Người Dùng</span>
                     <span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
-                    <li><a th:href="@{/admin/role/}"><i class="fa fa-database"></i>Danh Sách Vai Trò</a></li>
-					<li><a th:href="@{/admin/employee/}"><i class="fa fa-user-circle-o" aria-hidden="true"></i>Quản Lý Nhân Viên</a></li>
-                    <li><a th:href="@{/admin/customers/}"><i class="fa fa-user-circle-o" aria-hidden="true"></i>Quản Lý Khách Hàng</a></li>
+                    <li><a th:href="@{/admin/role/}"><i class="fa fa-database"></i> Danh Sách Vai Trò</a></li>
+					<li><a th:href="@{/admin/employee/}"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Quản Lý Nhân Viên</a></li>
+                    <li><a th:href="@{/admin/customers/}"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Quản Lý Khách Hàng</a></li>
                 </ul>
             </li>
 			<li>
-                <a href="index.html"><i class="fa fa-th-large"></i><span class="nav-label">Quản Lý Sản Phẩm</span>
+                <a href="index.html"><i class="fa fa-th-large"></i><span class="nav-label"> Quản Lý Sản Phẩm</span>
                     <span class="fa arrow"></span></a>
 
 				<ul class="nav nav-second-level">
@@ -59,6 +59,37 @@
                 </ul>
 				<ul class="nav nav-second-level">
                     <li><a th:href="@{/admin/size/}"><i class="fa fa-minus"></i> Danh Sách Kích Thước</a></li>
+                </ul>
+            </li>
+			<li>
+                <a href="index.html"><i class="fa fa-home"></i><span class="nav-label"> Quản Lý Kho</span>
+                    <span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                    <li><a th:href="@{/admin/inventory/}"><i class="fa fa-calculator"></i> Tồn kho/Nhập/Xuất</a></li>
+                </ul>
+				<ul class="nav nav-second-level">
+                    <li><a th:href="@{/admin/voucher/}"><i class="fa fa-exchange"></i> Lịch Sử Biến Động</a></li>
+                </ul>
+            </li>
+			<li>
+                <a href="index.html"><i class="fa fa-money"></i><span class="nav-label"> Quản Lý Voucher</span>
+                    <span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                    <li><a th:href="@{/admin/voucher/}"><i class="fa fa-database"></i> Danh Sách Voucher</a></li>
+                </ul>
+            </li>
+			<li>
+                <a href="index.html"><i class="fa fa-paste"></i></i><span class="nav-label"> Quản Lý Đơn Hàng</span>
+                    <span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                    <li><a th:href="@{/admin/voucher/}"><i class="fa fa-database"></i> Danh Sách Voucher</a></li>
+                </ul>
+            </li>
+			<li>
+                <a href="index.html"><i class="fa fa-signal"></i><span class="nav-label"> Thống Kê </span>
+                    <span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                    <li><a th:href="@{/admin/voucher/}"><i class="fa fa-database"></i> Danh Sách Voucher</a></li>
                 </ul>
             </li>
         </ul>

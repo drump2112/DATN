@@ -8775,7 +8775,28 @@ body.md-skin {
   padding: 5px 10px;
   font-size: 12px;
   line-height: 1.5;
-  padding: 5px 10px;
+}
+
+a.cart {
+  display: flex; /* bật flex */
+  align-items: center; /* căn giữa theo chiều dọc */
+  justify-content: center; /* căn giữa theo chiều ngang */
+  height: 30px;
+  gap: 6px;
   font-size: 12px;
+  font-weight: 400;
+  padding: 5px 10px;
+  line-height: 1.5;
+}
+
+button.cart {
+  display: flex; /* bật flex */
+  align-items: center; /* căn giữa theo chiều dọc */
+  justify-content: center; /* căn giữa theo chiều ngang */
+  gap: 6px;
+  height: 30px;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 5px 10px;
   line-height: 1.5;
 }

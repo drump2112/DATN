@@ -29,5 +29,7 @@ public interface ProductVariantService {
 
 	public long countAll();
 
+	public ProductVariantDTO findById(Integer id);
+
 	public List<ProductVariantDTO> getVariantsByProductId(Integer productId);
 }

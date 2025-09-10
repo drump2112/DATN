@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProductVariantRepository
 		extends JpaRepository<ProductVariant, Integer>, JpaSpecificationExecutor<ProductVariant> {
@@ -20,14 +22,28 @@ public interface ProductVariantRepository
 			"product.brand",
 			"product.category",
 			"size",
-			"color",
-			"images"
+			"color"
 	})
 	Page<ProductVariant> findAll(Pageable pageable);
 
 	List<ProductVariant> findByProductId(Integer productId);
 
+	boolean existsByVariantCode(String variantCode);
+
 	boolean existsByProductIdAndColorIdAndSizeId(Integer productId, Integer colorId, Integer sizeId);
 
+	@Query("SELECT pv.price FROM ProductVariant pv WHERE pv.product.id = :productId AND pv.color.id = :colorId")
 	Optional<BigDecimal> findPriceByProductIdAndColorId(Integer productId, Integer colorId);
+
+	@Query("SELECT MAX(v.variantCode) FROM ProductVariant v")
+	String findMaxVariantCode();
+
+	@Query("SELECT pv FROM ProductVariant pv " +
+			"JOIN FETCH pv.product p " +
+			"JOIN FETCH p.brand " +
+			"JOIN FETCH p.category " +
+			"JOIN FETCH pv.color " +
+			"JOIN FETCH pv.size " +
+			"WHERE pv.id = :id")
+	Optional<ProductVariant> findDetailById(@Param("id") Integer id);
 }

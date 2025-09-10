@@ -59,6 +59,6 @@ public class ProductVariant {
 	private Boolean status;
 
 	@OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private List<ProductVariantImage> images;
+	private List<StockMovement> stockMovements;
 
 }

@@ -25,6 +25,8 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 
 	long countByRoleId(Integer roleId);
 
+	boolean existsByUserCode(String userCode);
+
 	@EntityGraph(attributePaths = "role")
 	Optional<User> findByUserNameOrEmail(String userName, String email);
 

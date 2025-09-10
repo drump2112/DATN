@@ -10,6 +10,8 @@
         <th>Danh Mục</th>
         <th>Màu Sắc</th>
         <th>Kích Thước</th>
+        <th>Giá</th>
+        <th>Số Lượng</th>
         <th>Mô Tả</th>
         <th>Trạng Thái</th>
         <th>Hành Động</th>
@@ -20,11 +22,11 @@
         <td th:text="${item.id}">1</td>
         <td>
           <img
-            th:src="${item.imageUrls[0]}"
+            th:if="${item.imageUrls != null and !item.imageUrls.isEmpty()}"
+            th:src="${item.imageUrls.get(0)}"
             alt="Ảnh"
             width="60"
             height="60"
-            th:if="${item.imageUrls != null and !item.imageUrls.isEmpty()}"
           />
           <span th:if="${item.imageUrls == null or item.imageUrls.isEmpty()}"
             >No Image</span
@@ -36,6 +38,8 @@
         <td th:text="${item.categoryName}">Danh mục A</td>
         <td th:text="${item.colorName}">Đỏ</td>
         <td th:text="${item.sizeName}">L</td>
+        <td th:text="${item.price}">L</td>
+        <td th:text="${item.quantity}">L</td>
         <td
           th:utext="${#strings.replace(item.productDescription, '\n', '<br/>')}"
         ></td>

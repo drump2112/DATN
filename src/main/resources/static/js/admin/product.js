@@ -294,6 +294,46 @@ $(document).ready(function () {
     });
   }
 
+  window.toggleStatus = function (productId, isActive) {
+    const title = isActive
+      ? "Bạn có chắc muốn khóa sản phẩm này?"
+      : "Bạn có chắc muốn kích hoạt sản phẩm này?";
+
+    Swal.fire({
+      title: title,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Xác nhận",
+      cancelButtonText: "Hủy",
+      customClass: {
+        popup: "swal-pop-zindex",
+      },
+      backdrop: `rgba(0,0,0,0.4)`,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: `/admin/product/${productId}/toggle-status`,
+          type: "PUT",
+          success: function (data) {
+            Swal.fire("Thành công", data.message, "success");
+            const currentPage =
+              parseInt(
+                $("#paginationContainer .paginate_button.active a").text(),
+              ) - 1 || 0;
+            searchProduct(currentPage);
+          },
+          error: function (xhr) {
+            Swal.fire(
+              "Lỗi",
+              xhr.responseJSON?.message || "Có lỗi xảy ra",
+              "error",
+            );
+          },
+        });
+      }
+    });
+  };
+
   // Gán hàm cho window
   window.openAddModal = openAddModal;
   window.searchProduct = searchProduct;

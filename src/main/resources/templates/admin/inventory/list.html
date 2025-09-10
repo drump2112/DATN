@@ -1,0 +1,75 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="admin/layout/base :: base"
+>
+<th:block th:fragment="content">
+    <div class="row">
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title">
+					<h5>Danh Sách Sản Phẩm</h5>
+					<div class="ibox-tools">
+						<a class="collapse-link">
+							<i class="fa fa-chevron-up"></i>
+						</a>
+					</div>
+				</div>
+				<div class="ibox-content">
+					<div class="row">
+						<div class="col-sm-2 m-b-xs">
+							<select class="input-sm form-control input-s-sm inline" id="statusFilter">
+								<option value="">Chọn trạng thái</option>
+								<option value="1">Đang Kinh Doanh</option>
+								<option value="0">Ngừng Kinh Doanh</option>
+							</select>
+						</div>
+						<div class="col-sm-3 m-b-xs">
+							<div class="input-group"><input type="text" placeholder="Tìm Kiếm" class="input-sm form-control" id="searchInput">
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-sm btn-primary" onclick="searchProduct(0)"><i class="fa fa-search"></i></button>
+								</span>
+							</div>
+						</div>
+						<div class="col-sm-7">
+							<span class="input-group-btn">
+								<button
+									type="button"
+									class="btn btn-sm btn-primary pull-right"
+									id="btnAdd"
+									onclick="openAddModal()"
+								>
+									<i class="fa fa-plus-circle"></i> Thêm
+								</button>
+																<button
+									type="button"
+									class="btn btn-sm btn-primary pull-right"
+									id="btnAdd"
+									onclick="openAddModal()"
+								>
+									<i class="fa fa-plus-circle"></i> Xuất
+								</button>
+								<button
+									type="button"
+									class="btn btn-sm btn-primary pull-right"
+									id="btnAdd"
+									onclick="openAddModal()"
+								>
+									<i class="fa fa-plus-circle"></i> Điều Chỉnh 
+								</button>
+
+							</span>
+						</div>
+					</div>
+					<div class="table-responsive" id="productTableContainer">
+						<th:block th:replace="admin/inventory/table :: table"></th:block>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<th:block th:fragment="script">
+		<script th:src="@{/js/admin/product.js}"></script>
+	</th:block>
+</th:block>
+</html>

@@ -1,6 +1,8 @@
 package com.example.DATN.request;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,13 +20,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProductVariantRequest {
-	private String variantCode;
 	private String sku;
-	private BigDecimal price;
-	private Integer quantity;
+	private Integer price;
 	private Boolean status;
 	private Integer productId;
-	private Integer sizeId;
 	private Integer colorId;
-	private MultipartFile[] images;
+	private List<Integer> sizeIds;
+	private Map<Integer, Integer> quantities;
+	private Map<Integer, String> skus;
+	private List<MultipartFile> images;
 }

@@ -3,6 +3,7 @@ package com.example.DATN.services.impl;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -80,24 +81,85 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Override
 	public boolean addProductVariant(ProductVariantRequest req) {
-		boolean exists = productVariantRepository.existsByProductIdAndColorIdAndSizeId(
-				req.getProductId(), req.getColorId(), req.getSizeId());
-		if (exists) {
-			throw new BusinessException("Sản phẩm này đã tồn tại");
+		// Kiểm tra biến thể đã tồn tại
+		for (Integer sizeId : req.getSizeIds()) {
+			boolean exists = productVariantRepository.existsByProductIdAndColorIdAndSizeId(
+					req.getProductId(), req.getColorId(), sizeId);
+			if (exists) {
+				throw new BusinessException("Sản phẩm size " + sizeId + " đã tồn tại");
+			}
 		}
+
+		// Kiểm tra giá chung
 		Optional<BigDecimal> existingPrice = productVariantRepository
 				.findPriceByProductIdAndColorId(req.getProductId(), req.getColorId());
 
-		BigDecimal price = existingPrice.orElseThrow(() -> new RuntimeException());
-
-		if (existingPrice.isPresent() && existingPrice.get().compareTo(req.getPrice()) != 0) {
+		BigDecimal price = existingPrice.orElse(BigDecimal.valueOf(req.getPrice()));
+		if (existingPrice.isPresent() && existingPrice.get().compareTo(BigDecimal.valueOf(req.getPrice())) != 0) {
 			throw new BusinessException("Sản phẩm đang có giá " + price + " VNĐ");
 		}
 
-		ProductVariant variant = fromRequest(req);
-		productVariantRepository.save(variant);
-		saveProductVariantImages(variant, Arrays.asList(req.getImages()));
+		// Tạo danh sách biến thể
+		List<ProductVariant> variants = fromRequest(req);
+		productVariantRepository.saveAll(variants);
+
+		// Lưu ảnh (chung cho 1 màu)
+		saveProductVariantImages(variants.get(0), req.getImages());
+
 		return true;
+	}
+
+	private List<ProductVariant> fromRequest(ProductVariantRequest req) {
+		Product product = productRepository.findById(req.getProductId())
+				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
+
+		Color color = colorRepository.findById(req.getColorId())
+				.orElseThrow(() -> new BusinessException("Không tìm thấy màu sắc"));
+
+		List<ProductVariant> variants = new ArrayList<>();
+
+		// ✅ Lấy VariantCode lớn nhất hiện có
+		String maxCode = productVariantRepository.findMaxVariantCode();
+		int nextNumber = 1;
+		if (maxCode != null) {
+			try {
+				String numberPart = maxCode.split("-")[1];
+				nextNumber = Integer.parseInt(numberPart) + 1;
+			} catch (Exception e) {
+				throw new BusinessException("VariantCode trong DB không đúng format PV-XXX");
+			}
+		}
+
+		for (Integer sizeId : req.getSizeIds()) {
+			Size size = sizeRepository.findById(sizeId)
+					.orElseThrow(() -> new BusinessException("Không tìm thấy kích cỡ ID = " + sizeId));
+
+			Integer quantity = req.getQuantities().get(sizeId);
+			String sku = req.getSkus().get(sizeId);
+
+			if (quantity == null || sku == null) {
+				throw new BusinessException("Số lượng hoặc SKU không được cung cấp cho kích cỡ " + sizeId);
+			}
+
+			// ✅ Tạo code duy nhất cho từng vòng lặp
+			String variantCode = String.format("PV-%03d", nextNumber);
+			nextNumber++;
+
+			ProductVariant variant = ProductVariant.builder()
+					.variantCode(variantCode)
+					.product(product)
+					.color(color)
+					.size(size)
+					.price(BigDecimal.valueOf(req.getPrice()))
+					.quantity(quantity)
+					.sku(sku)
+					.status(req.getStatus())
+					.build();
+
+			variants.add(variant);
+		}
+
+		return variants;
 	}
 
 	@Override
@@ -130,31 +192,28 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		return pageResult.map(this::mapToDTO);
 	}
 
-	public ProductVariant fromRequest(ProductVariantRequest req) {
-		Product product = productRepository.findById(req.getProductId())
-				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
-
-		Color color = colorRepository.findById(req.getColorId())
-				.orElseThrow(() -> new BusinessException("Không tìm thấy màu sắc"));
-
-		Size size = sizeRepository.findById(req.getSizeId())
-				.orElseThrow(() -> new BusinessException("Không tìm thấy kích cỡ"));
-
-		return ProductVariant.builder()
-				.variantCode(LocalTime.now().toString())
-				.product(product)
-				.color(color)
-				.size(size)
-				.price(req.getPrice())
-				.quantity(req.getQuantity())
-				.sku(req.getSku())
-				.status(req.getStatus())
-				.build();
-	}
-
 	private void saveProductVariantImages(ProductVariant variant, List<MultipartFile> images) {
-		if (images == null || images.isEmpty())
+		if (images == null || images.isEmpty()) {
 			return;
+		}
+
+		// Lấy product và color từ variant
+		Product product = variant.getProduct();
+		Color color = variant.getColor();
+
+		if (product == null || color == null) {
+			throw new BusinessException("Product hoặc Color lỗi !");
+		}
+
+		Integer productId = product.getId();
+		Integer colorId = color.getId();
+
+		// Kiểm tra nếu đã tồn tại ảnh cho cặp product + color thì bỏ qua
+		List<ProductVariantImage> existing = variantImageRepository
+				.findByProductIdAndColorIdOrderBySortOrder(productId, colorId);
+		if (!existing.isEmpty()) {
+			return;
+		}
 
 		int step = 0;
 		for (MultipartFile file : images) {
@@ -163,8 +222,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 				String imagePath = imageService.saveImage(file, "product-variants");
 
 				ProductVariantImage image = ProductVariantImage.builder()
-
-						.productVariant(variant)
+						.product(product)
+						.color(color)
 						.imageUrl(imagePath)
 						.sortOrder(step)
 						.build();
@@ -212,13 +271,29 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 				.collect(Collectors.toList());
 	}
 
-	// @Override
-	// public List<ProductVariantDTO> getVariantsByProductId(Integer productId) {
-	// List<ProductVariant> variants =
-	// productVariantRepository.findByProductId(productId);
-	// return variants.stream()
-	// .map(this::toDTO)
-	// .collect(Collectors.toList());
-	// }
+	@Override
+	public ProductVariantDTO findById(Integer id) {
+		ProductVariant variant = productVariantRepository.findDetailById(id)
+				.orElseThrow(() -> new RuntimeException("ProductVariant not found with id: " + id));
+
+		return modelMapper.map(variant, ProductVariantDTO.class);
+	}
+
+	private String generateVariantCode() {
+		String prefix = "PV";
+
+		// Đếm tổng số variant hiện có
+		long count = productVariantRepository.count();
+
+		String variantCode;
+		int suffix = (int) count + 1;
+
+		do {
+			variantCode = String.format("%s-%03d", prefix, suffix);
+			suffix++;
+		} while (productVariantRepository.existsByVariantCode(variantCode));
+
+		return variantCode;
+	}
 
 }

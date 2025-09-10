@@ -245,9 +245,38 @@ public class UserServiceImpl implements UserService {
 			default:
 				prefix = "XX";
 		}
+
 		long count = userRepository.countByRoleId(roleId);
-		return String.format("%s-%03d", prefix, count + 1);
+		String userCode;
+		int suffix = (int) count + 1;
+
+		// Tăng suffix cho đến khi tìm được UserCode duy nhất
+		do {
+			userCode = String.format("%s-%03d", prefix, suffix);
+			suffix++;
+		} while (userRepository.existsByUserCode(userCode));
+
+		return userCode;
 	}
+
+	// private String generateUserCode(Integer roleId) {
+	// String prefix;
+	// switch (roleId) {
+	// case 1:
+	// prefix = "AD";
+	// break;
+	// case 2:
+	// prefix = "NV";
+	// break;
+	// case 3:
+	// prefix = "KH";
+	// break;
+	// default:
+	// prefix = "XX";
+	// }
+	// long count = userRepository.countByRoleId(roleId);
+	// return String.format("%s-%03d", prefix, count + 1);
+	// }
 
 	private String handleUploadAvatar(MultipartFile avatar, String currentAvatarPath) {
 		if (avatar != null && !avatar.isEmpty()) {

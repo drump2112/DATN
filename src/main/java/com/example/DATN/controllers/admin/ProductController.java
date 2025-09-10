@@ -130,6 +130,13 @@ public class ProductController {
 		return "admin/product/table :: table"; // Trả về fragment
 	}
 
+	@PutMapping("/{id}/toggle-status")
+	public ResponseEntity<?> toggleCustomerStatus(@PathVariable Integer id) {
+		boolean newStatus = productService.toggleStatus(id);
+		String message = newStatus ? "Kích hoạt thành công" : "Đã khóa";
+		return ResponseEntity.ok(Map.of("message", message));
+	}
+
 	@GetMapping("/select2")
 	@ResponseBody
 	public List<Map<String, Object>> getProductForSelect2(@RequestParam(required = false) String q) {

@@ -27,8 +27,13 @@ public class ProductVariantImage {
 	private Integer id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "ProductVariantId")
-	private ProductVariant productVariant;
+	@JoinColumn(name = "ProductId", nullable = false)
+	private Product product;
+
+	// Gắn theo Color
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ColorId", nullable = false)
+	private Color color;
 
 	@Column(name = "ImageUrl", nullable = false, length = 255)
 	private String imageUrl;

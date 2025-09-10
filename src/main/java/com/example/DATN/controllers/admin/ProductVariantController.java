@@ -1,8 +1,10 @@
 package com.example.DATN.controllers.admin;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.example.DATN.dtos.ProductVariantDTO;
+import com.example.DATN.exception.BusinessException;
 import com.example.DATN.request.ProductVariantRequest;
 import com.example.DATN.services.ProductVariantService;
 
@@ -51,6 +53,11 @@ public class ProductVariantController {
 		return "admin/productVariant/list";
 	}
 
+	@GetMapping("/{id}")
+	public ResponseEntity<ProductVariantDTO> getById(@PathVariable Integer id) {
+		return ResponseEntity.ok(productVariantService.findById(id));
+	}
+
 	@GetMapping("/table")
 	public String getTableFragment(
 
@@ -70,9 +77,48 @@ public class ProductVariantController {
 	}
 
 	@PostMapping("/add")
-	public ResponseEntity<?> addProductVariant(@ModelAttribute ProductVariantRequest req) {
-		productVariantService.addProductVariant(req);
-		return ResponseEntity.ok(Map.of("message", "Thêm thành công"));
+	public ResponseEntity<?> addProductVariant(
+			@ModelAttribute ProductVariantRequest req,
+			@RequestParam Map<String, String> allParams) {
+		try {
+			// Xử lý quantities và skus
+			Map<Integer, Integer> quantities = new HashMap<>();
+			Map<Integer, String> skus = new HashMap<>();
+			for (Map.Entry<String, String> entry : allParams.entrySet()) {
+				String key = entry.getKey();
+				String value = entry.getValue();
+				if (key.startsWith("quantities[")) {
+					Integer sizeId = Integer.parseInt(key.replaceAll("quantities\\[(\\d+)\\]", "$1"));
+					quantities.put(sizeId, Integer.parseInt(value));
+				} else if (key.startsWith("skus[")) {
+					Integer sizeId = Integer.parseInt(key.replaceAll("skus\\[(\\d+)\\]", "$1"));
+					skus.put(sizeId, value);
+				}
+			}
+			req.setQuantities(quantities);
+			req.setSkus(skus);
+
+			// Validate
+			if (req.getSizeIds() == null || req.getSizeIds().isEmpty()) {
+				return ResponseEntity.badRequest().body(Map.of("message", "Phải chọn ít nhất một kích cỡ"));
+			}
+			for (Integer sizeId : req.getSizeIds()) {
+				if (!quantities.containsKey(sizeId) || !skus.containsKey(sizeId)) {
+					return ResponseEntity.badRequest()
+							.body(Map.of("message", "Số lượng hoặc SKU không đầy đủ cho kích cỡ " + sizeId));
+				}
+			}
+			// Gọi service
+			productVariantService.addProductVariant(req);
+
+			return ResponseEntity.ok(Map.of("message", "Thêm thành công"));
+		} catch (NumberFormatException e) {
+			return ResponseEntity.badRequest().body(Map.of("message", "Dữ liệu số không hợp lệ"));
+		} catch (BusinessException e) {
+			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body(Map.of("message", "Lỗi server: " + e.getMessage()));
+		}
 	}
 
 	@GetMapping("/search")
