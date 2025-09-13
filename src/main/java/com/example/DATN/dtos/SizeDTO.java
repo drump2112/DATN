@@ -18,4 +18,6 @@ public class SizeDTO {
 
 	private String name;
 
+    private Boolean isActive;
+
 }

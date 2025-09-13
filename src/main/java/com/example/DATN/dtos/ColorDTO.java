@@ -16,4 +16,6 @@ public class ColorDTO {
 	private String colorCode;
 
 	private String colorName;
+
+    private Boolean isActive;
 }

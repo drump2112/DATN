@@ -1,24 +1,117 @@
 <th:block th:fragment="table">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Mã</th>
-        <th>Kích Cỡ</th>
-        <th>Hành Động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr th:each="item : ${sizes}">
-        <td th:text="${item.id}"></td>
-        <td th:text="${item.sizeCode}"></td>
-        <td th:text="${item.name}"></td>
-        <td>
-          <button class="btn btn-default dim" type="button">
-            <i class="fa fa-info"></i>
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Mã</th>
+            <th>Kích Cỡ</th>
+            <th>Trạng thái</th>
+            <th>Hành Động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${sizes}">
+            <td th:text="${item.id}"></td>
+            <td th:text="${item.sizeCode}"></td>
+            <td th:text="${item.name}"></td>
+            <td th:switch="${item.isActive}">
+                <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+                <span th:case="false" class="badge badge-danger">Ngừng</span>
+            </td>
+            <td>
+                <button
+                        class="btn btn-info dim"
+                        type="button"
+                        th:attr="data-id=${item.id},
+                 data-code=${item.sizeCode},
+                 data-name=${item.name},
+                 data-isActive=${item.isActive}"
+                        th:title="'Thông tin và cập nhật'"
+                        onclick="handleDetailClick(this)"
+                >
+                    <i class="fa fa-paste"></i>
+                </button>
+                <button
+                        th:id="'btn-status-' + ${item.id}"
+                        th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+                        th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
+                        th:title="${item.isActive} ? 'Khóa kích thước' : 'Kích hoạt kích thước'"
+                >
+                    <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <div
+            class="dataTables_paginate paging_simple_numbers"
+            id="DataTables_Table_0_paginate"
+            th:if="${totalPages > 0}"
+            style="text-align: right"
+    >
+        <ul
+                class="pagination"
+                id="paginationContainer"
+                th:attr="data-total-pages=${totalPages}, data-current-page=${currentPage}"
+        >
+            <!-- Nút Previous -->
+            <li
+                    class="paginate_button previous"
+                    th:classappend="${currentPage == 0} ? ' disabled'"
+            >
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:onclick="'searchSize(' + (${currentPage - 1}) + ')'"
+                >
+                    Previous
+                </a>
+            </li>
+
+
+            <!-- Nút số trang 1..totalPages -->
+            <li
+                    class="paginate_button"
+                    th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i - 1 == currentPage} ? ' active'"
+            >
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:text="${i}"
+                        th:onclick="'searchSize(' + (${i} - 1) + ')'"
+                >
+                </a>
+            </li>
+
+
+            <!-- Nút Next -->
+            <li class="paginate_button next" th:if="${currentPage + 1 < totalPages}">
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:onclick="'searchSize(' + (${currentPage + 1}) + ')'"
+                >
+                    Next
+                </a>
+            </li>
+
+
+            <li
+                    class="paginate_button next disabled"
+                    th:unless="${currentPage + 1 < totalPages}"
+            >
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:onclick="'searchSize(' + (${totalPages - 1}) + ')'"
+                >
+                    Next
+                </a>
+            </li>
+        </ul>
+    </div>
 </th:block>
+
