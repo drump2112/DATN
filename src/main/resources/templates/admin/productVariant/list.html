@@ -26,6 +26,10 @@
 							</select>
 						</div>
 						<div class="col-sm-2 m-b-xs">
+							<select class="input-sm form-control input-s-sm inline" id="brandFilter">
+							</select>
+						</div>
+						<div class="col-sm-2 m-b-xs">
 							<select class="input-sm form-control input-s-sm inline" id="cateFilter">
 							</select>
 						</div>
@@ -35,7 +39,7 @@
 								<option value="0">Ngừng Kinh Doanh</option>
 							</select>
 						</div>
-						<div class="col-sm-2 m-b-xs">
+						<div class="col-sm-2 m-b-xs"> 
 							<div class="input-group"><input type="text" placeholder="Tìm Kiếm (Mã SP, Tên SP, Thương Hiệu)" class="input-sm form-control" id="searchInput" style="height: 34px;border-radius: 5px 0 0 5px;">
 								<span class="input-group-btn">
 									<button type="button" class="btn btn-sm btn-primary" onclick="searchProductVariants(0)" style="height: 34px;border-radius:0 5px 5px 0;"><i class="fa fa-search"></i></button>
@@ -45,7 +49,7 @@
 						<div class="col-sm-1"> 
 							<button id="resetFilterBtn" class="btn btn-info" type="button"><i class="fa fa-mail-reply-all"></i></button>
 						</div>
-						<div class="col-sm-3">
+						<div class="col-sm-1">
 							<span class="input-group-btn">
 								<button
 									type="button"
@@ -58,6 +62,7 @@
 							</span>
 						</div>
 					</div>
+					<hr>
 					<div class="table-responsive" id="productTableContainer">
 						<th:block th:replace="admin/productVariant/table :: table"></th:block>
 					</div>
@@ -82,7 +87,6 @@
 								<h2>Thông Tin Cơ Bản</h2>
 								<div class="row">
 									<div class="col-sm-6 b-r">	 
-										<input type="hidden" id="productId" name="productId"> 
 										<div class="form-group"> 
 											<label>Mã SP</label> 
 											<input type="text" id="maSp" name="maSp" placeholder="{-Mã sản phẩm được tạo tự động có dạng : SP-XXX -}" 
@@ -176,13 +180,13 @@
 								</div>
 								<div class="form-group">
 									<label>Danh Mục</label>
-									<select id="danhMuc" class="form-control select2" style="width: 100%;" disabled>
+									<select id="danhMuc" class="form-control select2" style="width: 100%;" readonly>
 										<option></option>
 									</select>
 								</div>
 								<div class="form-group">
 									<label>Thương Hiệu</label>
-									<select id="thuongHieu" class="form-control select2" style="width: 100%;" disabled>
+									<select id="thuongHieu" class="form-control select2" style="width: 100%;" readonly>
 									</select>
 								</div>
 								<div class="form-group">
@@ -193,7 +197,7 @@
 								<div class="form-group">
 									<label>Số Lượng</label>
 									<input type="text" id="quantity" name="quantity" 
-										class="form-control" style="border-radius: 6px;" disabled>
+										class="form-control" style="border-radius: 6px;" readonly>
 								</div>
 							</div>
 							<div class="col-sm-6">
@@ -209,7 +213,7 @@
 								</div>
 								<div class="form-group">
 									<label for="">Mô Tả</label>
-									<textarea id="description" class="form-control" rows="3" style="resize: none;" disabled></textarea>
+									<textarea id="description" class="form-control" rows="3" style="resize: none;" readonly></textarea>
 								</div>
 								<div class="form-group">
 									<label for="">Ảnh Sản Phẩm</label>

@@ -17,6 +17,8 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
 	public void onAuthenticationFailure(HttpServletRequest request,
 			HttpServletResponse response,
 			AuthenticationException exception) throws IOException, ServletException {
+		String username = request.getParameter("username"); // lấy username từ form
+		request.getSession().setAttribute("lastUsername", username);
 		if (exception instanceof DisabledException) {
 			setDefaultFailureUrl("/login?error=disabled");
 		} else if (exception instanceof BadCredentialsException) {

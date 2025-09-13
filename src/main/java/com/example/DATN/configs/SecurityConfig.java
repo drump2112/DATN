@@ -88,18 +88,6 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AuthenticationFailureHandler customFailureHandler() {
-		return (request, response, exception) -> {
-			String message = "Đăng nhập thất bại!";
-			if (exception.getMessage().contains("disabled")) {
-				message = "Tài khoản chưa được kích hoạt!";
-			}
-			request.getSession().setAttribute("error", message);
-			response.sendRedirect("/login?error");
-		};
-	}
-
-	@Bean
 	public DaoAuthenticationProvider authProvider() {
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 		authProvider.setUserDetailsService(userDetailsService);

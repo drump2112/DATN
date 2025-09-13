@@ -81,22 +81,6 @@ public class UserController {
 		userService.addEmployee(employee);
 		return ResponseEntity.ok(Map.of("message", "Thêm thành công"));
 	}
-	// @PostMapping("/add")
-	// public ResponseEntity<?> addEmployee(
-	// @ModelAttribute EmployeeRequest employee) {
-	// try {
-	// boolean result = userService.addEmployee(employee);
-	// if (result) {
-	// return ResponseEntity.ok(Map.of("message", "Thêm Thành Công"));
-	// } else {
-	// return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message",
-	// "Thêm thất bại"));
-	// }
-	// } catch (Exception e) {
-	// return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	// .body(Map.of("message", "Lỗi server: " + e.getMessage()));
-	// }
-	// }
 
 	@PutMapping("/{id}")
 	public ResponseEntity<?> updateEmployee(

@@ -201,16 +201,17 @@ $(document).ready(function () {
         status: { required: "Vui lòng chọn trạng thái" },
       },
       errorPlacement: function (error, element) {
-        if (element.hasClass("select2-hidden-accessible")) {
-          error.insertAfter(element.next(".select2-container"));
-        } else if (
-          element.hasClass("touchspin2") ||
-          element.hasClass("touchspin-size")
-        ) {
-          error.insertAfter(element.closest(".bootstrap-touchspin"));
-        } else {
-          error.insertAfter(element);
-        }
+        // if (element.hasClass("select2-hidden-accessible")) {
+        //   error.insertAfter(element.next(".select2-container"));
+        // } else if (
+        //   element.hasClass("touchspin2") ||
+        //   element.hasClass("touchspin-size")
+        // ) {
+        //   error.insertAfter(element.closest(".bootstrap-touchspin"));
+        // } else {
+        //   error.insertAfter(element);
+        // }
+        element.before(error);
       },
     });
 
@@ -358,6 +359,7 @@ $(document).ready(function () {
       type: "GET",
       success: function (res) {
         console.log("👉 API trả về:", res);
+        console.log("id = " + res.id);
         // fill input
         $("#updateProductForm #productId").val(res.id);
         $("#updateProductForm #maSp").val(res.variantCode || res.productCode);
@@ -410,8 +412,12 @@ $(document).ready(function () {
               $(mockFile.previewElement)
                 .find("img[data-dz-thumbnail]")
                 .attr("src", url)
-                .css({ width: "100%", height: "auto" });
-
+                .css({
+                  width: "120px", // hoặc để Dropzone mặc định
+                  height: "120px",
+                  objectFit: "cover", // giữ tỉ lệ và crop cho đều
+                  objectPosition: "center", // căn giữa
+                });
               avatarDropzoneUpdate.files.push(mockFile);
             });
           }
@@ -424,6 +430,64 @@ $(document).ready(function () {
       },
     });
   };
+
+  $("#btnUpdateProduct").on("click", function () {
+    if (!$("#updateProductForm").valid()) {
+      return;
+    }
+
+    const id = $("#productId").val();
+    const formData = new FormData();
+
+    // Lấy giá
+    formData.append("price", $("#updateProductForm #price").val());
+
+    // Lấy ảnh (Dropzone hoặc input file)
+    if (typeof avatarDropzoneUpdate !== "undefined") {
+      avatarDropzoneUpdate.getAcceptedFiles().forEach((file, index) => {
+        formData.append("images", file);
+        console.log("Dropzone file:", file.name, file.size, file.type);
+      });
+    }
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    Swal.fire({
+      title: "Xác nhận cập nhật",
+      text: "Bạn có chắc chắn muốn cập nhật giá và ảnh sản phẩm?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Xác nhận",
+      cancelButtonText: "Hủy",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: `/admin/productVariant/${id}/update`,
+          type: "PUT",
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (res) {
+            Swal.fire("Thành công", res.message, "success");
+            $("#updateModal").modal("hide");
+            $("#updateProductForm")[0].reset();
+            if (typeof avatarDropzoneUpdate !== "undefined") {
+              avatarDropzoneUpdate.removeAllFiles(true);
+            }
+            searchProductVariants(0);
+          },
+          error: function (xhr) {
+            Swal.fire(
+              "Lỗi",
+              xhr.responseJSON?.message || "Cập nhật thất bại",
+              "error",
+            );
+          },
+        });
+      }
+    });
+  });
 
   // Hàm khởi tạo Select2
   function initSelect2s() {
@@ -507,6 +571,19 @@ $(document).ready(function () {
       allowClear: true,
       ajax: {
         url: "/admin/size/select2",
+        dataType: "json",
+        delay: 250,
+        data: (params) => ({ q: params.term }),
+        processResults: (data) => ({ results: data }),
+        cache: true,
+      },
+    });
+
+    $("#brandFilter").select2({
+      placeholder: "Chọn Thương Hiệu",
+      allowClear: true,
+      ajax: {
+        url: "/admin/brand/select2",
         dataType: "json",
         delay: 250,
         data: (params) => ({ q: params.term }),
@@ -652,6 +729,7 @@ $(document).ready(function () {
     const colorId = $("#colorFilter").val();
     const sizeId = $("#sizeFilter").val();
     const cateId = $("#cateFilter").val();
+    const brandId = $("#brandFilter").val();
     const status = $("#statusFilter").val();
 
     $.ajax({
@@ -663,6 +741,7 @@ $(document).ready(function () {
         colorId: colorId,
         sizeId: sizeId,
         cateId: cateId,
+        brandId: brandId,
         status: status,
       },
       success: function (response) {
@@ -696,6 +775,45 @@ $(document).ready(function () {
       },
     });
     $("#searchInput").val("");
+  });
+
+  //validate updateProductForm
+
+  $("#updateProductForm").validate({
+    ignore: ":hidden:not(.select2-hidden-accessible)",
+    onfocusout: false,
+    onkeyup: false,
+    onclick: false,
+    rules: {
+      price: {
+        required: true,
+        min: 1000,
+      },
+      // size: { required: true },
+      // color: { required: true },
+      // status: { required: true },
+    },
+    messages: {
+      price: {
+        required: "Vui lòng nhập giá",
+        min: "Giá phải lớn hơn hoặc bằng 1000",
+      },
+      // size: { required: "Vui lòng chọn kích thước" },
+      // color: { required: "Vui lòng chọn màu sắc" },
+      // status: { required: "Vui lòng chọn trạng thái" },
+    },
+    errorPlacement: function (error, element) {
+      if (element.hasClass("select2-hidden-accessible")) {
+        error.insertAfter(element.next(".select2-container"));
+      } else if (
+        element.hasClass("touchspin2") ||
+        element.hasClass("touchspin-size")
+      ) {
+        error.insertAfter(element.closest(".bootstrap-touchspin"));
+      } else {
+        error.insertAfter(element);
+      }
+    },
   });
 
   window.searchProductVariants = searchProductVariants;

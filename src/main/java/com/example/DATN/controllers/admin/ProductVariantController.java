@@ -6,6 +6,7 @@ import java.util.Map;
 import com.example.DATN.dtos.ProductVariantDTO;
 import com.example.DATN.exception.BusinessException;
 import com.example.DATN.request.ProductVariantRequest;
+import com.example.DATN.request.ProductVariantUpdateRequest;
 import com.example.DATN.services.ProductVariantService;
 
 import org.springframework.data.domain.Sort;
@@ -121,12 +122,27 @@ public class ProductVariantController {
 		}
 	}
 
+	@PutMapping("/{id}/update")
+	public ResponseEntity<?> updateProductVariant(
+			@PathVariable Integer id,
+			@ModelAttribute ProductVariantUpdateRequest req) {
+		try {
+			productVariantService.updateProductVariant(id, req);
+			return ResponseEntity.ok(Map.of("message", "Cập nhật thành công"));
+		} catch (BusinessException e) {
+			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body(Map.of("message", "Lỗi server: " + e.getMessage()));
+		}
+	}
+
 	@GetMapping("/search")
 	public String searchProducts(
 			@RequestParam(required = false) String keyword,
 			@RequestParam(required = false) Integer colorId,
 			@RequestParam(required = false) Integer sizeId,
 			@RequestParam(required = false) Integer cateId,
+			@RequestParam(required = false) Integer brandId,
 			@RequestParam(required = false) Boolean status,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size,
@@ -134,7 +150,7 @@ public class ProductVariantController {
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 		Page<ProductVariantDTO> productsPage = productVariantService.searchProductVariants(
-				keyword, colorId, sizeId, cateId, status, pageable);
+				keyword, colorId, sizeId, cateId, brandId, status, pageable);
 
 		model.addAttribute("listProducts", productsPage.getContent());
 		model.addAttribute("currentPage", productsPage.getNumber());

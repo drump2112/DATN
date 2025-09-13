@@ -1,8 +1,9 @@
 Dropzone.autoDiscover = false;
+
 var avatarDropzone = null;
 
 $(document).ready(function () {
-  // Khởi tạo Dropzone một lần duy nhất
+  // === Khởi tạo Dropzone ===
   avatarDropzone = new Dropzone("#avatarDropzone", {
     url: "/dummy-upload",
     autoProcessQueue: false,
@@ -16,10 +17,10 @@ $(document).ready(function () {
     previewsContainer: "#avatarDropzone",
   });
 
-  // Đồng bộ file Dropzone với input file
+  // Đồng bộ file Dropzone với input hidden
   avatarDropzone.on("addedfile", function (file) {
     if (this.files.length > 1) {
-      this.removeFile(this.files[0]); // Xóa file cũ nếu có
+      this.removeFile(this.files[0]);
     }
     if (file instanceof File) {
       const dt = new DataTransfer();
@@ -28,28 +29,97 @@ $(document).ready(function () {
     }
   });
 
-  // Làm mới Dropzone và input file khi modal đóng
+  // Reset Dropzone khi đóng modal
   $("#myModal").on("hidden.bs.modal", function () {
-    if (avatarDropzone) {
-      avatarDropzone.removeAllFiles(true); // Xóa tất cả tệp
-    }
-    $("#avatarInput").val(""); // Đặt lại input file
+    if (avatarDropzone) avatarDropzone.removeAllFiles(true);
+    $("#avatarInput").val("");
+    $("#employeeForm")[0].reset();
+    validator.resetForm();
+    $("#employeeForm .form-control").removeClass("error");
+    $("#employeeForm label.error").remove(); // <-- Xóa label error
   });
 
-  // Hàm xóa thông báo lỗi
-  function clearErrors() {
-    $(".text-danger").text("");
-  }
+  // === Khởi tạo validate ===
 
-  // Mở modal để thêm nhân viên
+  $.validator.addMethod(
+    "pattern",
+    function (value, element, param) {
+      if (this.optional(element)) {
+        return true;
+      }
+      if (typeof param === "string") {
+        param = new RegExp(param);
+      }
+      return param.test(value);
+    },
+    "Giá trị không đúng định dạng",
+  );
+
+  var validator = $("#employeeForm").validate({
+    ignore: ":hidden:not(.select2-hidden-accessible)",
+    rules: {
+      fullName: { required: true, maxlength: 30 },
+      email: { required: true, email: true, maxlength: 50 },
+      phone: {
+        required: true,
+        maxlength: 10,
+        pattern: /^(03|05|07|08|09)\d{8}$/,
+      },
+      dateOfBirth: { required: true },
+      userName: { required: true, maxlength: 20 },
+      password: { required: true, minlength: 8 },
+      // vaiTro: { required: true },
+      address: { required: true },
+    },
+    messages: {
+      fullName: {
+        required: "Họ tên không được để trống",
+        maxlength: "Họ tên không quá 30 ký tự",
+      },
+      email: {
+        required: "Email không được để trống",
+        email: "Email không hợp lệ",
+        maxlength: "Email không quá 50 ký tự",
+      },
+      phone: {
+        required: "Số điện thoại không được để trống",
+        maxlength: "Số điện thoại không quá 10 chữ số",
+        pattern: "Số điện thoại không hợp lệ",
+      },
+      dateOfBirth: { required: "Chọn ngày sinh" },
+      userName: {
+        required: "Tên đăng nhập không được để trống",
+        maxlength: "Tên đăng nhập không quá 20 ký tự",
+      },
+      password: {
+        required: "Mật khẩu không được để trống",
+        minlength: "Mật khẩu không ít hơn 8 ký tự",
+      },
+      // vaiTro: { required: "Vai trò không được để trống" },
+      address: { required: "Địa chỉ không được để trống" },
+    },
+    errorPlacement: function (error, element) {
+      element.before(error);
+    },
+  });
+
+  // === Modal Add ===
   function openAddModal() {
-    clearErrors();
+    // $("#userId").val("");
+    validator.resetForm();
+    $("#employeeForm .error").removeClass("error");
+
     $("#modalTitle").text("Thêm Nhân Viên");
     $("#employeeForm")[0].reset();
     $("#employeeForm input, #employeeForm select")
       .prop("readonly", false)
       .prop("disabled", false);
     $("#employeeForm #maNv").prop("readonly", true).prop("disabled", true);
+
+    // Chỉ required khi thêm
+    $("#tenDangNhap").rules("add", { required: true });
+    $("#matKhau").rules("add", { required: true });
+
     $("#btnAdd").show();
     $("#btnUpdate").hide();
     $("#usernameGroup").show();
@@ -57,15 +127,17 @@ $(document).ready(function () {
     $("#ngaySinhGroup").appendTo(".col-sm-6.b-r");
     $('input[name="gender"]').iCheck("uncheck");
     $("#genderNam").iCheck("check");
-    if (avatarDropzone) {
-      avatarDropzone.removeAllFiles(true); // Đảm bảo Dropzone trống
-    }
+
+    if (avatarDropzone) avatarDropzone.removeAllFiles(true);
+
     $("#myModal").modal("show");
   }
 
-  // Mở modal để cập nhật/chi tiết nhân viên
+  // === Modal Edit ===
   function openEditModal(data, isEditable) {
-    clearErrors();
+    validator.resetForm();
+    $("#employeeForm .error").removeClass("error");
+
     $("#userId").val(data.id);
     $("#maNv").val(data.userCode).prop("readonly", true);
     $("#hoTen").val(data.fullName).prop("readonly", !isEditable);
@@ -76,6 +148,7 @@ $(document).ready(function () {
     $("#vaiTro").val(data.role).prop("disabled", !isEditable);
     $("#diaChi").val(data.address).prop("readonly", !isEditable);
     $("#dob").val(data.dateOfBirth).prop("readonly", !isEditable);
+
     $("#usernameGroup").hide();
     $("#passwordGroup").hide();
     $("#ngaySinhGroup").appendTo(".col-sm-6:last");
@@ -86,22 +159,18 @@ $(document).ready(function () {
       $("#genderNu").iCheck("check");
     }
 
-    if (!isEditable) {
-      $('input[name="gender"]').iCheck("disable");
-    } else {
-      $('input[name="gender"]').iCheck("enable");
-    }
+    $('input[name="gender"]').iCheck(isEditable ? "enable" : "disable");
 
     $("#modalTitle").text("Chi Tiết Và Cập Nhật Thông Tin Nhân Viên");
     $("#btnAdd").hide();
     $("#btnUpdate").toggle(isEditable);
 
-    // Xóa ảnh cũ trong Dropzone trước khi tải ảnh mới
-    if (avatarDropzone) {
-      avatarDropzone.removeAllFiles(true);
-    }
+    // Loại bỏ required khi edit
+    $("#tenDangNhap").rules("remove", "required");
+    $("#matKhau").rules("remove", "required");
 
-    // Tải ảnh avatar nếu có
+    if (avatarDropzone) avatarDropzone.removeAllFiles(true);
+
     if (avatarDropzone && data.avatar) {
       const avatarUrl = data.avatar.startsWith("/")
         ? `${window.location.origin}${data.avatar}`
@@ -120,7 +189,7 @@ $(document).ready(function () {
     $("#myModal").modal("show");
   }
 
-  // Xử lý sự kiện click chi tiết
+  // === Click chi tiết để mở modal edit ===
   window.handleDetailClick = function (button) {
     const user = {
       id: $(button).data("id"),
@@ -142,92 +211,10 @@ $(document).ready(function () {
     openEditModal(user, true);
   };
 
-  // Validate dữ liệu
-  function validateForm(isAddMode) {
-    clearErrors();
-    let isValid = true;
-
-    const fullName = $("#hoTen").val().trim();
-    const email = $("#email").val().trim();
-    const phone = $("#sdt").val().trim();
-    const dateOfBirth = $("#dob").val().trim();
-    const userName = $("#tenDangNhap").val().trim();
-    const password = $("#matKhau").val().trim();
-    const role = $("#vaiTro").val();
-    const diachi = $("#diaChi").val().trim();
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
-
-    if (!fullName) {
-      $("#error-hoTen").text("Họ tên không được để trống");
-      isValid = false;
-    } else if (fullName.length > 30) {
-      $("#error-hoTen").text("Họ tên không quá 30 ký tự");
-      isValid = false;
-    }
-
-    if (!email) {
-      $("#error-email").text("Email không được để trống");
-      isValid = false;
-    } else if (!emailRegex.test(email)) {
-      $("#error-email").text("Email không hợp lệ");
-      isValid = false;
-    } else if (email.length > 50) {
-      $("#error-email").text("Email không quá 50 ký tự");
-      isValid = false;
-    }
-
-    if (!phone) {
-      $("#error-sdt").text("Số điện thoại không được để trống");
-      isValid = false;
-    } else if (!phoneRegex.test(phone)) {
-      $("#error-sdt").text("Số điện thoại không hợp lệ");
-      isValid = false;
-    } else if (phone.length > 10) {
-      $("#error-sdt").text("Số điện thoại không quá 10 chữ số");
-      isValid = false;
-    }
-
-    if (!dateOfBirth) {
-      $("#error-dob").text("Chọn ngày sinh");
-      isValid = false;
-    }
-
-    if (isAddMode) {
-      if (!userName) {
-        $("#error-tenDangNhap").text("Tên đăng nhập không được để trống");
-        isValid = false;
-      } else if (userName.length > 20) {
-        $("#error-tenDangNhap").text("Tên đăng nhập không quá 20 ký tự");
-        isValid = false;
-      }
-
-      if (!password) {
-        $("#error-matKhau").text("Mật khẩu không được để trống");
-        isValid = false;
-      } else if (password.length < 8) {
-        $("#error-matKhau").text("Mật khẩu không ít hơn 8 ký tự");
-        isValid = false;
-      }
-    }
-
-    if (!role) {
-      $("#error-vaiTro").text("Vai trò không được để trống");
-      isValid = false;
-    }
-
-    if (!diachi) {
-      $("#error-diaChi").text("Địa chỉ không được để trống");
-      isValid = false;
-    }
-
-    return isValid;
-  }
-
-  // Thêm nhân viên
-  $("#btnAdd").click(function () {
-    if (!validateForm(true)) return;
+  // === Add ===
+  $("#btnAdd").click(function (e) {
+    e.preventDefault();
+    if (!$("#employeeForm").valid()) return;
 
     Swal.fire({
       title: "Xác nhận thêm nhân viên?",
@@ -237,21 +224,17 @@ $(document).ready(function () {
       cancelButtonText: "Hủy",
     }).then((result) => {
       if (result.isConfirmed) {
+        const formData = new FormData();
         const dz = Dropzone.forElement("#avatarDropzone");
         const files = dz.getAcceptedFiles();
         const avatarFile = files.length > 0 ? files[0] : null;
 
-        const formData = new FormData();
-        formData.append("fullName", $("#hoTen").val().trim());
-        formData.append("email", $("#email").val().trim());
-        formData.append("phone", $("#sdt").val().trim());
-        formData.append("userName", $("#tenDangNhap").val().trim());
-        formData.append("password", $("#matKhau").val().trim());
-        formData.append("address", $("#diaChi").val().trim());
-        formData.append("roleId", $("#vaiTro").val());
-        formData.append("gender", $("input[name='gender']:checked").val());
-        formData.append("dateOfBirth", $("#dob").val());
-
+        // Chỉ thêm các trường cần thiết vào FormData
+        $("#employeeForm")
+          .serializeArray()
+          .forEach((field) => {
+            formData.append(field.name, field.value);
+          });
         if (avatarFile) {
           formData.append("avatar", avatarFile, avatarFile.name);
         }
@@ -286,9 +269,10 @@ $(document).ready(function () {
     });
   });
 
-  // Cập nhật nhân viên
-  $("#btnUpdate").on("click", function () {
-    if (!validateForm(false)) return;
+  // === Update ===
+  $("#btnUpdate").on("click", function (e) {
+    e.preventDefault();
+    if (!$("#employeeForm").valid()) return;
 
     Swal.fire({
       title: "Xác nhận cập nhật nhân viên?",
@@ -299,18 +283,19 @@ $(document).ready(function () {
     }).then((result) => {
       if (result.isConfirmed) {
         const formData = new FormData();
-        formData.append("fullName", $("#hoTen").val().trim());
-        formData.append("email", $("#email").val().trim());
-        formData.append("phone", $("#sdt").val().trim());
-        formData.append("roleId", $("#vaiTro").val());
-        formData.append("address", $("#diaChi").val().trim());
-        formData.append("dateOfBirth", $("#dob").val());
-        formData.append("gender", $("input[name='gender']:checked").val());
-
         const files = avatarDropzone.getAcceptedFiles();
         if (files.length > 0) {
           formData.append("avatar", files[0]);
         }
+
+        // Chỉ thêm các trường cần thiết, loại bỏ tenDangNhap và matKhau
+        $("#employeeForm")
+          .serializeArray()
+          .forEach((field) => {
+            if (field.name !== "tenDangNhap" && field.name !== "matKhau") {
+              formData.append(field.name, field.value);
+            }
+          });
 
         const employeeId = $("#userId").val();
 
@@ -327,14 +312,18 @@ $(document).ready(function () {
             searchUser(currentPage);
           },
           error: function (xhr) {
-            toastr.error("Cập nhật thất bại: " + xhr.responseText);
+            Swal.fire(
+              "Lỗi",
+              xhr.responseJSON?.message || "Cập nhật thất bại",
+              "error",
+            );
           },
         });
       }
     });
   });
 
-  // Tìm kiếm nhân; viên
+  // === Search ===
   function searchUser(page) {
     var keyword = $("#searchInput").val().trim();
     var isActive = $("#statusFilter").val() || null;
@@ -342,11 +331,7 @@ $(document).ready(function () {
     $.ajax({
       url: "/admin/employee/search",
       type: "GET",
-      data: {
-        page: page,
-        keyword: keyword,
-        isActive: isActive,
-      },
+      data: { page: page, keyword: keyword, isActive: isActive },
       success: function (response) {
         $("#employeeTableContainer").html(response);
       },
@@ -356,7 +341,7 @@ $(document).ready(function () {
     });
   }
 
-  // Chuyển đổi trạng thái
+  // === Toggle Status ===
   window.toggleStatus = function (userId, isActive) {
     const title = isActive
       ? "Bạn có chắc muốn vô hiệu hóa tài khoản này?"
@@ -368,10 +353,8 @@ $(document).ready(function () {
       showCancelButton: true,
       confirmButtonText: "Xác nhận",
       cancelButtonText: "Hủy",
-      customClass: {
-        popup: "swal-pop-zindex",
-      },
-      backdrop: `rgba(0,0,0,0.4)`,
+      customClass: { popup: "swal-pop-zindex" },
+      backdrop: `rgba(0, 0, 0, 0.4)`,
     }).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
@@ -397,7 +380,7 @@ $(document).ready(function () {
     });
   };
 
-  // Gán hàm cho window
+  // Gán hàm ra global
   window.openAddModal = openAddModal;
   window.searchUser = searchUser;
 });

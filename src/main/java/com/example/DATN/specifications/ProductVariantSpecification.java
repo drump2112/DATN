@@ -55,6 +55,15 @@ public class ProductVariantSpecification {
 		};
 	}
 
+	public static Specification<ProductVariant> hasBrand(Integer brandId) {
+		return (root, query, cb) -> {
+			if (brandId == null)
+				return null;
+			return cb.equal(root.get("product").get("brand").get("id"), brandId);
+
+		};
+	}
+
 	public static Specification<ProductVariant> hasStatus(Boolean status) {
 		return (root, query, cb) -> {
 			if (status == null)

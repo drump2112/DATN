@@ -8,6 +8,8 @@
         <th>Tên Sản Phẩm</th>
         <th>Thương Hiệu</th>
         <th>Danh Mục</th>
+        <th>Màu Sắc</th>
+        <th>Kích Thước</th>
         <th>Số Lượng</th>
         <th>Trạng Thái</th>
         <th>Hành Động</th>
@@ -15,24 +17,27 @@
     </thead>
     <tbody>
       <tr th:each=" item : ${listProducts}">
-        <td th:text="${item.id}"></td>
+        <td th:text="${item.id}">1</td>
         <td>
           <img
-            th:src="@{${item.thumbnail}}"
-            alt="Thumbnail"
-            style="
-              width: 50px;
-              height: 50px;
-              object-fit: cover;
-              border-radius: 50%;
-            "
+            th:if="${item.imageUrls != null and !item.imageUrls.isEmpty()}"
+            th:src="${item.imageUrls.get(0)}"
+            alt="Ảnh"
+            width="60"
+            height="60"
           />
+          <span th:if="${item.imageUrls == null or item.imageUrls.isEmpty()}"
+            >No Image</span
+          >
         </td>
-        <td th:text="${item.productCode}"></td>
-        <td th:text="${item.name}"></td>
-        <td th:text="${item.brandName}"></td>
-        <td th:text="${item.categoryName}"></td>
-        <td th:switch="${item.isActive}">
+        <td th:text="${item.variantCode}">SP001</td>
+        <td th:text="${item.productName}">Sản phẩm A</td>
+        <td th:text="${item.brandName}">Thương hiệu A</td>
+        <td th:text="${item.categoryName}">Danh mục A</td>
+        <td th:text="${item.colorName}">Đỏ</td>
+        <td th:text="${item.sizeName}">L</td>
+        <td th:text="${item.quantity}">L</td>
+        <td th:switch="${item.status}">
           <span th:case="true" class="badge badge-primary"
             >Đang Kinh Doanh</span
           >
@@ -43,22 +48,29 @@
         <td>
           <button
             class="btn btn-info dim"
-            type="button"
-            th:attr="data-id=${item.id}"
-            th:title="'Thông tin và cập nhật'"
-            onclick="handleDetailClick(this)"
+            data-toggle="popover"
+            data-html="true"
+            data-content="
+          <form onsubmit='submitStock(this);return false;'>
+            <input type='hidden' name='movementType' value='IN'>
+            <input type='number' name='quantity' class='form-control' placeholder='Số lượng'>
+            <textarea name='note' class='form-control mt-2' placeholder='Ghi chú'></textarea>
+            <button type='submit' class='btn btn-sm btn-primary mt-2'>OK</button>
+          </form>
+        "
           >
-            <i class="fa fa-paste"></i>
+            <i class="fa fa-plus-square"></i>
           </button>
-
-          <!-- <button -->
-          <!--   th:id="'btn-status-' + ${item.id}" -->
-          <!--   th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')" -->
-          <!--   th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|" -->
-          <!--   th:title="${item.isActive} ? 'Khóa sản phẩm' : 'Mở khóa sản phẩm'" -->
-          <!-- > -->
-          <!--   <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i> -->
-          <!-- </button> -->
+          <button class="btn btn-danger dim" type="button" th:title="'Xuất'">
+            <i class="fa fa-minus-square"></i>
+          </button>
+          <button
+            class="btn btn-warning dim"
+            type="button"
+            th:title="'Điều Chỉnh'"
+          >
+            <i class="fa fa-external-link"></i>
+          </button>
         </td>
       </tr>
     </tbody>
@@ -82,7 +94,7 @@
         <a
           href="#"
           tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage - 1}) + ')'"
+          th:onclick="'searchProductVariants(' + (${currentPage - 1}) + ')'"
         >
           Previous
         </a>
@@ -98,7 +110,7 @@
           href="#"
           tabindex="0"
           th:text="${i}"
-          th:onclick="'searchUser(' + (${i} - 1) + ')'"
+          th:onclick="'searchProductVariants(' + (${i} - 1) + ')'"
         >
         </a>
       </li>
@@ -108,7 +120,7 @@
         <a
           href="#"
           tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage + 1}) + ')'"
+          th:onclick="'searchProductVariants(' + (${currentPage + 1}) + ')'"
         >
           Next
         </a>
@@ -121,7 +133,7 @@
         <a
           href="#"
           tabindex="0"
-          th:onclick="'searchUser(' + (${totalPages - 1}) + ')'"
+          th:onclick="'searchProductVariants(' + (${totalPages - 1}) + ')'"
         >
           Next
         </a>

@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.DATN.dtos.ProductVariantDTO;
 import com.example.DATN.models.ProductVariant;
 import com.example.DATN.request.ProductVariantRequest;
+import com.example.DATN.request.ProductVariantUpdateRequest;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,10 +25,20 @@ public interface ProductVariantService {
 			Integer colorId,
 			Integer sizeId,
 			Integer cateId,
+			Integer brandId,
 			Boolean status,
 			Pageable pageable);
 
+	public Page<ProductVariantDTO> searchProductVariantsInventory(
+			String keyword,
+			Integer colorId,
+			Integer sizeId,
+			Integer cateId,
+			Pageable pageable);
+
 	public long countAll();
+
+	public void updateProductVariant(Integer id, ProductVariantUpdateRequest request);
 
 	public ProductVariantDTO findById(Integer id);
 

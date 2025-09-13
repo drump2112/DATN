@@ -2,6 +2,7 @@ package com.example.DATN.services.impl;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -201,6 +202,7 @@ public class UserServiceImpl implements UserService {
 				.address(req.getAddress())
 				.gender(req.getGender())
 				.dateOfBirth(req.getDateOfBirth())
+                .createAt(new Date())
 				.isActive(false); // default
 
 		if (req.getPassword() != null && !req.getPassword().isEmpty()) {
@@ -258,25 +260,6 @@ public class UserServiceImpl implements UserService {
 
 		return userCode;
 	}
-
-	// private String generateUserCode(Integer roleId) {
-	// String prefix;
-	// switch (roleId) {
-	// case 1:
-	// prefix = "AD";
-	// break;
-	// case 2:
-	// prefix = "NV";
-	// break;
-	// case 3:
-	// prefix = "KH";
-	// break;
-	// default:
-	// prefix = "XX";
-	// }
-	// long count = userRepository.countByRoleId(roleId);
-	// return String.format("%s-%03d", prefix, count + 1);
-	// }
 
 	private String handleUploadAvatar(MultipartFile avatar, String currentAvatarPath) {
 		if (avatar != null && !avatar.isEmpty()) {

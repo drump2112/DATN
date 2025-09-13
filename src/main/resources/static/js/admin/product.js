@@ -246,8 +246,11 @@ $(document).ready(function () {
         formData.append("description", $("#description").val());
 
         const files = avatarDropzone.getAcceptedFiles();
-        if (files.length > 0) {
-          formData.append("thumbnail", files[0]);
+        if (files.length > 0 && files[0] instanceof File) {
+          console.log("Thumbnail file:", files[0]); // Debug
+          formData.append("thumbnail", files[0], files[0].name);
+        } else {
+          console.log("No valid file selected, skipping thumbnail"); // Debug
         }
 
         const productId = $("#productId").val();

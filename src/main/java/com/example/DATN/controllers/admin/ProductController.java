@@ -73,6 +73,12 @@ public class ProductController {
 		return "admin/product/table :: table";
 	}
 
+	@GetMapping("/{id}")
+	public ResponseEntity<ProductDTO> getProduct(@PathVariable Integer id) {
+		ProductDTO dto = productService.getProductDTOById(id);
+		return ResponseEntity.ok(dto);
+	}
+
 	@GetMapping("/count")
 	@ResponseBody
 	public long countProduct(@RequestParam(required = false) String keyword) {
@@ -99,15 +105,22 @@ public class ProductController {
 		}
 	}
 
-	@GetMapping("/{id}")
-	public ResponseEntity<ProductDTO> getProduct(@PathVariable Integer id) {
-		ProductDTO dto = productService.getProductDTOById(id);
-		return ResponseEntity.ok(dto);
-	}
-
 	@PutMapping("/{id}")
-	public String updateProduct() {
-		return "";
+	public ResponseEntity<?> updateProduct(
+			@PathVariable Integer id,
+			@ModelAttribute ProductRequest productRequest) {
+		try {
+			boolean result = productService.updateProduct(id, productRequest);
+
+			if (result) {
+				return ResponseEntity.ok(Map.of("message", "Cập Nhật Thành Công"));
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Cập nhật thất bại"));
+			}
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("message", "Lỗi server: " + e.getMessage()));
+		}
 	}
 
 	@GetMapping("/search")
@@ -133,7 +146,7 @@ public class ProductController {
 	@PutMapping("/{id}/toggle-status")
 	public ResponseEntity<?> toggleCustomerStatus(@PathVariable Integer id) {
 		boolean newStatus = productService.toggleStatus(id);
-		String message = newStatus ? "Kích hoạt thành công" : "Đã khóa";
+		String message = newStatus ? "Kích hoạt thành công" : "Đã khóa tài khoản";
 		return ResponseEntity.ok(Map.of("message", message));
 	}
 

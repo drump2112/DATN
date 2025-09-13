@@ -127,7 +127,39 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public boolean updateProduct(Integer id, ProductRequest productRequest) {
-		return true;
+		try {
+			// Tìm sản phẩm theo ID
+			Product existingProduct = productRepository.findById(id)
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+
+			// Lấy brand mới
+			Brand brand = brandRepository.findById(productRequest.getBrandId())
+					.orElseThrow(() -> new RuntimeException(
+							"Không tìm thấy thương hiệu với ID: " + productRequest.getBrandId()));
+
+			// Lấy category mới
+			Category category = categoryRepository.findById(productRequest.getCategoryId())
+					.orElseThrow(() -> new RuntimeException(
+							"Không tìm thấy danh mục với ID: " + productRequest.getCategoryId()));
+
+			// Xử lý thumbnail
+			String thumbnailPath = handleUploadThumbnail(productRequest.getThumbnail(), existingProduct.getThumbnail());
+
+			// Tạo sản phẩm mới với builder, giữ nguyên các trường không cần cập nhật
+			Product updatedProduct = existingProduct.toBuilder()
+					.name(productRequest.getName())
+					.description(productRequest.getDescription())
+					.brand(brand)
+					.category(category)
+					.thumbnail(thumbnailPath)
+					.build();
+
+			// Lưu sản phẩm
+			productRepository.save(updatedProduct);
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("Lỗi cập nhật sản phẩm: " + e.getMessage(), e);
+		}
 	}
 
 	private Product fromProductRequest(ProductRequest req) {
@@ -170,14 +202,6 @@ public class ProductServiceImpl implements ProductService {
 		}
 	}
 
-	private String uploadThumbnail(MultipartFile thumbnail) {
-		try {
-			return imageService.saveImage(thumbnail, "product");
-		} catch (IOException e) {
-			throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
-		}
-	}
-
 	@Override
 	public List<ProductDTO> getProducts(String keyword) {
 		List<Product> products;
@@ -210,6 +234,28 @@ public class ProductServiceImpl implements ProductService {
 		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
 		return modelMapper.map(product, ProductDTO.class);
+	}
+
+	private String uploadThumbnail(MultipartFile thumbnail) {
+		try {
+			return imageService.saveImage(thumbnail, "product");
+		} catch (IOException e) {
+			throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+		}
+	}
+
+	private String handleUploadThumbnail(MultipartFile thumbnail, String currentThumbnailPath) {
+		if (thumbnail != null && !thumbnail.isEmpty()) {
+			try {
+				if (currentThumbnailPath != null && !currentThumbnailPath.isEmpty()) {
+					imageService.deleteImage(currentThumbnailPath);
+				}
+				return imageService.saveImage(thumbnail, "product");
+			} catch (IOException e) {
+				throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+			}
+		}
+		return currentThumbnailPath;
 	}
 
 }

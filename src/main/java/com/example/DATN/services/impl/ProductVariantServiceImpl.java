@@ -23,6 +23,7 @@ import com.example.DATN.repositories.ProductVariantImageRepository;
 import com.example.DATN.repositories.ProductVariantRepository;
 import com.example.DATN.repositories.SizeRepository;
 import com.example.DATN.request.ProductVariantRequest;
+import com.example.DATN.request.ProductVariantUpdateRequest;
 import com.example.DATN.services.ImageService;
 import com.example.DATN.services.ProductVariantService;
 import com.example.DATN.specifications.ProductVariantSpecification;
@@ -36,6 +37,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 
 @Service
 public class ProductVariantServiceImpl implements ProductVariantService {
@@ -177,6 +180,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 			Integer colorId,
 			Integer sizeId,
 			Integer cateId,
+			Integer brandId,
 			Boolean status,
 			Pageable pageable) {
 
@@ -185,7 +189,27 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 				.and(ProductVariantSpecification.hasColor(colorId))
 				.and(ProductVariantSpecification.hasSize(sizeId))
 				.and(ProductVariantSpecification.hasCategory(cateId))
+				.and(ProductVariantSpecification.hasBrand(brandId))
 				.and(ProductVariantSpecification.hasStatus(status));
+
+		Page<ProductVariant> pageResult = productVariantRepository.findAll(spec, pageable);
+
+		return pageResult.map(this::mapToDTO);
+	}
+
+	@Override
+	public Page<ProductVariantDTO> searchProductVariantsInventory(
+			String keyword,
+			Integer colorId,
+			Integer sizeId,
+			Integer cateId,
+			Pageable pageable) {
+
+		Specification<ProductVariant> spec = Specification
+				.where(ProductVariantSpecification.containsKeyword(keyword))
+				.and(ProductVariantSpecification.hasColor(colorId))
+				.and(ProductVariantSpecification.hasSize(sizeId))
+				.and(ProductVariantSpecification.hasCategory(cateId));
 
 		Page<ProductVariant> pageResult = productVariantRepository.findAll(spec, pageable);
 
@@ -277,6 +301,57 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 				.orElseThrow(() -> new RuntimeException("ProductVariant not found with id: " + id));
 
 		return modelMapper.map(variant, ProductVariantDTO.class);
+	}
+
+	@Override
+	public void updateProductVariant(Integer id, ProductVariantUpdateRequest request) {
+		ProductVariant variant = productVariantRepository.findById(id)
+				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
+
+		// ✅ Cập nhật giá nếu có
+		if (request.getPrice() != null) {
+			variant.setPrice(BigDecimal.valueOf(request.getPrice()));
+		}
+
+		productVariantRepository.save(variant);
+
+		// ✅ Cập nhật ảnh nếu có upload mới
+		if (request.getImages() != null && !request.getImages().isEmpty()) {
+			// Lấy ảnh cũ
+			List<ProductVariantImage> oldImages = variantImageRepository.findByProductIdAndColorIdOrderBySortOrder(
+					variant.getProduct().getId(),
+					variant.getColor().getId());
+
+			// Xoá ảnh cũ trong DB + xoá file trên disk
+			for (ProductVariantImage old : oldImages) {
+				try {
+					imageService.deleteImage(old.getImageUrl()); // xoá file vật lý
+				} catch (IOException e) {
+					System.err.println("Không thể xóa file: " + old.getImageUrl());
+				}
+			}
+			variantImageRepository.deleteAll(oldImages);
+
+			// Lưu ảnh mới
+			int step = 0;
+			for (MultipartFile file : request.getImages()) {
+				try {
+					++step;
+					String imagePath = imageService.saveImage(file, "product-variants");
+
+					ProductVariantImage image = ProductVariantImage.builder()
+							.product(variant.getProduct())
+							.color(variant.getColor())
+							.imageUrl(imagePath)
+							.sortOrder(step)
+							.build();
+
+					variantImageRepository.save(image);
+				} catch (IOException e) {
+					throw new BusinessException("Lỗi khi lưu ảnh mới");
+				}
+			}
+		}
 	}
 
 	private String generateVariantCode() {

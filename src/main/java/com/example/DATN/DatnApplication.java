@@ -14,13 +14,9 @@ import jakarta.annotation.PostConstruct;
 @SpringBootApplication
 public class DatnApplication {
 
-	@Autowired
-	private PasswordEncoder passwordEncoder;
-	@Autowired
-	private UserRepository userRepo;
-
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 		SpringApplication.run(DatnApplication.class, args);
 	}
+
 
 }
