@@ -22,7 +22,7 @@ public interface SizeService {
     boolean addSize(SizeRequest sizerequet);
 
 
-    boolean updateSize(Integer id, SizeRequest sizerequet);
+    boolean updateSize(Integer id, SizeRequest sizeRequest);
 
 
     Page<SizeDTO> searchSize(String keyword, Boolean isActive, Pageable pageable);

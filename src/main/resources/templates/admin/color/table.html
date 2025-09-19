@@ -1,48 +1,75 @@
 <th:block th:fragment="table">
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Mã</th>
-            <th>màu sắc</th>
-            <th>Trạng thái</th>
-            <th>Hành Động</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item : ${colors}">
-            <td th:text="${item.id}"></td>
-            <td th:text="${item.colorCode}"></td>
-            <td th:text="${item.colorName}"></td>
-            <td th:switch="${item.isActive}">
-                <span th:case="true" class="badge badge-primary">Hoạt Động</span>
-                <span th:case="false" class="badge badge-danger">Ngừng</span>
-            </td>
-            <td>
-                <button
-                        class="btn btn-info dim"
-                        type="button"
-                        th:attr="data-id=${item.id},
+    <div class="row">
+        <div class="col-sm-4 m-b-xs">
+            <select class="input-sm form-control input-s-sm inline" id="statusFilter">
+                <option value="">Chọn Trang Thái</option>
+                <option value="1">Hoạt Động</option>
+                <option value="0">Ngừng Hoạt Động</option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group">
+                <input type="text" placeholder="Tìm Kiếm(Mã màu, Tên màu)" class="input-sm form-control"
+                       id="searchInput">
+                <span class="input-group-btn">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="searchColor(0)">
+                           <i class="fa fa-search"></i>
+                        </button>
+                 </span>
+            </div>
+        </div>
+        <div class="col-sm-4 m-b-xs">
+            <button type="button" class="btn btn-w-m btn-primary pull-right" onclick="openAddModal()">
+                <i class="fa fa-plus-circle"></i> Thêm màu sắc
+            </button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mã</th>
+                <th>màu sắc</th>
+                <th>Trạng thái</th>
+                <th>Hành Động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${colors}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${item.colorCode}"></td>
+                <td th:text="${item.colorName}"></td>
+                <td th:switch="${item.isActive}">
+                    <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+                    <span th:case="false" class="badge badge-danger">Ngừng</span>
+                </td>
+                <td>
+                    <button
+                            class="btn btn-info dim"
+                            type="button"
+                            th:attr="data-id=${item.id},
                  data-code=${item.colorCode},
                  data-name=${item.colorName},
                  data-isActive=${item.isActive}"
-                        th:title="'Thông tin và cập nhật'"
-                        onclick="handleDetailClick(this)"
-                >
-                    <i class="fa fa-paste"></i>
-                </button>
-                <button
-                        th:id="'btn-status-' + ${item.id}"
-                        th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
-                        th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
-                        th:title="${item.isActive} ? 'Khóa màu sắc' : 'Kích hoạt màu sắc'"
-                >
-                    <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
-                </button>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+                            th:title="'Thông tin và cập nhật'"
+                            onclick="handleDetailClick(this)"
+                    >
+                        <i class="fa fa-paste"></i>
+                    </button>
+                    <button
+                            th:id="'btn-status-' + ${item.id}"
+                            th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+                            th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
+                            th:title="${item.isActive} ? 'Khóa màu sắc' : 'Kích hoạt màu sắc'"
+                    >
+                        <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
     <div
             class="dataTables_paginate paging_simple_numbers"
             id="DataTables_Table_0_paginate"

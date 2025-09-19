@@ -17,4 +17,5 @@ public class CategoryDTO {
 
 	private String name;
 
+    private Boolean isActive;
 }

@@ -8,12 +8,9 @@ import java.util.stream.Collectors;
 
 
 import com.example.DATN.dtos.ColorDTO;
-import com.example.DATN.dtos.ColorDTO;
 import com.example.DATN.exception.BusinessException;
 import com.example.DATN.models.Color;
-import com.example.DATN.models.Color;
-import com.example.DATN.repositories.ColorRepoSitory;
-import com.example.DATN.request.ColorRequest;
+import com.example.DATN.repositories.ColorRepository;
 import com.example.DATN.request.ColorRequest;
 import com.example.DATN.services.ColorService;
 
@@ -30,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class ColorServiceImpl implements ColorService {
 
     @Autowired
-    private ColorRepoSitory colorRepository;
+    private ColorRepository colorRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -72,7 +69,7 @@ public class ColorServiceImpl implements ColorService {
     @Override
     public boolean toggleStatus(Integer id) {
         Color Color = colorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy kích thước"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy màu sắc"));
         Color.setIsActive(!Color.getIsActive());
         colorRepository.save(Color);
         return Color.getIsActive();
@@ -81,7 +78,7 @@ public class ColorServiceImpl implements ColorService {
     @Override
     public boolean addColor(ColorRequest ColorRequest) {
         if (colorRepository.existsByName(ColorRequest.getName())) {
-            throw new BusinessException("Kích thước đã tồn tại");
+            throw new BusinessException("Màu sắc đã tồn tại");
         }
         Color Color = fromRequest(ColorRequest);
         colorRepository.save(Color);

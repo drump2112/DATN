@@ -380,7 +380,6 @@ $(document).ready(function () {
     });
   };
 
-  // Gán hàm ra global
   window.openAddModal = openAddModal;
   window.searchUser = searchUser;
 });

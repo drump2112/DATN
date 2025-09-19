@@ -28,4 +28,7 @@ public interface ProductService {
 	List<ProductDTO> getProductActive();
 
 	ProductDTO getById(Integer id);
+
+    public long countAll();
+
 }

@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ColorRepoSitory extends JpaRepository<Color, Integer> {
+public interface ColorRepository extends JpaRepository<Color, Integer> {
     List<Color> findByNameContainingIgnoreCase(String name);
 
     @Query("SELECT COALESCE(MAX(s.id), 0) FROM Color s")

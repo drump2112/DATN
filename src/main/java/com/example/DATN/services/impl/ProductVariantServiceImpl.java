@@ -2,12 +2,9 @@ package com.example.DATN.services.impl;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.spi.LocaleServiceProvider;
 import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.ProductVariantDTO;
@@ -17,7 +14,7 @@ import com.example.DATN.models.Product;
 import com.example.DATN.models.ProductVariant;
 import com.example.DATN.models.ProductVariantImage;
 import com.example.DATN.models.Size;
-import com.example.DATN.repositories.ColorRepoSitory;
+import com.example.DATN.repositories.ColorRepository;
 import com.example.DATN.repositories.ProductRepository;
 import com.example.DATN.repositories.ProductVariantImageRepository;
 import com.example.DATN.repositories.ProductVariantRepository;
@@ -28,7 +25,6 @@ import com.example.DATN.services.ImageService;
 import com.example.DATN.services.ProductVariantService;
 import com.example.DATN.specifications.ProductVariantSpecification;
 
-import org.hibernate.metamodel.internal.RuntimeMetamodelsImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,8 +33,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 
 @Service
 public class ProductVariantServiceImpl implements ProductVariantService {
@@ -50,7 +44,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 	private ModelMapper modelMapper;
 
 	@Autowired
-	private ColorRepoSitory colorRepository;
+	private ColorRepository colorRepository;
 
 	@Autowired
 	private SizeRepository sizeRepository;

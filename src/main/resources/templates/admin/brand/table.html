@@ -1,58 +1,166 @@
 <th:block th:fragment="table">
-  <div class="row">
-    <div class="col-sm-3 m-b-xs"></div>
-    <div class="col-sm-4 m-b-xs"></div>
-    <div class="col-sm-5">
-      <div class="input-group">
+    <div class="row">
+        <div class="col-sm-4 m-b-xs">
+            <select class="input-sm form-control input-s-sm inline" id="statusFilter">
+                <option value="">Chọn Trang Thái</option>
+                <option value="1">Hoạt Động</option>
+                <option value="0">Ngừng Hoạt Động</option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group">
+                <input type="text" placeholder="Tìm Kiếm(Mã, Tên)" class="input-sm form-control"
+                       id="searchInput">
+                <span class="input-group-btn">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="searchBrand(0)">
+                           <i class="fa fa-search"></i>
+                        </button>
+                 </span>
+            </div>
+        </div>
+        <div class="col-sm-1">
+            <button id="resetFilterBtn" class="btn btn-info" type="button"><i class="fa fa-mail-reply-all"></i></button>
+        </div>
+        <div class="col-sm-3">
+            <div class="input-group">
         <span class="input-group-btn">
           <button
-            type="button"
-            class="btn btn-sm btn-primary pull-right"
-            id="btnAdd"
-            onclick="openAddModal()"
+                  type="button"
+                  class="btn btn-sm btn-primary pull-right"
+                  id="btnAdd"
+                  onclick="openAddModal()"
           >
-            <i class="fa fa-plus-circle"></i> Thêm
+              <i class="fa fa-plus-circle"></i> Thêm
           </button>
         </span>
-      </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="table-responsive">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Ảnh</th>
-          <th>Mã Thương Hiệu</th>
-          <th>Tên</th>
-          <th>Hành Động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:each="item : ${brands}">
-          <td th:text="${item.id}"></td>
-          <td>
-            <img
-              th:src="@{${item.logoUrl}}"
-              alt="Avatar"
-              style="
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ảnh</th>
+                <th>Mã Thương Hiệu</th>
+                <th>Tên</th>
+                <th>Trạng Thái</th>
+                <th>Hành Động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${brands}">
+                <td th:text="${item.id}"></td>
+                <td>
+                    <img
+                            th:src="@{${item.logoUrl}}"
+                            alt="Avatar"
+                            style="
                 width: 50px;
                 height: 50px;
                 object-fit: cover;
                 border-radius: 50%;
               "
-            />
-          </td>
+                    />
+                </td>
+                <td th:text="${item.brandCode}"></td>
+                <td th:text="${item.name}"></td>
+                <td th:switch="${item.isActive}">
+                    <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+                    <span th:case="false" class="badge badge-danger">Ngừng</span>
+                </td>
+                <td>
+                    <button
+                            class="btn btn-info dim"
+                            type="button"
+                            th:attr="data-id=${item.id},
+                 data-code=${item.brandCode},
+                 data-name=${item.name},
+                 data-isActive=${item.isActive}"
+                            th:title="'Thông tin và cập nhật'"
+                            onclick="handleDetailClick(this)"
+                    >
+                        <i class="fa fa-paste"></i>
+                    </button>
+                    <button
+                            th:id="'btn-status-' + ${item.id}"
+                            th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+                            th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
+                            th:title="${item.isActive} ? 'Khóa Thương Hiệu' : 'Mở khóa thương hiệu'"
+                    >
+                        <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div
+            class="dataTables_paginate paging_simple_numbers"
+            id="DataTables_Table_0_paginate"
+            th:if="${totalPages > 0}"
+            style="text-align: right"
+    >
+        <ul
+                class="pagination"
+                id="paginationContainer"
+                th:attr="data-total-pages=${totalPages}, data-current-page=${currentPage}"
+        >
+            <!-- Nút Previous -->
+            <li
+                    class="paginate_button previous"
+                    th:classappend="${currentPage == 0} ? ' disabled'"
+            >
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:onclick="'searchSize(' + (${currentPage - 1}) + ')'"
+                >
+                    Previous
+                </a>
+            </li>
 
-          <td th:text="${item.brandCode}"></td>
-          <td th:text="${item.name}"></td>
-          <td>
-            <button class="btn btn-default dim" type="button">
-              <i class="fa fa-info"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+
+            <!-- Nút số trang 1..totalPages -->
+            <li
+                    class="paginate_button"
+                    th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i - 1 == currentPage} ? ' active'"
+            >
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:text="${i}"
+                        th:onclick="'searchColor(' + (${i} - 1) + ')'"
+                >
+                </a>
+            </li>
+
+
+            <!-- Nút Next -->
+            <li class="paginate_button next" th:if="${currentPage + 1 < totalPages}">
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:onclick="'searchColor(' + (${currentPage + 1}) + ')'"
+                >
+                    Next
+                </a>
+            </li>
+
+
+            <li
+                    class="paginate_button next disabled"
+                    th:unless="${currentPage + 1 < totalPages}"
+            >
+                <a
+                        href="#"
+                        tabindex="0"
+                        th:onclick="'searchColor(' + (${totalPages - 1}) + ')'"
+                >
+                    Next
+                </a>
+            </li>
+        </ul>
+    </div>
 </th:block>

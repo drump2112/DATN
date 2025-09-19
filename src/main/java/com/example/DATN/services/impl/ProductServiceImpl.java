@@ -236,7 +236,12 @@ public class ProductServiceImpl implements ProductService {
 		return modelMapper.map(product, ProductDTO.class);
 	}
 
-	private String uploadThumbnail(MultipartFile thumbnail) {
+    @Override
+    public long countAll() {
+        return productRepository.count();
+    }
+
+    private String uploadThumbnail(MultipartFile thumbnail) {
 		try {
 			return imageService.saveImage(thumbnail, "product");
 		} catch (IOException e) {

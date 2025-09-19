@@ -82,9 +82,8 @@ public class ProductController {
 	@GetMapping("/count")
 	@ResponseBody
 	public long countProduct(@RequestParam(required = false) String keyword) {
-		// return productService.countUsersByRoles(keyword, 1, 2);
-		return 1;
-	}
+        return productService.countAll();
+    }
 
 	@PostMapping("/add")
 	public ResponseEntity<?> addProduct(

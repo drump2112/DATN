@@ -32,8 +32,5 @@ public interface ColorService {
 
     Page<ColorDTO> searchColor(String keyword, Boolean isActive, Pageable pageable);
 
-
-
-
 }
 

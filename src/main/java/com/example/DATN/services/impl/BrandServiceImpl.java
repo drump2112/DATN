@@ -6,7 +6,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.BrandDTO;
+import com.example.DATN.dtos.ColorDTO;
+import com.example.DATN.dtos.ProductVariantDTO;
 import com.example.DATN.models.Brand;
+import com.example.DATN.models.Color;
+import com.example.DATN.models.ProductVariant;
 import com.example.DATN.repositories.BrandRepository;
 import com.example.DATN.request.BrandRequest;
 import com.example.DATN.services.BrandService;
@@ -75,7 +79,34 @@ public class BrandServiceImpl implements BrandService {
 				.collect(Collectors.toList());
 	}
 
-	public Brand fromRequest(BrandRequest req) {
+    @Override
+    public boolean updateBrand(Integer id, BrandRequest brandRequest) {
+        return false;
+    }
+
+    @Override
+    public BrandDTO findById(Integer id) {
+        Brand brand = brandRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("brand not found with id: " + id));
+        return modelMapper.map(brand, BrandDTO.class);
+    }
+
+    @Override
+    public boolean toggleStatus(Integer id) {
+        Brand brand = brandRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu"));
+        brand.setIsActive(!brand.getIsActive());
+        brandRepository.save(brand);
+        return brand.getIsActive();
+    }
+
+    @Override
+    public Page<BrandDTO> searchBrand(String keyword, Boolean isActive, Pageable pageable) {
+        Page<Brand> brands = brandRepository.search(keyword, isActive, pageable);
+        return brands.map(entity -> modelMapper.map(entity, BrandDTO.class));
+    }
+
+    public Brand fromRequest(BrandRequest req) {
 
 		String brandCode = generateBrandCode();
 		String logoUrl = "";

@@ -1,7 +1,6 @@
-// color.js
 // xem chi tiết
 window.handleDetailClick = function (button) {
-    const color = {
+    const category = {
         id: $(button).data("id"),
         code: $(button).data("code"),
         name: $(button).data("name"),
@@ -10,12 +9,12 @@ window.handleDetailClick = function (button) {
     const currentPage =
         parseInt($("#paginationContainer .paginate_button.active a").text()) -
         1 || 0;
-    $("#colorForm").data("current-page", currentPage);
-    openEditModal(color, true);
+    $("#categoryForm").data("current-page", currentPage);
+    openEditModal(category, true);
 };
 
 
-// mở modal và hiển thị chi tiêt color
+// mở modal và hiển thị chi tiêt category
 function openEditModal(data, isEditable) {
     clearErrors();
     $("#id").val(data.id);
@@ -23,8 +22,8 @@ function openEditModal(data, isEditable) {
     $("#name").val(data.name).prop("readonly", !isEditable);
 
 
-    $("#modalTitle").text("Chi tiết và cập nhật thông tin màu sắc");
-    $("#btnAddColor").hide();
+    $("#modalTitle").text("Chi Tiết Và Cập Nhật Thông Tin Danh mục");
+    $("#btnAddCategory").hide();
     $("#btnUpdate").toggle(isEditable);
     $("#myModal").modal("show");
 }
@@ -41,34 +40,34 @@ function clearErrors() {
 function openAddModal() {
     console.log(" oke đã  tới đây")
     clearErrors();
-    $("#modalTitle").text("Thêm màu sắc");
-    $("#colorForm input, #colorForm select")
+    $("#modalTitle").text("Thêm Danh mục");
+    $("#categoryForm input, #categoryForm select")
         .prop("readonly", false)
         .prop("disabled", false);
-    $("#colorForm #maColor").prop("readonly", true).prop("disabled", true);
-    $("#btnAddColor").show();
+    $("#categoryForm #maCategory").prop("readonly", true).prop("disabled", true);
+    $("#btnAddCategory").show();
     $("#btnUpdate").hide();
     $("#myModal").modal("show");
 }
 
 
-//  Hàm validation tên màu sắc
-function validateColorName() {
+//  Hàm validation tên Danh mục
+function validateCategoryName() {
     const name = $("#name").val().trim();
     let errorMessage = "";
 
 
     // Không để trống
     if (!name) {
-        errorMessage = "Màu sắc không được để trống!";
+        errorMessage = "Danh mục không được để trống!";
     }
-    // Chỉ cho phép chữ cái + khoảng trắng (có dấu tiếng Việt)
+    // Chỉ cho phép chữ cái + khoảng trắng (Unicode)
     else if (!/^[\p{L}\s]+$/u.test(name)) {
-        errorMessage = "Màu sắc chỉ được nhập chữ!";
+        errorMessage = "Danh mục chỉ được nhập chữ!";
     }
     // Giới hạn độ dài
-    else if (name.length < 2 || name.length > 30) {
-        errorMessage = "Tên màu sắc phải từ 2 đến 30 ký tự!";
+    else if (name.length < 2 || name.length > 50) {
+        errorMessage = "Tên danh mục phải từ 2 đến 50 ký tự!";
     }
 
 
@@ -80,12 +79,15 @@ function validateColorName() {
 }
 
 
-// thêm màu sắc
-$("#btnAddColor").click(function () {
-    if (!validateColorName()) return; //   check trước khi gửi
+
+
+// thêm Danh mục
+$("#btnAddCategory").click(function () {
+    if (!validateCategoryName()) return; //   check trước khi gửi
+
 
     Swal.fire({
-        title: "Xác nhận thêm màu sắc?",
+        title: "Xác nhận thêm Danh mục?",
         icon: "question",
         showCancelButton: true,
         confirmButtonText: "Thêm",
@@ -94,13 +96,13 @@ $("#btnAddColor").click(function () {
         if (result.isConfirmed) {
             const formData = new FormData();
             formData.append("id", $("#id").val().trim());
-            formData.append("colorCode", $("#code").val() || null);
+            formData.append("categoryCode", $("#code").val() || null);
             formData.append("name", $("#name").val().trim());
             formData.append("isActive", true);
 
 
             $.ajax({
-                url: "/admin/color/add",
+                url: "/admin/categories/add",
                 method: "POST",
                 processData: false,
                 contentType: false,
@@ -109,7 +111,7 @@ $("#btnAddColor").click(function () {
                     Swal.fire("Thành công!", response.message, "success");
                     $("#myModal").modal("hide");
                     const currentPage = getCurrentPage();
-                    searchColor(currentPage);
+                    searchCategory(currentPage);
                 },
                 error: function (xhr) {
                     Swal.fire(
@@ -123,19 +125,21 @@ $("#btnAddColor").click(function () {
     });
 });
 
+
 // get trang hiện tại
 function getCurrentPage() {
     return parseInt($("#paginationContainer").attr("data-current-page")) || 0;
 }
 
 
-// Tìm kiếm Color
-function searchColor(page) {
+// Tìm kiếm category
+function searchCategory(page) {
     var keyword = $("#searchInput").val().trim();
     var isActive = $("#statusFilter").val() || null;
 
+
     $.ajax({
-        url: "/admin/color/search",
+        url: "/admin/categories/search",
         type: "GET",
         data: {
             page: page,
@@ -143,19 +147,20 @@ function searchColor(page) {
             isActive: isActive,
         },
         success: function (response) {
-            $("#colorTableContainer").html(response);
+            $("#categoryTableContainer").html(response);
         },
         error: function () {
-            searchColor(0);
+            searchCategory(0);
         },
     });
 }
 
+
 // Chuyển đổi trạng thái
 window.toggleStatus = function (userId, isActive) {
     const title = isActive
-        ? "Bạn có chắc muốn vô hiệu hóa màu sắc này?"
-        : "Bạn có chắc muốn kích hoạt màu sắc này?";
+        ? "Bạn có chắc muốn vô hiệu hóa Danh mục này?"
+        : "Bạn có chắc muốn kích hoạt Danh mục này?";
 
 
     Swal.fire({
@@ -171,12 +176,12 @@ window.toggleStatus = function (userId, isActive) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: `/admin/color/${userId}/toggle-status`,
+                url: `/admin/categories/${userId}/toggle-status`,
                 type: "PUT",
                 success: function (data) {
                     Swal.fire("Thành công", data.message, "success");
                     const currentPage = getCurrentPage();
-                    searchColor(currentPage);
+                    searchCategory(currentPage);
                 },
                 error: function (xhr) {
                     Swal.fire(
@@ -190,12 +195,16 @@ window.toggleStatus = function (userId, isActive) {
     });
 };
 
+
+//cập nhật
+
+
 $("#btnUpdate").on("click", function () {
-    if (!validateColorName(false)) return;
+    if (!validateCategoryName(false)) return;
 
 
     Swal.fire({
-        title: "Xác nhận cập nhật màu sắc?",
+        title: "Xác nhận cập nhật danh mục?",
         icon: "question",
         showCancelButton: true,
         confirmButtonText: "Cập nhật",
@@ -203,15 +212,13 @@ $("#btnUpdate").on("click", function () {
     }).then((result) => {
         if (result.isConfirmed) {
             const formData = new FormData();
-            formData.append("colorCode", $("#code").val().trim());
+            formData.append("categoryCode", $("#code").val().trim());
             formData.append("name", $("#name").val().trim());
-            console.log(formData.get("colorCode" + "code"))
-            console.log(formData.get("name"))
-            const colorId = $("#id").val();
+            const categoryId = $("#id").val();
 
 
             $.ajax({
-                url: `/admin/color/${colorId}`,
+                url: `/admin/categories/${categoryId}`,
                 type: "PUT",
                 data: formData,
                 processData: false,
@@ -219,8 +226,8 @@ $("#btnUpdate").on("click", function () {
                 success: function (response) {
                     Swal.fire("Cập nhật thành công!", response.message, "success");
                     $("#myModal").modal("hide");
-                    const currentPage = $("#colorForm").data("current-page") || 0;
-                    searchColor(currentPage);
+                    const currentPage = $("#categoryForm").data("current-page") || 0;
+                    searchSize(currentPage);
                 },
                 error: function (xhr) {
                     toastr.error("Cập nhật thất bại: " + xhr.responseText);

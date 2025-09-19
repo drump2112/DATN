@@ -31,4 +31,7 @@ public class Brand {
 
 	@Column(name = "LogoUrl")
 	private String logoUrl;
+
+    @Column(name = "isActive")
+    private Boolean isActive;
 }

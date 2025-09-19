@@ -61,7 +61,6 @@ public class ProductVariantController {
 
 	@GetMapping("/table")
 	public String getTableFragment(
-
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size,
 			Model model) {

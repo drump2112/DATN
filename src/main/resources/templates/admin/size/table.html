@@ -1,50 +1,75 @@
 <th:block th:fragment="table">
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Mã</th>
-            <th>Kích Cỡ</th>
-            <th>Trạng thái</th>
-            <th>Hành Động</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="item : ${sizes}">
-            <td th:text="${item.id}"></td>
-            <td th:text="${item.sizeCode}"></td>
-            <td th:text="${item.name}"></td>
-            <td th:switch="${item.isActive}">
-                <span th:case="true" class="badge badge-primary">Hoạt Động</span>
-                <span th:case="false" class="badge badge-danger">Ngừng</span>
-            </td>
-            <td>
-                <button
-                        class="btn btn-info dim"
-                        type="button"
-                        th:attr="data-id=${item.id},
+    <div class="row">
+        <div class="col-sm-4 m-b-xs">
+            <select class="input-sm form-control input-s-sm inline" id="statusFilter">
+                <option value="">Chọn Trang Thái</option>
+                <option value="1">Hoạt Động</option>
+                <option value="0">Ngừng Hoạt Động</option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group">
+                <input type="text" placeholder="Tìm Kiếm(Ma Nv,Sdt)" class="input-sm form-control"
+                       id="searchInput">
+                <span class="input-group-btn">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="searchSize(0)">
+                           <i class="fa fa-search"></i>
+                        </button>
+                     </span>
+            </div>
+        </div>
+        <div class="col-sm-4 m-b-xs">
+            <button type="button" class="btn btn-w-m btn-primary pull-right" onclick="openAddModal()">
+                <i class="fa fa-plus-circle"></i> Thêm kích thước
+            </button>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mã</th>
+                <th>Kích Cỡ</th>
+                <th>Trạng thái</th>
+                <th>Hành Động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${sizes}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${item.sizeCode}"></td>
+                <td th:text="${item.name}"></td>
+                <td th:switch="${item.isActive}">
+                    <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+                    <span th:case="false" class="badge badge-danger">Ngừng</span>
+                </td>
+                <td>
+                    <button
+                            class="btn btn-info dim"
+                            type="button"
+                            th:attr="data-id=${item.id},
                  data-code=${item.sizeCode},
                  data-name=${item.name},
                  data-isActive=${item.isActive}"
-                        th:title="'Thông tin và cập nhật'"
-                        onclick="handleDetailClick(this)"
-                >
-                    <i class="fa fa-paste"></i>
-                </button>
-                <button
-                        th:id="'btn-status-' + ${item.id}"
-                        th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
-                        th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
-                        th:title="${item.isActive} ? 'Khóa kích thước' : 'Kích hoạt kích thước'"
-                >
-                    <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
-                </button>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-
+                            th:title="'Thông tin và cập nhật'"
+                            onclick="handleDetailClick(this)"
+                    >
+                        <i class="fa fa-paste"></i>
+                    </button>
+                    <button
+                            th:id="'btn-status-' + ${item.id}"
+                            th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+                            th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
+                            th:title="${item.isActive} ? 'Khóa kích thước' : 'Kích hoạt kích thước'"
+                    >
+                        <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
     <div
             class="dataTables_paginate paging_simple_numbers"
             id="DataTables_Table_0_paginate"
@@ -69,8 +94,6 @@
                     Previous
                 </a>
             </li>
-
-
             <!-- Nút số trang 1..totalPages -->
             <li
                     class="paginate_button"
@@ -85,8 +108,6 @@
                 >
                 </a>
             </li>
-
-
             <!-- Nút Next -->
             <li class="paginate_button next" th:if="${currentPage + 1 < totalPages}">
                 <a
@@ -97,8 +118,6 @@
                     Next
                 </a>
             </li>
-
-
             <li
                     class="paginate_button next disabled"
                     th:unless="${currentPage + 1 < totalPages}"

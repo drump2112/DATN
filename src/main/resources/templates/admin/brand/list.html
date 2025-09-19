@@ -7,20 +7,14 @@
     <div class="row col-lg-6" style="margin-left: 300px">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
-          <h5>Danh Sách Màu Sắc</h5>
+          <h5>Danh Sách Thương Hiệu</h5>
           <div class="ibox-tools">
             <a class="collapse-link">
               <i class="fa fa-chevron-up"></i>
             </a>
-            <a class="dropdown-toggle" data-toggle="dropdown" href="">
-              <i class="fa fa-wrench"></i>
-            </a>
-            <a class="close-link">
-              <i class="fa fa-times"></i>
-            </a>
           </div>
         </div>
-        <div class="ibox-content">
+        <div class="ibox-content"  id="brandTableContainer">
           <th:block th:replace="admin/brand/table :: table"></th:block>
         </div>
       </div>
@@ -35,14 +29,15 @@
 				</div>
 				<div class="modal-body">
 					<div class="row">
-						<form role="form">
-							<div class="col-sm-6 b-r">	
-								<div class="form-group"><label>Mã Thương Hiệu</label> <input type="text" id="brandCode" placeholder="Brand Code" class="form-control" disabled></div>
-								<div class="form-group"><label>Tên Thương Hiệu</label> <input type="text" id="nameBrand" placeholder="Tên Thương Hiệu" class="form-control"></div>
+						<form id="brandForm" role="form">
+							<div class="col-sm-6 b-r">
+                                <input type="hidden" id="brandId" name="brandId">
+                                <div class="form-group"><label>Mã Thương Hiệu</label> <input type="text" id="brandCode" placeholder="Brand Code" class="form-control" disabled></div>
+								<div class="form-group"><label>Tên Thương Hiệu</label> <input type="text" id="nameBrand" name="nameBrand" placeholder="Tên Thương Hiệu" class="form-control"></div>
 							</div>
 							<div class="col-sm-6">
 								<div class="form-group">
-									<label for="">Logo</label>
+									<label>Logo</label>
 									<div id="avatarDropzone" class="dropzone dz-clickable"></div>
 									<input type="file" id="avatarInput" name="avatar" style="display:none;">
 									<span class="text-danger" id="error-avatar"></span>
@@ -51,6 +46,9 @@
 							<div>
 								<button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddBrand" type="button"><strong>Thêm</strong></button>
 							</div>
+                            <div>
+                                <button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnUpdateBrand" type="button"><strong>Cập nhật</strong></button>
+                            </div>
 						</form>
 					</div>
 				</div>
