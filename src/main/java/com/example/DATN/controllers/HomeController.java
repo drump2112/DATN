@@ -45,15 +45,15 @@ public class HomeController {
 
 		log.info("=== Variants list ===");
 		for (ProductVariantDTO variant : variants) {
-			log.info(variant.toString()); // toString() phải được override nếu muốn log đẹp
+			log.info(variant.toString());
 		}
 		model.addAttribute("product", product);
 		try {
 			String variantsJson = new ObjectMapper().writeValueAsString(variants);
 			model.addAttribute("variants", variantsJson);
 		} catch (JsonProcessingException e) {
-			e.printStackTrace(); // hoặc log lỗi
-			model.addAttribute("variants", "[]"); // fallback rỗng nếu lỗi
+			e.printStackTrace();
+			model.addAttribute("variants", "[]");
 		}
 
 		return "shop/product-detail";
