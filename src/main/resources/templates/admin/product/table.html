@@ -83,7 +83,7 @@
         <a
           href="#"
           tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage - 1}) + ')'"
+          th:onclick="'searchProduct(' + (${currentPage - 1}) + ')'"
         >
           Previous
         </a>
@@ -99,7 +99,7 @@
           href="#"
           tabindex="0"
           th:text="${i}"
-          th:onclick="'searchUser(' + (${i} - 1) + ')'"
+          th:onclick="'searchProduct(' + (${i} - 1) + ')'"
         >
         </a>
       </li>
@@ -109,7 +109,7 @@
         <a
           href="#"
           tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage + 1}) + ')'"
+          th:onclick="'searchProduct(' + (${currentPage + 1}) + ')'"
         >
           Next
         </a>
@@ -122,7 +122,7 @@
         <a
           href="#"
           tabindex="0"
-          th:onclick="'searchUser(' + (${totalPages - 1}) + ')'"
+          th:onclick="'searchProduct(' + (${totalPages - 1}) + ')'"
         >
           Next
         </a>

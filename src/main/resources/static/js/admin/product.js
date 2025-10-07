@@ -2,6 +2,53 @@ Dropzone.autoDiscover = false;
 var avatarDropzone = null;
 
 $(document).ready(function () {
+
+ $.validator.addMethod("select2Required", function (value, element) {
+    return value !== null && value !== "" && value.length > 0;
+  }, "Vui lòng chọn giá trị");
+
+  // Thêm phương thức tùy chỉnh cho notBlank
+  $.validator.addMethod("notBlank", function (value, element) {
+    return value != null && $.trim(value).length > 0;
+  }, "Vui lòng nhập nội dung hợp lệ");
+
+  // Cấu hình validation
+  $("#productForm").validate({
+    ignore: [], // Không bỏ qua các trường ẩn
+    rules: {
+      tenSp: { required: true, maxlength: 100 },
+      danhMuc: { select2Required: true },
+      thuongHieu: { select2Required: true },
+      avatar: { required: true },
+      description: { required: true, minlength: 10, notBlank: true },
+    },
+    messages: {
+      tenSp: {
+        required: "Vui lòng nhập tên sản phẩm",
+        maxlength: "Tên sản phẩm không quá 100 ký tự",
+      },
+      danhMuc: { select2Required: "Vui lòng chọn danh mục" },
+      thuongHieu: { select2Required: "Vui lòng chọn thương hiệu" },
+      avatar: { required: "Vui lòng chọn ảnh sản phẩm" },
+      description: {
+        required: "Vui lòng nhập mô tả sản phẩm",
+        minlength: "Mô tả phải có ít nhất 10 ký tự",
+        notBlank: "Vui lòng nhập nội dung hợp lệ",
+      },
+    },
+    errorPlacement: function (error, element) {
+      var formGroup = element.closest(".form-group");
+      var label = formGroup.find("label").first();
+      if (label.length) {
+        error.insertAfter(label);
+      } else {
+        error.insertAfter(element);
+      }
+    },
+  });
+
+
+
   // Khởi tạo Select2
   function initSelect2s() {
     $("#danhMuc").select2({
@@ -9,9 +56,9 @@ $(document).ready(function () {
       placeholder: "Chọn danh mục",
       allowClear: true,
       ajax: {
-        url: "/admin/category/select2",
+        url: "/admin/categories/select2",
         dataType: "json",
-        delay: 250,
+        delay: 50,
         data: (params) => ({ q: params.term }),
         processResults: (data) => ({ results: data }),
         cache: true,
@@ -25,7 +72,7 @@ $(document).ready(function () {
       ajax: {
         url: "/admin/brand/select2",
         dataType: "json",
-        delay: 250,
+        delay: 50,
         data: (params) => ({ q: params.term }),
         processResults: (data) => ({ results: data }),
         cache: true,
@@ -34,6 +81,10 @@ $(document).ready(function () {
   }
 
   initSelect2s();
+
+  $("#description").on("input", function () {
+    $(this).valid();
+  });
 
   // Khởi tạo Dropzone một lần duy nhất
   avatarDropzone = new Dropzone("#avatarDropzone", {
@@ -73,6 +124,7 @@ $(document).ready(function () {
 
   // Mở modal để thêm sản phẩm
   function openAddModal() {
+    $("#productForm").validate().resetForm();
     $("#modalTitle").text("Thêm Sản Phẩm");
     $("#productForm").trigger("reset");
     $("#danhMuc").val(null).trigger("change");
@@ -85,82 +137,89 @@ $(document).ready(function () {
     $("#myModal").modal("show");
   }
 
-  // Mở modal để cập nhật/chi tiết sản phẩm
-  function openEditModal(product) {
-    console.log("Dữ liệu sản phẩm:", product); // Debug dữ liệu sản phẩm
-    $("#modalTitle").text("Chi Tiết Và Cập Nhật Sản Phẩm");
-    $("#productForm").trigger("reset");
+ // Mở modal để cập nhật/chi tiết sản phẩm
+function openEditModal(product) {
+  console.log("Dữ liệu sản phẩm:", product);
+  $("#productForm").validate().resetForm();
+  $("#modalTitle").text("Chi Tiết Và Cập Nhật Sản Phẩm");
+  $("#productForm").trigger("reset");
 
-    $("#productId").val(product.id);
-    $("#maSp").val(product.productCode);
-    $("#tenSp").val(product.name);
-    $("#description").val(product.description);
+  $("#productId").val(product.id);
+  $("#maSp").val(product.productCode);
+  $("#tenSp").val(product.name);
+  $("#description").val(product.description || "");
 
-    // Set Select2
-    if (product.categoryId && product.categoryName) {
-      const option = new Option(
-        product.categoryName,
-        product.categoryId,
-        true,
-        true,
-      );
-      $("#danhMuc").append(option).trigger("change");
-    }
-
-    if (product.brandId && product.brandName) {
-      const option = new Option(product.brandName, product.brandId, true, true);
-      $("#thuongHieu").append(option).trigger("change");
-    }
-
-    // Reset ảnh
-    if (avatarDropzone) {
-      avatarDropzone.removeAllFiles(true);
-    }
-
-    // Tải ảnh thumbnail nếu có
-    if (avatarDropzone && product.thumbnail) {
-      const thumbnail = product.thumbnail.startsWith("/")
-        ? `${window.location.origin}${product.thumbnail}`
-        : product.thumbnail;
-      console.log("Đang tải thumbnail:", thumbnail); // Debug URL ảnh
-      const mockFile = {
-        name: thumbnail.split("/").pop() || "thumbnail.jpg",
-        size: 12345,
-        type: "image/jpeg",
-        accepted: true,
-      };
-      avatarDropzone.emit("addedfile", mockFile);
-      avatarDropzone.emit("complete", mockFile);
-      avatarDropzone.createThumbnailFromUrl(
-        mockFile,
-        thumbnail,
-        function () {
-          console.log("Thumbnail loaded successfully");
-        },
-        function () {
-          console.error("Failed to load thumbnail:", thumbnail);
-          toastr.error("Không thể tải ảnh thumbnail!");
-        },
-      );
-      avatarDropzone.files.push(mockFile);
-    } else {
-      console.warn(
-        "Không có thumbnail hoặc thumbnail không hợp lệ:",
-        product.thumbnail,
-      );
-    }
-
-    $("#btnAddProduct").hide();
-    $("#btnUpdateProduct").show();
-    $("#myModal").modal("show");
+  if (product.categoryId && product.categoryName) {
+    const option = new Option(
+      product.categoryName || "Unknown",
+      product.categoryId,
+      true,
+      true
+    );
+    $("#danhMuc").append(option).trigger("change").valid();
+  }
+  if (product.brandId && product.brandName) {
+    const option = new Option(
+      product.brandName || "Unknown",
+      product.brandId,
+      true,
+      true
+    );
+    $("#thuongHieu").append(option).trigger("change").valid();
   }
 
+  if (avatarDropzone) {
+    avatarDropzone.removeAllFiles(true);
+  }
+
+  if (avatarDropzone && product.thumbnail) {
+    const thumbnail = product.thumbnail.startsWith("/")
+      ? `${window.location.origin}${product.thumbnail}`
+      : product.thumbnail;
+    console.log("Đang tải thumbnail:", thumbnail);
+    const mockFile = {
+      name: thumbnail.split("/").pop() || "thumbnail.jpg",
+      size: 12345,
+      type: "image/jpeg",
+      accepted: true,
+    };
+    avatarDropzone.emit("addedfile", mockFile);
+    avatarDropzone.emit("complete", mockFile);
+    avatarDropzone.createThumbnailFromUrl(
+      mockFile,
+      thumbnail,
+      function () {
+        console.log("Thumbnail loaded successfully");
+      },
+      function () {
+        console.error("Failed to load thumbnail:", thumbnail);
+        toastr.error("Không thể tải ảnh thumbnail!");
+      }
+    );
+    avatarDropzone.files.push(mockFile);
+
+    // Đồng bộ với #avatarInput
+    const dt = new DataTransfer();
+    const dummyFile = new File([""], mockFile.name, { type: mockFile.type });
+    dt.items.add(dummyFile);
+    document.getElementById("avatarInput").files = dt.files;
+    $("#avatarInput").valid();
+  } else {
+    $("#avatarInput").val("");
+  }
+
+  $("#productForm").valid();
+
+  $("#btnAddProduct").hide();
+  $("#btnUpdateProduct").show();
+  $("#myModal").modal("show");
+}
   // Xử lý click nút chi tiết
   window.handleDetailClick = function (button) {
     const id = $(button).data("id");
     const currentPage =
       parseInt($("#paginationContainer .paginate_button.active a").text()) -
-        1 || 0;
+      1 || 0;
     $("#productForm").data("current-page", currentPage);
 
     $.ajax({
@@ -177,6 +236,11 @@ $(document).ready(function () {
 
   // Thêm sản phẩm
   $("#btnAddProduct").click(function () {
+
+    if (!$("#productForm").valid()) {
+      return;
+    }
+
     Swal.fire({
       title: "Xác Nhận Thêm Sản Phẩm",
       icon: "question",
@@ -231,6 +295,11 @@ $(document).ready(function () {
 
   // Cập nhật sản phẩm
   $("#btnUpdateProduct").on("click", function () {
+
+     if (!$("#productForm").valid()) {
+      return;
+    }
+
     Swal.fire({
       title: "Xác Nhận Cập Nhật Sản Phẩm",
       icon: "question",
@@ -336,6 +405,8 @@ $(document).ready(function () {
       }
     });
   };
+
+  $("#productForm").valid();
 
   // Gán hàm cho window
   window.openAddModal = openAddModal;

@@ -8,6 +8,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.ProductDTO;
+import com.example.DATN.exception.BusinessException;
 import com.example.DATN.models.Brand;
 import com.example.DATN.models.Category;
 import com.example.DATN.models.Product;
@@ -115,14 +116,15 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public boolean addProduct(ProductRequest productRequest) {
-		try {
 			Product product = fromProductRequest(productRequest);
+
+			if (productRepository.existsByName(productRequest.getName())) {
+				throw new BusinessException("Tên sản phẩm đã tồn tại");
+			}
+
 			productRepository.save(product);
 			return true;
 
-		} catch (Exception e) {
-			throw new RuntimeException("Loi them san pham: " + e.getMessage(), e);
-		}
 	}
 
 	@Override
@@ -236,12 +238,12 @@ public class ProductServiceImpl implements ProductService {
 		return modelMapper.map(product, ProductDTO.class);
 	}
 
-    @Override
-    public long countAll() {
-        return productRepository.count();
-    }
+	@Override
+	public long countAll() {
+		return productRepository.count();
+	}
 
-    private String uploadThumbnail(MultipartFile thumbnail) {
+	private String uploadThumbnail(MultipartFile thumbnail) {
 		try {
 			return imageService.saveImage(thumbnail, "product");
 		} catch (IOException e) {

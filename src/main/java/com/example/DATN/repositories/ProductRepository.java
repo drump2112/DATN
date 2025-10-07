@@ -15,7 +15,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
 
 	boolean existsByProductCode(String productCode);
 
-	Optional<Product> findByid(Integer Id);
+	boolean existsByName(String name);
+
+	Optional<Product> findById(Integer id);
 
 	List<Product> findByNameContainingIgnoreCase(String name);
 

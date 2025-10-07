@@ -99,7 +99,7 @@ public class ProductController {
 			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(Map.of("message", "Lỗi server: " + e.getMessage()));
+					.body(Map.of("message",  e.getMessage()));
 
 		}
 	}

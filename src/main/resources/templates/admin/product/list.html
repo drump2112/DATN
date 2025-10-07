@@ -75,20 +75,17 @@
 									<label>Tên Sản Phẩm</label>
 									<input type="text" id="tenSp" name="tenSp" placeholder="Nhập Tên Sản Phẩm"
 										class="form-control" style="border-radius: 6px;">
-									<span class="text-danger" id="error-tenSp"></span>
 								</div>
 								<div class="form-group">
 									<label>Danh Mục</label>
-									<select id="danhMuc" class="form-control select2" style="width: 100%;">
+									<select id="danhMuc" name="danhMuc" class="form-control select2" style="width: 100%;">
 										<option></option>
 									</select>
-									<span class="text-danger" id="error-category"></span>
 								</div>
 								<div class="form-group">
 									<label>Thương Hiệu</label>
-									<select id="thuongHieu" class="form-control select2" style="width: 100%;">
+									<select id="thuongHieu" name="thuongHieu" class="form-control select2" style="width: 100%;">
 									</select>
-									<span class="text-danger" id="error-brand"></span>
 								</div>
 							</div>
 							<div class="col-sm-6">
@@ -96,11 +93,10 @@
 									<label for="">Ảnh Sản Phẩm</label>
 									<div id="avatarDropzone" class="dropzone dz-clickable"></div>
 									<input type="file" id="avatarInput" name="avatar" style="display:none;">
-									<span class="text-danger" id="error-avatar"></span>
 								</div>
 								<div class="form-group">
 									<label for="">Mô Tả</label>
-									<textarea id="description" class="form-control" rows="3" style="resize: none;"></textarea>
+									<textarea id="description" name="description" class="form-control" rows="3" style="resize: none;"></textarea>
 								</div>
 							</div>
 							<div style="margin-right: 14px">
