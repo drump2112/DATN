@@ -140,6 +140,12 @@ public class BrandController {
         return "admin/brand/table :: table"; // Trả về fragment
     }
 
+    @GetMapping("/count")
+	@ResponseBody
+	public long countBrand(@RequestParam(required = false) String keyword) {
+		return brandService.countAll();
+	}
+
     @PutMapping("/{id}/toggle-status")
     public ResponseEntity<?> toggleCustomerStatus(@PathVariable Integer id) {
         boolean newStatus = brandService.toggleStatus(id);

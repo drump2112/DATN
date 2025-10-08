@@ -134,12 +134,22 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public boolean updateEmployee(Integer id, EmployeeRequest employeeRequest) {
+		List<Integer> checkRoles = List.of(1, 2);
+
 		User existingUser = userRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng có id: " + id));
 
 		Role newRole = roleRepository.findById(employeeRequest.getRoleId())
 				.orElseThrow(
 						() -> new RuntimeException("Không tìm thấy vai trò có id: " + employeeRequest.getRoleId()));
+
+		if (userRepository.existsByEmailAndRoleIdInAndIdNot(employeeRequest.getEmail(), checkRoles, id)) {
+			throw new BusinessException("Email đã được sử dụng.");
+		}
+
+		if (userRepository.existsByPhoneAndRoleIdInAndIdNot(employeeRequest.getPhone(), checkRoles, id)) {
+			throw new BusinessException("Số điện thoại đã được sử dụng.");
+		}
 
 		String avatarPath = handleUploadAvatar(employeeRequest.getAvatar(), existingUser.getAvatar());
 
@@ -202,7 +212,7 @@ public class UserServiceImpl implements UserService {
 				.address(req.getAddress())
 				.gender(req.getGender())
 				.dateOfBirth(req.getDateOfBirth())
-                .createAt(new Date())
+				.createAt(new Date())
 				.isActive(false); // default
 
 		if (req.getPassword() != null && !req.getPassword().isEmpty()) {

@@ -2,15 +2,22 @@ Dropzone.autoDiscover = false;
 var avatarDropzone = null;
 
 $(document).ready(function () {
-
- $.validator.addMethod("select2Required", function (value, element) {
-    return value !== null && value !== "" && value.length > 0;
-  }, "Vui lòng chọn giá trị");
+  $.validator.addMethod(
+    "select2Required",
+    function (value, element) {
+      return value !== null && value !== "" && value.length > 0;
+    },
+    "Vui lòng chọn giá trị",
+  );
 
   // Thêm phương thức tùy chỉnh cho notBlank
-  $.validator.addMethod("notBlank", function (value, element) {
-    return value != null && $.trim(value).length > 0;
-  }, "Vui lòng nhập nội dung hợp lệ");
+  $.validator.addMethod(
+    "notBlank",
+    function (value, element) {
+      return value != null && $.trim(value).length > 0;
+    },
+    "Vui lòng nhập nội dung hợp lệ",
+  );
 
   // Cấu hình validation
   $("#productForm").validate({
@@ -46,8 +53,6 @@ $(document).ready(function () {
       }
     },
   });
-
-
 
   // Khởi tạo Select2
   function initSelect2s() {
@@ -137,89 +142,92 @@ $(document).ready(function () {
     $("#myModal").modal("show");
   }
 
- // Mở modal để cập nhật/chi tiết sản phẩm
-function openEditModal(product) {
-  console.log("Dữ liệu sản phẩm:", product);
-  $("#productForm").validate().resetForm();
-  $("#modalTitle").text("Chi Tiết Và Cập Nhật Sản Phẩm");
-  $("#productForm").trigger("reset");
+  // Mở modal để cập nhật/chi tiết sản phẩm
+  function openEditModal(product) {
+    console.log("Dữ liệu sản phẩm:", product);
+    $("#productForm").validate().resetForm();
+    $("#modalTitle").text("Chi Tiết Và Cập Nhật Sản Phẩm");
+    $("#productForm").trigger("reset");
 
-  $("#productId").val(product.id);
-  $("#maSp").val(product.productCode);
-  $("#tenSp").val(product.name);
-  $("#description").val(product.description || "");
+    $("#productId").val(product.id);
+    $("#maSp").val(product.productCode);
+    $("#tenSp").val(product.name);
+    $("#description").val(product.description || "");
 
-  if (product.categoryId && product.categoryName) {
-    const option = new Option(
-      product.categoryName || "Unknown",
-      product.categoryId,
-      true,
-      true
-    );
-    $("#danhMuc").append(option).trigger("change").valid();
+    if (product.categoryId && product.categoryName) {
+      const option = new Option(
+        product.categoryName || "Unknown",
+        product.categoryId,
+        true,
+        true,
+      );
+      $("#danhMuc").append(option).trigger("change").valid();
+    }
+
+    if (product.brandId && product.brandName) {
+      const option = new Option(
+        product.brandName || "Unknown",
+        product.brandId,
+        true,
+        true,
+      );
+      $("#thuongHieu").append(option).trigger("change").valid();
+    }
+
+    if (avatarDropzone) {
+      avatarDropzone.removeAllFiles(true);
+    }
+
+    if (avatarDropzone && product.thumbnail) {
+      const thumbnail = product.thumbnail.startsWith("/")
+        ? `${window.location.origin}${product.thumbnail}`
+        : product.thumbnail;
+      console.log("Đang tải thumbnail:", thumbnail);
+      const mockFile = {
+        name: thumbnail.split("/").pop() || "thumbnail.jpg",
+        size: 12345,
+        type: "image/jpeg",
+        accepted: true,
+      };
+      avatarDropzone.emit("addedfile", mockFile);
+      avatarDropzone.emit("complete", mockFile);
+      avatarDropzone.createThumbnailFromUrl(
+        mockFile,
+        thumbnail,
+        function () {
+          console.log("Thumbnail loaded successfully");
+        },
+        function () {
+          console.error("Failed to load thumbnail:", thumbnail);
+          toastr.error("Không thể tải ảnh thumbnail!");
+        },
+      );
+
+      avatarDropzone.files.push(mockFile);
+
+      // Đồng bộ với #avatarInput
+      const dt = new DataTransfer();
+      const dummyFile = new File([""], mockFile.name, { type: mockFile.type });
+      dt.items.add(dummyFile);
+      document.getElementById("avatarInput").files = dt.files;
+      $("#avatarInput").valid();
+    } else {
+      $("#avatarInput").val("");
+    }
+
+    $("#productForm").valid();
+
+    $("#btnAddProduct").hide();
+    $("#btnUpdateProduct").show();
+    $("#myModal").modal("show");
   }
-  if (product.brandId && product.brandName) {
-    const option = new Option(
-      product.brandName || "Unknown",
-      product.brandId,
-      true,
-      true
-    );
-    $("#thuongHieu").append(option).trigger("change").valid();
-  }
 
-  if (avatarDropzone) {
-    avatarDropzone.removeAllFiles(true);
-  }
-
-  if (avatarDropzone && product.thumbnail) {
-    const thumbnail = product.thumbnail.startsWith("/")
-      ? `${window.location.origin}${product.thumbnail}`
-      : product.thumbnail;
-    console.log("Đang tải thumbnail:", thumbnail);
-    const mockFile = {
-      name: thumbnail.split("/").pop() || "thumbnail.jpg",
-      size: 12345,
-      type: "image/jpeg",
-      accepted: true,
-    };
-    avatarDropzone.emit("addedfile", mockFile);
-    avatarDropzone.emit("complete", mockFile);
-    avatarDropzone.createThumbnailFromUrl(
-      mockFile,
-      thumbnail,
-      function () {
-        console.log("Thumbnail loaded successfully");
-      },
-      function () {
-        console.error("Failed to load thumbnail:", thumbnail);
-        toastr.error("Không thể tải ảnh thumbnail!");
-      }
-    );
-    avatarDropzone.files.push(mockFile);
-
-    // Đồng bộ với #avatarInput
-    const dt = new DataTransfer();
-    const dummyFile = new File([""], mockFile.name, { type: mockFile.type });
-    dt.items.add(dummyFile);
-    document.getElementById("avatarInput").files = dt.files;
-    $("#avatarInput").valid();
-  } else {
-    $("#avatarInput").val("");
-  }
-
-  $("#productForm").valid();
-
-  $("#btnAddProduct").hide();
-  $("#btnUpdateProduct").show();
-  $("#myModal").modal("show");
-}
   // Xử lý click nút chi tiết
   window.handleDetailClick = function (button) {
     const id = $(button).data("id");
     const currentPage =
       parseInt($("#paginationContainer .paginate_button.active a").text()) -
-      1 || 0;
+        1 || 0;
     $("#productForm").data("current-page", currentPage);
 
     $.ajax({
@@ -236,7 +244,6 @@ function openEditModal(product) {
 
   // Thêm sản phẩm
   $("#btnAddProduct").click(function () {
-
     if (!$("#productForm").valid()) {
       return;
     }
@@ -295,8 +302,7 @@ function openEditModal(product) {
 
   // Cập nhật sản phẩm
   $("#btnUpdateProduct").on("click", function () {
-
-     if (!$("#productForm").valid()) {
+    if (!$("#productForm").valid()) {
       return;
     }
 

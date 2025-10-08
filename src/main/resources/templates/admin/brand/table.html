@@ -131,7 +131,7 @@
                         href="#"
                         tabindex="0"
                         th:text="${i}"
-                        th:onclick="'searchColor(' + (${i} - 1) + ')'"
+                        th:onclick="'searchBrand(' + (${i} - 1) + ')'"
                 >
                 </a>
             </li>
@@ -142,7 +142,7 @@
                 <a
                         href="#"
                         tabindex="0"
-                        th:onclick="'searchColor(' + (${currentPage + 1}) + ')'"
+                        th:onclick="'searchBrand(' + (${currentPage + 1}) + ')'"
                 >
                     Next
                 </a>
@@ -156,7 +156,7 @@
                 <a
                         href="#"
                         tabindex="0"
-                        th:onclick="'searchColor(' + (${totalPages - 1}) + ')'"
+                        th:onclick="'searchBrand(' + (${totalPages - 1}) + ')'"
                 >
                     Next
                 </a>

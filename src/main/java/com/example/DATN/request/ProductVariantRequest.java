@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ProductVariantRequest {
-	private String sku;
+	// private String sku;
 	private Integer price;
 	private Boolean status;
 	private Integer productId;

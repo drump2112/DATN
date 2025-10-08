@@ -78,12 +78,12 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Override
 	public boolean addProductVariant(ProductVariantRequest req) {
-		// Kiểm tra biến thể đã tồn tại
+
 		for (Integer sizeId : req.getSizeIds()) {
 			boolean exists = productVariantRepository.existsByProductIdAndColorIdAndSizeId(
 					req.getProductId(), req.getColorId(), sizeId);
 			if (exists) {
-				throw new BusinessException("Sản phẩm size " + sizeId + " đã tồn tại");
+				throw new BusinessException("Sản phẩm này size " + sizeId + " đã tồn tại");
 			}
 		}
 
@@ -132,11 +132,12 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					.orElseThrow(() -> new BusinessException("Không tìm thấy kích cỡ ID = " + sizeId));
 
 			Integer quantity = req.getQuantities().get(sizeId);
-			String sku = req.getSkus().get(sizeId);
+			// String sku = req.getSkus().get(sizeId);
 
-			if (quantity == null || sku == null) {
-				throw new BusinessException("Số lượng hoặc SKU không được cung cấp cho kích cỡ " + sizeId);
-			}
+			// if (quantity == null || sku == null) {
+			// throw new BusinessException("Số lượng hoặc SKU không được cung cấp cho kích
+			// cỡ " + sizeId);
+			// }
 
 			// ✅ Tạo code duy nhất cho từng vòng lặp
 			String variantCode = String.format("PV-%03d", nextNumber);
@@ -149,7 +150,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					.size(size)
 					.price(BigDecimal.valueOf(req.getPrice()))
 					.quantity(quantity)
-					.sku(sku)
+					// .sku(sku)
 					.status(req.getStatus())
 					.build();
 

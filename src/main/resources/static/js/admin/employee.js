@@ -68,8 +68,12 @@ $(document).ready(function () {
       dateOfBirth: { required: true },
       userName: { required: true, maxlength: 20 },
       password: { required: true, minlength: 8 },
-      // vaiTro: { required: true },
-      address: { required: true },
+      address: {
+        normalizer: function (value) {
+          return $.trim(value);
+        },
+        required: true,
+      },
     },
     messages: {
       fullName: {
@@ -83,7 +87,7 @@ $(document).ready(function () {
       },
       phone: {
         required: "Số điện thoại không được để trống",
-        maxlength: "Số điện thoại không quá 10 chữ số",
+        maxlength: "Số điện thoại không quá 10 kí tự",
         pattern: "Số điện thoại không hợp lệ",
       },
       dateOfBirth: { required: "Chọn ngày sinh" },
@@ -95,7 +99,6 @@ $(document).ready(function () {
         required: "Mật khẩu không được để trống",
         minlength: "Mật khẩu không ít hơn 8 ký tự",
       },
-      // vaiTro: { required: "Vai trò không được để trống" },
       address: { required: "Địa chỉ không được để trống" },
     },
     errorPlacement: function (error, element) {
@@ -206,7 +209,7 @@ $(document).ready(function () {
     };
     const currentPage =
       parseInt($("#paginationContainer .paginate_button.active a").text()) -
-        1 || 0;
+      1 || 0;
     $("#employeeForm").data("current-page", currentPage);
     openEditModal(user, true);
   };
@@ -224,7 +227,9 @@ $(document).ready(function () {
       cancelButtonText: "Hủy",
     }).then((result) => {
       if (result.isConfirmed) {
+
         const formData = new FormData();
+
         const dz = Dropzone.forElement("#avatarDropzone");
         const files = dz.getAcceptedFiles();
         const avatarFile = files.length > 0 ? files[0] : null;
@@ -233,7 +238,7 @@ $(document).ready(function () {
         $("#employeeForm")
           .serializeArray()
           .forEach((field) => {
-            formData.append(field.name, field.value);
+            formData.append(field.name, $.trim(field.value));
           });
         if (avatarFile) {
           formData.append("avatar", avatarFile, avatarFile.name);
@@ -247,7 +252,11 @@ $(document).ready(function () {
           data: formData,
           success: function (response) {
             Swal.fire("Thành công!", response.message, "success");
+
             $("#myModal").modal("hide");
+
+            $("#statusFilter").val("");
+
             $.get("/admin/employee/count").done(function (totalItems) {
               const pageSize = 5;
               const lastPage = Math.max(

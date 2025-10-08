@@ -26,4 +26,6 @@ public interface BrandService {
     boolean toggleStatus(Integer id);
 
     Page<BrandDTO> searchBrand(String keyword, Boolean isActive, Pageable pageable);
+
+    long countAll();
 }

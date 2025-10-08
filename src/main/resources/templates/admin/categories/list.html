@@ -1,6 +1,5 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="admin/layout/base :: base">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
 <th:block th:fragment="content">
     <div class="row col-lg-6" style="margin-left: 300px">
         <div class="ibox float-e-margins">
@@ -35,12 +34,13 @@
                             </div>
                             <div class="form-group">
                                 <label>Tên danh mục</label>
-                                <input type="text" id="name" class="form-control"></div>
+                                <input type="text" id="name" class="form-control">
+                            </div>
                             <div>
                                 <button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddCategory"
-                                        type="button"><strong>Thêm</strong></button>
+                                    type="button"><strong>Thêm</strong></button>
                                 <button class="btn btn-sm btn-success pull-right m-t-n-xs" id="btnUpdate"
-                                        type="button"><strong>Cập nhật</strong></button>
+                                    type="button"><strong>Cập nhật</strong></button>
                             </div>
                         </form>
                     </div>
@@ -52,5 +52,5 @@
         <script th:src="@{/js/admin/categories.js}"></script>
     </th:block>
 </th:block>
-</html>
 
+</html>

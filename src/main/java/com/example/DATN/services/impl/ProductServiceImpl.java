@@ -116,14 +116,14 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public boolean addProduct(ProductRequest productRequest) {
-			Product product = fromProductRequest(productRequest);
+		Product product = fromProductRequest(productRequest);
 
-			if (productRepository.existsByName(productRequest.getName())) {
-				throw new BusinessException("Tên sản phẩm đã tồn tại");
-			}
+		if (productRepository.existsByName(productRequest.getName())) {
+			throw new BusinessException("Tên sản phẩm đã tồn tại");
+		}
 
-			productRepository.save(product);
-			return true;
+		productRepository.save(product);
+		return true;
 
 	}
 

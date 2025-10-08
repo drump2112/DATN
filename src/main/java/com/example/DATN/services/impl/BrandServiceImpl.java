@@ -6,11 +6,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.BrandDTO;
-import com.example.DATN.dtos.ColorDTO;
-import com.example.DATN.dtos.ProductVariantDTO;
 import com.example.DATN.models.Brand;
-import com.example.DATN.models.Color;
-import com.example.DATN.models.ProductVariant;
 import com.example.DATN.repositories.BrandRepository;
 import com.example.DATN.request.BrandRequest;
 import com.example.DATN.services.BrandService;
@@ -79,34 +75,49 @@ public class BrandServiceImpl implements BrandService {
 				.collect(Collectors.toList());
 	}
 
-    @Override
-    public boolean updateBrand(Integer id, BrandRequest brandRequest) {
-        return false;
-    }
+	@Override
+	public boolean updateBrand(Integer id, BrandRequest brandRequest) {
+		try {
+			Brand existingBrand = brandRepository.findById(id)
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu với ID: " + id));
 
-    @Override
-    public BrandDTO findById(Integer id) {
-        Brand brand = brandRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("brand not found with id: " + id));
-        return modelMapper.map(brand, BrandDTO.class);
-    }
+			String logoUrl = handleUploadLogo(brandRequest.getLogoUrl(), existingBrand.getLogoUrl());
 
-    @Override
-    public boolean toggleStatus(Integer id) {
-        Brand brand = brandRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu"));
-        brand.setIsActive(!brand.getIsActive());
-        brandRepository.save(brand);
-        return brand.getIsActive();
-    }
+			Brand updateBrand = existingBrand.toBuilder()
+					.name(brandRequest.getName())
+					.logoUrl(logoUrl)
+					.build();
 
-    @Override
-    public Page<BrandDTO> searchBrand(String keyword, Boolean isActive, Pageable pageable) {
-        Page<Brand> brands = brandRepository.search(keyword, isActive, pageable);
-        return brands.map(entity -> modelMapper.map(entity, BrandDTO.class));
-    }
+			brandRepository.save(updateBrand);
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("Lỗi cập nhật thương hiệu: " + e.getMessage(), e);
+		}
+	}
 
-    public Brand fromRequest(BrandRequest req) {
+	@Override
+	public BrandDTO findById(Integer id) {
+		Brand brand = brandRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("brand not found with id: " + id));
+		return modelMapper.map(brand, BrandDTO.class);
+	}
+
+	@Override
+	public boolean toggleStatus(Integer id) {
+		Brand brand = brandRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu"));
+		brand.setIsActive(!brand.getIsActive());
+		brandRepository.save(brand);
+		return brand.getIsActive();
+	}
+
+	@Override
+	public Page<BrandDTO> searchBrand(String keyword, Boolean isActive, Pageable pageable) {
+		Page<Brand> brands = brandRepository.search(keyword, isActive, pageable);
+		return brands.map(entity -> modelMapper.map(entity, BrandDTO.class));
+	}
+
+	public Brand fromRequest(BrandRequest req) {
 
 		String brandCode = generateBrandCode();
 		String logoUrl = "";
@@ -117,8 +128,28 @@ public class BrandServiceImpl implements BrandService {
 		Brand.BrandBuilder brandBuilder = Brand.builder()
 				.name(req.getName())
 				.brandCode(brandCode)
-				.logoUrl(logoUrl);
+				.logoUrl(logoUrl)
+				.isActive(true);
 		return brandBuilder.build();
+	}
+
+	@Override
+	public long countAll() {
+		return brandRepository.count();
+	}
+
+	private String handleUploadLogo(MultipartFile logoUrl, String currentLogoUrl) {
+		if (logoUrl != null && !logoUrl.isEmpty()) {
+			try {
+				if (currentLogoUrl != null && !currentLogoUrl.isEmpty()) {
+					imageService.deleteImage(currentLogoUrl);
+				}
+				return imageService.saveImage(logoUrl, "brand");
+			} catch (IOException e) {
+				throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+			}
+		}
+		return currentLogoUrl;
 	}
 
 	private String generateBrandCode() {

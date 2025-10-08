@@ -1,5 +1,7 @@
 $(document).ready(function () {
   // Khởi tạo jQuery Steps
+  $('[data-toggle="popover"]').popover();
+
   initFilter();
 
   $("#productForm")
@@ -71,7 +73,6 @@ $(document).ready(function () {
                                     <tr>
                                         <th>Size</th>
                                         <th>Số Lượng</th>
-                                        <th>SKU</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -84,9 +85,6 @@ $(document).ready(function () {
                                 <td>${size.text}</td>
                                 <td>
                                     <input type="text" name="quantity_${size.id}" class="form-control touchspin-size required" value="0" />
-                                </td>
-                                <td>
-                                    <input type="text" name="sku_${size.id}" class="form-control required" value="" />
                                 </td>
                             </tr>
                         `;
@@ -119,12 +117,12 @@ $(document).ready(function () {
                 min: "Số lượng phải lớn hơn 0",
               },
             });
-            $(`input[name="sku_${size.id}"]`).rules("add", {
-              required: true,
-              messages: {
-                required: "Vui lòng nhập SKU",
-              },
-            });
+            // $(`input[name="sku_${size.id}"]`).rules("add", {
+            //   required: true,
+            //   messages: {
+            //     required: "Vui lòng nhập SKU",
+            //   },
+            // });
           });
 
           console.log("Rendered sizes in step 2:", selectedSizes);
@@ -823,13 +821,15 @@ $(document).ready(function () {
     });
   });
 
-  // Xử lý khi modal đóng để xóa backdrop và lớp modal-open
-  $("#fastAddColorModal, #fastAddSizeModal").on("hidden.bs.modal", function () {
-    console.log("Modal đã đóng, xóa backdrop");
-    // Xóa backdrop thủ công và lớp modal-open để tránh màn hình bị tối
-    if ($(".modal:visible").length === 0) {
-      $(".modal-backdrop ").remove();
-      $("body").removeClass("modal-backdrop in");
+  $(document).on("hidden.bs.modal", function () {
+    const anyOpenModal = $(".modal.show").length > 0;
+
+    // Nếu vẫn còn modal khác đang mở
+    if (anyOpenModal) {
+      $("body").addClass("modal-open");
+    } else {
+      $("body").removeClass("modal-open");
+      $(".modal-backdrop").remove();
     }
   });
 

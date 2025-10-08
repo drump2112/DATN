@@ -29,6 +29,6 @@ public interface ProductService {
 
 	ProductDTO getById(Integer id);
 
-    public long countAll();
+  long countAll();
 
 }

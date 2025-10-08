@@ -1,8 +1,5 @@
 <!doctype html>
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        th:replace="admin/layout/base :: base"
->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
 <th:block th:fragment="content">
     <div class="row">
         <div class="col-lg-12">
@@ -41,14 +38,14 @@
                         </div>
                         <div class="col-sm-2 m-b-xs">
                             <div class="input-group"><input type="text"
-                                                            placeholder="Tìm Kiếm (Mã SP, Tên SP, Thương Hiệu)"
-                                                            class="input-sm form-control" id="searchInput"
-                                                            style="height: 34px;border-radius: 5px 0 0 5px;">
+                                    placeholder="Tìm Kiếm (Mã SP, Tên SP, Thương Hiệu)" class="input-sm form-control"
+                                    id="searchInput" style="height: 34px;border-radius: 5px 0 0 5px;">
                                 <span class="input-group-btn">
-									<button type="button" class="btn btn-sm btn-primary"
-                                            onclick="searchProductVariants(0)"
-                                            style="height: 34px;border-radius:0 5px 5px 0;"><i class="fa fa-search"></i></button>
-								</span>
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                        onclick="searchProductVariants(0)"
+                                        style="height: 34px;border-radius:0 5px 5px 0;"><i
+                                            class="fa fa-search"></i></button>
+                                </span>
                             </div>
                         </div>
                         <div class="col-sm-1">
@@ -56,16 +53,12 @@
                                     class="fa fa-mail-reply-all"></i></button>
                         </div>
                         <div class="col-sm-1">
-							<span class="input-group-btn">
-								<button
-                                        type="button"
-                                        class="btn btn-sm btn-primary pull-right"
-                                        id="btnOpenAddModal"
-                                        style="height: 34px;"
-                                >
-									<i class="fa fa-plus-circle"></i> Thêm
-								</button>
-							</span>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-sm btn-primary pull-right" id="btnOpenAddModal"
+                                    style="height: 34px;">
+                                    <i class="fa fa-plus-circle"></i> Thêm
+                                </button>
+                            </span>
                         </div>
                     </div>
                     <hr>
@@ -77,8 +70,7 @@
         </div>
     </div>
     <div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" data-focus="false"
-         style="padding-right: 15px;" data-backdrop="static"
-         data-keyboard="false">
+        style="padding-right: 15px;" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog" style="width: 1200px;	">
             <div class="modal-content animated bounceInRight">
                 <div class="modal-header">
@@ -97,13 +89,13 @@
                                         <div class="form-group">
                                             <label>Mã SP</label>
                                             <input type="text" id="maSp" name="maSp"
-                                                   placeholder="{-Mã sản phẩm được tạo tự động có dạng : SP-XXX -}"
-                                                   class="form-control" style="border-radius: 6px;" readonly>
+                                                placeholder="{-Mã sản phẩm được tạo tự động có dạng : SP-XXX -}"
+                                                class="form-control" style="border-radius: 6px;" readonly>
                                         </div>
                                         <div class="form-group">
                                             <label>Sản Phẩm</label>
                                             <select id="sanPham" name="sanPham" class="form-control select2"
-                                                    style="width: 100%;">
+                                                style="width: 100%;">
                                                 <option></option>
                                             </select>
                                         </div>
@@ -111,7 +103,7 @@
                                             <label>Giá</label>
                                             <div class="input-group bootstrap-touchspin">
                                                 <input class="touchspin2 form-control" type="text" id="price" value=""
-                                                       name="price" style="display: block;">
+                                                    name="price" style="display: block;">
                                             </div>
                                         </div>
                                     </div>
@@ -119,9 +111,10 @@
                                         <div class="form-group">
                                             <label for="mauSac">Màu Sắc</label>
                                             <select id="mauSac" name="mauSac" class="form-control select2"
-                                                    style="width: 91%;">
+                                                style="width: 91%;">
                                                 <option></option>
                                             </select>
+
                                             <button type="button" id="fastAddColor" class="btn btn-primary">
                                                 <i class="fa fa-plus-square"></i>
                                             </button>
@@ -129,7 +122,7 @@
                                         <div class="form-group">
                                             <label for="kichCo">Kích Cỡ</label>
                                             <select id="kichCo" name="kichCo[]" class="form-control select2"
-                                                    multiple="multiple" style="width: 91%;">
+                                                multiple="multiple" style="width: 91%;">
                                             </select>
                                             <button type="button" id="fastAddSize" class="btn btn-primary">
                                                 <i class="fa fa-plus-square"></i>
@@ -172,8 +165,7 @@
         </div>
     </div>
     <div class="modal inmodal" id="updateModal" tabindex="-1" role="dialog" aria-hidden="true" data-focus="false"
-         style="padding-right: 15px;" data-backdrop="static"
-         data-keyboard="false">
+        style="padding-right: 15px;" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog" style="width: 1200px;	">
             <div class="modal-content animated bounceInRight">
                 <div class="modal-header">
@@ -189,13 +181,13 @@
                                 <div class="form-group">
                                     <label>Mã SP</label>
                                     <input type="text" id="maSp" name="maSp"
-                                           placeholder="{-Mã sản phẩm được tạo tự động có dạng : SP-XXX -}"
-                                           class="form-control" style="border-radius: 6px;" readonly>
+                                        placeholder="{-Mã sản phẩm được tạo tự động có dạng : SP-XXX -}"
+                                        class="form-control" style="border-radius: 6px;" readonly>
                                 </div>
                                 <div class="form-group">
                                     <label>Tên Sản Phẩm</label>
                                     <input type="text" id="tenSp" name="tenSp" placeholder="Nhập Tên Sản Phẩm"
-                                           class="form-control" style="border-radius: 6px;">
+                                        class="form-control" style="border-radius: 6px;">
                                 </div>
                                 <div class="form-group">
                                     <label>Danh Mục</label>
@@ -210,13 +202,13 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Giá</label>
-                                    <input type="text" id="price" name="price"
-                                           class="form-control" style="border-radius: 6px;">
+                                    <input type="text" id="price" name="price" class="form-control"
+                                        style="border-radius: 6px;">
                                 </div>
                                 <div class="form-group">
                                     <label>Số Lượng</label>
-                                    <input type="text" id="quantity" name="quantity"
-                                           class="form-control" style="border-radius: 6px;" readonly>
+                                    <input type="text" id="quantity" name="quantity" class="form-control"
+                                        style="border-radius: 6px;" readonly>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -233,7 +225,7 @@
                                 <div class="form-group">
                                     <label for="">Mô Tả</label>
                                     <textarea id="description" class="form-control" rows="3" style="resize: none;"
-                                              readonly></textarea>
+                                        readonly></textarea>
                                 </div>
                                 <div class="form-group">
                                     <label for="">Ảnh Sản Phẩm</label>
@@ -243,7 +235,7 @@
                             </div>
                             <div style="margin-right: 14px">
                                 <button id="btnUpdateProduct" class="btn btn-sm btn-success pull-right m-t-n-xs"
-                                        type="button">
+                                    type="button">
                                     <strong>Cập Nhật</strong>
                                 </button>
                             </div>
@@ -253,64 +245,73 @@
             </div>
         </div>
     </div>
-	<div class="modal inmodal" id="fastAddColorModal" tabindex="-1" role="dialog" aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content animated bounceInRight">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-					<h4 class="modal-title">Thêm màu sắc</h4>
-				</div>
-				<div class="modal-body">
-					<div class="row">
-						<form role="form">
-							<div class="form-group">
-								<input type="hidden" id="id">
-								<label>Mã màu sắc</label>
-								<input type="text" id="code" placeholder="color Code" class="form-control" disabled="">
-							</div>
-							<div class="form-group">
-								<label>Tên màu sắc</label>
-								<input type="text" id="name" class="form-control"></div>
-							<div>
-								<button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddColor" type="button"><strong>Thêm</strong></button>
-								<button class="btn btn-sm btn-success pull-right m-t-n-xs" id="btnUpdate" type="button" style="display: none;"><strong>Cập nhật</strong></button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-<div class="modal inmodal" id="fastAddSizeModal" tabindex="-1" role="dialog" aria-hidden="true" >
-    <div class="modal-dialog">
-        <div class="modal-content animated bounceInRight">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title">Thêm kích thước</h4>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <form role="form">
-                        <div class="form-group">
-                            <input type="hidden" id="id">
-                            `      <label>Mã kích thước</label>
-                            <input type="text" id="code" placeholder="Size Code" class="form-control" disabled="">
-                        </div>
-                        <div class="form-group">
-                            <label>Tên kích thước</label>
-                            <input type="text" id="name" class="form-control"></div>
-                        <div>
-                            <button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddSize" type="button"><strong>Thêm</strong></button>
-                            <button class="btn btn-sm btn-success pull-right m-t-n-xs" id="btnUpdate" type="button" style="display: none;"><strong>Cập nhật</strong></button>
-                        </div>
-                    </form>
+    <div class="modal inmodal" id="fastAddColorModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content animated bounceInRight">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Thêm màu sắc</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="hidden" id="id">
+                                <label>Mã màu sắc</label>
+                                <input type="text" id="code" placeholder="color Code" class="form-control" disabled="">
+                            </div>
+                            <div class="form-group">
+                                <label>Tên màu sắc</label>
+                                <input type="text" id="name" class="form-control">
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddColor"
+                                    type="button"><strong>Thêm</strong></button>
+                                <button class="btn btn-sm btn-success pull-right m-t-n-xs" id="btnUpdate" type="button"
+                                    style="display: none;"><strong>Cập nhật</strong></button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <div class="modal inmodal" id="fastAddSizeModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content animated bounceInRight">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Thêm kích thước</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="hidden" id="id">
+                                ` <label>Mã kích thước</label>
+                                <input type="text" id="code" placeholder="Size Code" class="form-control" disabled="">
+                            </div>
+                            <div class="form-group">
+                                <label>Tên kích thước</label>
+                                <input type="text" id="name" class="form-control">
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddSize"
+                                    type="button"><strong>Thêm</strong></button>
+                                <button class="btn btn-sm btn-success pull-right m-t-n-xs" id="btnUpdate" type="button"
+                                    style="display: none;"><strong>Cập nhật</strong></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <th:block th:fragment="script">
         <script th:src="@{/js/admin/productVariant.js}"></script>
     </th:block>
 </th:block>
+
 </html>

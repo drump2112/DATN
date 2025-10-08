@@ -27,6 +27,10 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 
 	boolean existsByUserCode(String userCode);
 
+	boolean existsByEmailAndRoleIdInAndIdNot(String email, List<Integer> roleIds, Integer id);
+
+	boolean existsByPhoneAndRoleIdInAndIdNot(String phone, List<Integer> roleIds, Integer id);
+
 	@EntityGraph(attributePaths = "role")
 	Optional<User> findByUserNameOrEmail(String userName, String email);
 

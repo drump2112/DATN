@@ -102,12 +102,14 @@ public class ProductVariantController {
 			if (req.getSizeIds() == null || req.getSizeIds().isEmpty()) {
 				return ResponseEntity.badRequest().body(Map.of("message", "Phải chọn ít nhất một kích cỡ"));
 			}
+
 			for (Integer sizeId : req.getSizeIds()) {
 				if (!quantities.containsKey(sizeId) || !skus.containsKey(sizeId)) {
 					return ResponseEntity.badRequest()
 							.body(Map.of("message", "Số lượng hoặc SKU không đầy đủ cho kích cỡ " + sizeId));
 				}
 			}
+
 			// Gọi service
 			productVariantService.addProductVariant(req);
 

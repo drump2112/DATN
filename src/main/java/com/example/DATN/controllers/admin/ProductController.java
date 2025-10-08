@@ -82,8 +82,8 @@ public class ProductController {
 	@GetMapping("/count")
 	@ResponseBody
 	public long countProduct(@RequestParam(required = false) String keyword) {
-        return productService.countAll();
-    }
+		return productService.countAll();
+	}
 
 	@PostMapping("/add")
 	public ResponseEntity<?> addProduct(
@@ -99,7 +99,7 @@ public class ProductController {
 			}
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(Map.of("message",  e.getMessage()));
+					.body(Map.of("message", e.getMessage()));
 
 		}
 	}
@@ -145,7 +145,7 @@ public class ProductController {
 	@PutMapping("/{id}/toggle-status")
 	public ResponseEntity<?> toggleCustomerStatus(@PathVariable Integer id) {
 		boolean newStatus = productService.toggleStatus(id);
-		String message = newStatus ? "Kích hoạt thành công" : "Đã khóa tài khoản";
+		String message = newStatus ? "Mở khóa sản phẩm" : "Đã khóa sản phẩm";
 		return ResponseEntity.ok(Map.of("message", message));
 	}
 
