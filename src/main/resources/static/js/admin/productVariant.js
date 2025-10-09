@@ -233,9 +233,11 @@ $(document).ready(function () {
   let avatarDropzone = null;
   $("#myModal").on("shown.bs.modal", function () {
     console.log("Modal shown, initializing Select2 and Dropzone");
+
+    // Khởi tạo Select2 (giữ nguyên mã của bạn)
     initSelect2s();
 
-    // Khởi tạo Dropzone
+    // Khởi tạo Dropzone (giữ nguyên mã của bạn)
     try {
       if (!avatarDropzone) {
         Dropzone.autoDiscover = false;
@@ -256,9 +258,63 @@ $(document).ready(function () {
     } catch (error) {
       console.error("Error initializing Dropzone:", error);
     }
+
+    // Reset validator để xóa lỗi (bao gồm price)
+    var validator = $("#productForm").validate();
+    validator.resetForm(); // Xóa tất cả lỗi validate và error classes
+
+    // Reset giá trị và TouchSpin cho price
+    $("#price").val("").trigger("touchspin.updatesettings", { initval: "" });
+
+    // Reset wizard về bước 1
+    var $wizard = $("#productForm");
+    $wizard.steps("setStep", 0); // Đặt về bước 1 (nếu plugin hỗ trợ setStep)
+    // Nếu setStep không hoạt động, trigger click trên step đầu tiên
+    $(".steps ul li:first a").click();
+    $(".steps ul li").removeClass("error done current"); // Xóa trạng thái
+    $(".steps ul li:first").addClass("current"); // Đặt step 1 là current
+
+    // Reset nội dung động ở bước 2
+    $("#productForm fieldset").eq(1).find(".row").empty();
+
+    // Reset Dropzone (đề phòng nếu đã có file từ trước)
+    if (avatarDropzone) {
+      avatarDropzone.removeAllFiles(true);
+    }
+
+    console.log("Modal reset: Validator, wizard, and dynamic content cleared");
   });
 
-  // ==============================
+  // Thêm sự kiện hidden.bs.modal để đảm bảo reset khi đóng modal
+  $("#myModal").on("hidden.bs.modal", function () {
+    // Reset form values
+    $("#productForm")[0].reset();
+    $("#sanPham, #mauSac, #kichCo, #status")
+      .val(null)
+      .trigger("change.select2");
+
+    // Reset validator
+    var validator = $("#productForm").validate();
+    validator.resetForm(); // Xóa lỗi validate
+
+    // Reset TouchSpin cho price
+    $("#price").val("").trigger("touchspin.updatesettings", { initval: "" });
+
+    // Reset wizard về bước 1
+    $(".steps ul li:first a").click();
+    $(".steps ul li").removeClass("error done current");
+    $(".steps ul li:first").addClass("current");
+
+    // Xóa nội dung động ở bước 2
+    $("#productForm fieldset").eq(1).find(".row").empty();
+
+    // Reset Dropzone
+    if (avatarDropzone) {
+      avatarDropzone.removeAllFiles(true);
+    }
+
+    console.log("Modal closed: Form, validator, and wizard fully reset");
+  }); // ==============================
   // Dropzone cho Update
   // ==============================
   // Chặn Dropzone tự động khởi tạo

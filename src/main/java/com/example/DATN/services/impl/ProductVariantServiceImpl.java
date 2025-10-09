@@ -78,13 +78,30 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Override
 	public boolean addProductVariant(ProductVariantRequest req) {
-
+		// Kiểm tra biến thể đã tồn tại
+		List<String> existingSizes = new ArrayList<>(); // Danh sách size đã tồn tại
 		for (Integer sizeId : req.getSizeIds()) {
 			boolean exists = productVariantRepository.existsByProductIdAndColorIdAndSizeId(
 					req.getProductId(), req.getColorId(), sizeId);
 			if (exists) {
-				throw new BusinessException("Sản phẩm này size " + sizeId + " đã tồn tại");
+				existingSizes.add(sizeRepository.findById(sizeId).get().getName()); // Thêm vào list thay vì throw ngay
 			}
+		}
+		// Xử lý message dựa trên số lượng size tồn tại
+		if (!existingSizes.isEmpty()) {
+			String message;
+			if (existingSizes.size() == 1) {
+				message = "Size " + existingSizes.get(0) + " đã tồn tại";
+			} else {
+				StringBuilder sb = new StringBuilder("Các size \n");
+				for (String size : existingSizes) {
+					sb.append("Size ").append(size);
+				}
+				sb = sb.append(" đã tồn tại\n");
+				message = sb.toString();
+			}
+
+			throw new BusinessException(message);
 		}
 
 		// Kiểm tra giá chung
@@ -132,12 +149,11 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					.orElseThrow(() -> new BusinessException("Không tìm thấy kích cỡ ID = " + sizeId));
 
 			Integer quantity = req.getQuantities().get(sizeId);
-			// String sku = req.getSkus().get(sizeId);
+			String sku = req.getSkus().get(sizeId);
 
-			// if (quantity == null || sku == null) {
-			// throw new BusinessException("Số lượng hoặc SKU không được cung cấp cho kích
-			// cỡ " + sizeId);
-			// }
+			if (quantity == null || sku == null) {
+				throw new BusinessException("Số lượng hoặc SKU không được cung cấp cho kích cỡ " + sizeId);
+			}
 
 			// ✅ Tạo code duy nhất cho từng vòng lặp
 			String variantCode = String.format("PV-%03d", nextNumber);
@@ -150,7 +166,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					.size(size)
 					.price(BigDecimal.valueOf(req.getPrice()))
 					.quantity(quantity)
-					// .sku(sku)
+					.sku(sku)
 					.status(req.getStatus())
 					.build();
 
