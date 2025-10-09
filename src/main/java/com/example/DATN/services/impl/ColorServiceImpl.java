@@ -1,4 +1,4 @@
-//implement color 
+//implement color
 
 package com.example.DATN.services.impl;
 
@@ -100,6 +100,11 @@ public class ColorServiceImpl implements ColorService {
     public Page<ColorDTO> searchColor(String keyword, Boolean isActive, Pageable pageable) {
         Page<Color> Colors = colorRepository.search(keyword, isActive, pageable);
         return Colors.map(entity -> modelMapper.map(entity, ColorDTO.class));
+    }
+
+    @Override
+	public long countAll() {
+        return colorRepository.count();
     }
 
     public Color fromRequest(ColorRequest req) {

@@ -29,24 +29,23 @@
           <span th:case="true">Nam</span>
           <span th:case="false">Nữ</span>
         </td>
-        <td th:text="${item.dateOfBirth}"></td>
+        <td th:text="${#temporals.format(item.dateOfBirth, 'dd/MM/yyyy')}"></td>
         <td th:text="${item.roleName}"></td>
         <td th:switch="${item.isActive}">
-          <span th:case="true">Hoạt Động</span>
-          <span th:case="false">Ngừng</span>
+          <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+          <span th:case="false" class="badge badge-danger">Ngừng</span>
         </td>
         <td>
           <button class="btn btn-info dim" type="button">
             <i class="fa fa-paste"></i>
           </button>
-          <button
-            th:id="'btn-status-' + ${item.id}"
+          <button th:id="'btn-status-' + ${item.id}"
             th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
             th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
-            th:title="${item.isActive} ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'"
-          >
+            th:title="${item.isActive} ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'">
             <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
           </button>
+          <button class="btn btn-warning  dim" type="button"><i class="fa fa-user-circle-o"></i></button>
         </td>
       </tr>
     </tbody>

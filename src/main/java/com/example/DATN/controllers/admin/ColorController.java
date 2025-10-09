@@ -118,6 +118,13 @@ public class ColorController {
         return "admin/color/table :: table"; // Trả về fragment
     }
 
+  @GetMapping("/counts")
+	@ResponseBody
+	public long countColor(@RequestParam(required = false) String keyword) {
+    return colorService.countAll();
+	}
+
+
     @PutMapping("/{id}/toggle-status")
     public ResponseEntity<?> toggleColorStatus(@PathVariable Integer id) {
         boolean newStatus = colorService.toggleStatus(id);

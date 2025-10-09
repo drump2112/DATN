@@ -109,6 +109,11 @@ public class SizeServiceImpl implements SizeService {
     }
 
 
+    @Override
+	public long countAll() {
+        return sizeRepository.count();
+    }
+
     public Size fromRequest(SizeRequest req) {
 
 

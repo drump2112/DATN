@@ -7,7 +7,7 @@
     <div class="row">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
-          <h5>Người Dùng</h5>
+          <h5>Chức Năng</h5>
           <div class="ibox-tools">
             <a class="collapse-link">
               <i class="fa fa-chevron-up"></i>
@@ -16,8 +16,6 @@
         </div>
         <div class="ibox-content">
 			<div class="row">
-				<div class="col-sm-7 m-b-xs">
-				</div>
 				<div class="col-sm-2 m-b-xs">
 					<select class="input-sm form-control input-s-sm inline">
 						<option value="1">Hoạt Động</option>
@@ -34,6 +32,8 @@
 						</span>
 					</div>
 				</div>
+				<div class="col-sm-7 m-b-xs">
+				</div>
 			</div>
         </div>
       </div>
@@ -46,26 +46,20 @@
             <a class="collapse-link">
               <i class="fa fa-chevron-up"></i>
             </a>
-            <a class="dropdown-toggle" data-toggle="dropdown" href="">
-              <i class="fa fa-wrench"></i>
-            </a>
-            <a class="close-link">
-              <i class="fa fa-times"></i>
-            </a>
           </div>
         </div>
         <div class="ibox-content">
           <th:block th:replace="admin/user/customer/table :: table"></th:block>
         </div>
 		<th:block th:fragment="script">
-		
+
 		<script>
 		function toggleStatus(userId, isActive) {
-			
+
 			 const title = isActive
 				? 'Bạn có chắc muốn vô hiệu hóa tài khoản này?'
 				: 'Bạn có chắc muốn kích hoạt tài khoản này?';
-			
+
 			Swal.fire({
 			title: title,
 			icon: 'warning',

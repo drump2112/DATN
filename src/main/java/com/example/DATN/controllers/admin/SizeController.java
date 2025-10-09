@@ -53,9 +53,7 @@ public class SizeController {
 
         return "admin/size/list";
 
-
     }
-
 
     @GetMapping("/select2")
     @ResponseBody
@@ -122,6 +120,11 @@ public class SizeController {
         return "admin/size/table :: table"; // Trả về fragment
     }
 
+    @GetMapping("/counts")
+	@ResponseBody
+	public long countSize(@RequestParam(required = false) String keyword) {
+		return sizeService.countAll();
+	}
 
     @PutMapping("/{id}/toggle-status")
     public ResponseEntity<?> toggleCustomerStatus(@PathVariable Integer id) {
@@ -129,7 +132,6 @@ public class SizeController {
         String message = newStatus ? "Kích hoạt kích thước thành công" : "Đã khóa kích thước";
         return ResponseEntity.ok(Map.of("message", message));
     }
-
 
 }
 

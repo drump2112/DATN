@@ -27,4 +27,6 @@ public interface SizeService {
 
     Page<SizeDTO> searchSize(String keyword, Boolean isActive, Pageable pageable);
 
+    long countAll();
+
 }

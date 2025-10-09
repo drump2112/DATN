@@ -62,15 +62,9 @@ function validateColorName() {
     if (!name) {
         errorMessage = "Màu sắc không được để trống!";
     }
-    // Chỉ cho phép chữ cái + khoảng trắng (có dấu tiếng Việt)
-    else if (!/^[\p{L}\s]+$/u.test(name)) {
-        errorMessage = "Màu sắc chỉ được nhập chữ!";
-    }
-    // Giới hạn độ dài
     else if (name.length < 2 || name.length > 30) {
         errorMessage = "Tên màu sắc phải từ 2 đến 30 ký tự!";
     }
-
 
     if (errorMessage) {
         Swal.fire("Lỗi!", errorMessage, "error");
@@ -82,7 +76,7 @@ function validateColorName() {
 
 // thêm màu sắc
 $("#btnAddColor").click(function () {
-    if (!validateColorName()) return; //   check trước khi gửi
+    if (!validateColorName()) return; s//   check trước khi gửi
 
     Swal.fire({
         title: "Xác nhận thêm màu sắc?",
@@ -108,8 +102,14 @@ $("#btnAddColor").click(function () {
                 success: function (response) {
                     Swal.fire("Thành công!", response.message, "success");
                     $("#myModal").modal("hide");
-                    const currentPage = getCurrentPage();
-                    searchColor(currentPage);
+                    $.get("/admin/color/counts").done(function (totalItems) {
+                        const pageSize = 5;
+                        const lastPage = Math.max(
+                            0,
+                            Math.ceil(totalItems / pageSize) - 1,
+                        );
+                        searchColor(lastPage);
+                    });
                 },
                 error: function (xhr) {
                     Swal.fire(
@@ -192,7 +192,6 @@ window.toggleStatus = function (userId, isActive) {
 
 $("#btnUpdate").on("click", function () {
     if (!validateColorName(false)) return;
-
 
     Swal.fire({
         title: "Xác nhận cập nhật màu sắc?",

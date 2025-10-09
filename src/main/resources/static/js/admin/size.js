@@ -56,18 +56,11 @@ function validateSizeName() {
     const name = $("#name").val().trim();
     let errorMessage = "";
 
-
     if (!name) {
         errorMessage = "Kích thước không được để trống!";
     } else if (!/^\d+$/.test(name)) {
         errorMessage = "Kích thước chỉ được nhập số!";
-    } else {
-        const sizeValue = parseInt(name, 10);
-        if (sizeValue < 34 || sizeValue > 46) {
-            errorMessage = "Kích thước phải nằm trong khoảng từ 34 đến 46!";
-        }
     }
-
 
     if (errorMessage) {
         Swal.fire("Lỗi!", errorMessage, "error");
@@ -80,7 +73,6 @@ function validateSizeName() {
 // thêm kích thước
 $("#btnAddSize").click(function () {
     if (!validateSizeName()) return; //   check trước khi gửi
-
 
     Swal.fire({
         title: "Xác nhận thêm kích thước?",
@@ -96,7 +88,6 @@ $("#btnAddSize").click(function () {
             formData.append("name", $("#name").val().trim());
             formData.append("isActive", true);
 
-
             $.ajax({
                 url: "/admin/size/add",
                 method: "POST",
@@ -105,10 +96,16 @@ $("#btnAddSize").click(function () {
                 data: formData,
                 success: function (response) {
                     Swal.fire("Thành công!", response.message, "success");
+
                     $("#myModal").modal("hide");
-                    $.get("/admin/size/count").done(function () {
-                        const currentPage = getCurrentPage();
-                        searchSize(currentPage);
+
+                    $.get("/admin/size/counts").done(function (totalItems) {
+                        const pageSize = 5;
+                        const lastPage = Math.max(
+                            0,
+                            Math.ceil(totalItems / pageSize) - 1,
+                        );
+                        searchSize(lastPage);
                     });
                 },
                 error: function (xhr) {
@@ -132,6 +129,7 @@ function getCurrentPage() {
 
 // Tìm kiếm size
 function searchSize(page) {
+
     var keyword = $("#searchInput").val().trim();
     var isActive = $("#statusFilter").val() || null;
 

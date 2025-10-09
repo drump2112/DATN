@@ -140,7 +140,7 @@ public class BrandController {
         return "admin/brand/table :: table"; // Trả về fragment
     }
 
-    @GetMapping("/count")
+    @GetMapping("/counts")
 	@ResponseBody
 	public long countBrand(@RequestParam(required = false) String keyword) {
 		return brandService.countAll();

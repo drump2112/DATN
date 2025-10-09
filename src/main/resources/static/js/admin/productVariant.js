@@ -1,12 +1,15 @@
 $(document).ready(function () {
   // Khởi tạo jQuery Steps
-  $('[data-toggle="popover"]').popover();
-
   initFilter();
 
   $("#productForm")
     .steps({
       bodyTag: "fieldset",
+      labels: {
+        next: 'Tiếp theo',
+        previous: 'Quay lại',
+        finish: 'Thêm',
+      },
       onStepChanging: function (event, currentIndex, newIndex) {
         var form = $(this);
 
@@ -802,6 +805,119 @@ $(document).ready(function () {
       },
     });
   }
+
+  $(document).on('hidden.bs.modal', '.modal', function () {
+    $('.modal:visible').length && $(document.body).addClass('modal-open');
+  });
+
+  $("#btnAddColor").click(function () {
+    // if (!validateColorName()) return; //   check trước khi gửi
+
+    Swal.fire({
+      title: "Xác nhận thêm màu sắc?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Thêm",
+      cancelButtonText: "Hủy",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const formData = new FormData();
+        formData.append("id", $("#id").val().trim());
+        formData.append("colorCode", $("#code").val() || null);
+        formData.append("name", $("#name").val().trim());
+        formData.append("isActive", true);
+
+        $.ajax({
+          url: "/admin/color/add",
+          method: "POST",
+          processData: false,
+          contentType: false,
+          data: formData,
+          success: function (response) {
+            toastr.success("Thêm màu sắc thành công !");
+
+            $("#mauSac").select2({
+              dropdownParent: $("#myModal"),
+              placeholder: "Chọn Màu Sắc",
+              allowClear: true,
+              ajax: {
+                url: "/admin/color/select2",
+                dataType: "json",
+                delay: 50,
+                data: (params) => ({ q: params.term }),
+                processResults: (data) => ({ results: data }),
+                cache: true,
+              },
+            }).val(null).trigger("change.select2");
+            $("#fastAddColorModal").modal("hide");
+          },
+          error: function (xhr) {
+            toastr.error(
+              xhr.responseJSON?.message || "Thêm màu sắc thất bại"
+            );
+          },
+        });
+      }
+    });
+  });
+
+  $("#btnAddSize").click(function () {
+    // if (!validateSizeName()) return; //   check trước khi gửi
+
+    Swal.fire({
+      title: "Xác nhận thêm kích thước?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Thêm",
+      cancelButtonText: "Hủy",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const formData = new FormData();
+
+        formData.append("id", $("#id").val().trim());
+        formData.append("sizeCode", $("#code").val() || null);
+        formData.append("name", $("#name").val().trim());
+        formData.append("isActive", true);
+
+        $.ajax({
+          url: "/admin/size/add",
+          method: "POST",
+          processData: false,
+          contentType: false,
+          data: formData,
+          success: function (response) {
+            // Swal.fire("Thành công!", response.message, "success");
+            toastr.success("Thêm kích thước thành công !");
+
+            $("#kichCo")
+              .select2({
+                dropdownParent: "#myModal",
+                placeholder: "Chọn Kích Thước",
+                allowClear: true,
+                ajax: {
+                  url: "/admin/size/select2",
+                  dataType: "json",
+                  delay: 50,
+                  data: (params) => ({ q: params.term }),
+                  processResults: (data) => ({ results: data }),
+                  cache: true,
+                },
+              })
+              .val(null)
+              .trigger("change.select2");
+            $("#fastAddSizeModal").modal("hide");
+
+          },
+          error: function (xhr) {
+            toastr.error(
+              xhr.responseJSON?.message || "Thêm kích thước thất bại"
+            );
+          },
+        });
+      }
+    });
+  });
+
 
   $("#resetFilterBtn").on("click", function () {
     $("#colorFilter").val(null).trigger("change");
