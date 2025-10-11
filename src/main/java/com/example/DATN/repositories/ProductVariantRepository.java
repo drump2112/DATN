@@ -30,10 +30,13 @@ public interface ProductVariantRepository
 
 	boolean existsByVariantCode(String variantCode);
 
+	boolean existsByProductIdAndColorId(Integer productId, Integer colorId);
+
 	boolean existsByProductIdAndColorIdAndSizeId(Integer productId, Integer colorId, Integer sizeId);
 
-	@Query("SELECT pv.price FROM ProductVariant pv WHERE pv.product.id = :productId AND pv.color.id = :colorId")
-	Optional<BigDecimal> findPriceByProductIdAndColorId(Integer productId, Integer colorId);
+	@Query("SELECT MIN(pv.price) FROM ProductVariant pv WHERE pv.product.id = :productId AND pv.color.id = :colorId")
+	Optional<BigDecimal> findPriceByProductIdAndColorId(@Param("productId") Integer productId,
+			@Param("colorId") Integer colorId);
 
 	@Query("SELECT MAX(v.variantCode) FROM ProductVariant v")
 	String findMaxVariantCode();

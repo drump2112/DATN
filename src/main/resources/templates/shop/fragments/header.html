@@ -18,7 +18,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html">DTD-Snaker</a>
+              <a class="navbar-brand" th:href="@{/}">DTD-Snaker</a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
               <ul class="nav navbar-nav navbar-right">
@@ -59,7 +59,11 @@
                 </a>
               </li>
             </ul>
-            <a href="/login" class="navbar-brand" style="margin-left: 20px"
+
+            <a
+              th:href="@{/customer/auth/}"
+              class="navbar-brand"
+              style="margin-left: 20px"
               >Đăng nhập</a
             >
           </div>

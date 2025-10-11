@@ -118,7 +118,11 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		productVariantRepository.saveAll(variants);
 
 		// Lưu ảnh (chung cho 1 màu)
-		saveProductVariantImages(variants.get(0), req.getImages());
+		boolean colorExists = productVariantRepository.existsByProductIdAndColorId(req.getProductId(),
+				req.getColorId());
+		if (!colorExists) {
+			saveProductVariantImages(variants.get(0), req.getImages());
+		}
 
 		return true;
 	}
@@ -149,11 +153,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					.orElseThrow(() -> new BusinessException("Không tìm thấy kích cỡ ID = " + sizeId));
 
 			Integer quantity = req.getQuantities().get(sizeId);
-			String sku = req.getSkus().get(sizeId);
-
-			if (quantity == null || sku == null) {
-				throw new BusinessException("Số lượng hoặc SKU không được cung cấp cho kích cỡ " + sizeId);
-			}
 
 			// ✅ Tạo code duy nhất cho từng vòng lặp
 			String variantCode = String.format("PV-%03d", nextNumber);
@@ -166,7 +165,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 					.size(size)
 					.price(BigDecimal.valueOf(req.getPrice()))
 					.quantity(quantity)
-					.sku(sku)
 					.status(req.getStatus())
 					.build();
 

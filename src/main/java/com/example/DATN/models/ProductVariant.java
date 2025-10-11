@@ -46,9 +46,6 @@ public class ProductVariant {
 	@JoinColumn(name = "ColorID")
 	private Color color;
 
-	@Column(name = "SKU", unique = true, length = 100)
-	private String sku;
-
 	@Column(name = "Price", nullable = false, precision = 10, scale = 2)
 	private BigDecimal price;
 

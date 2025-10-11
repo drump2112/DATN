@@ -27,6 +27,6 @@ public class ProductVariantRequest {
 	private Integer colorId;
 	private List<Integer> sizeIds;
 	private Map<Integer, Integer> quantities;
-	private Map<Integer, String> skus;
+	// private Map<Integer, String> skus;
 	private List<MultipartFile> images;
 }

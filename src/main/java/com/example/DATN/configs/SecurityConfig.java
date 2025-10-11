@@ -3,6 +3,7 @@ package com.example.DATN.configs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,21 +30,19 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
+	// 🧩 1️⃣ SECURITY CHO ADMIN + SELLER
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	@Order(1)
+	public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
 		http
-				.csrf().disable()
+				.securityMatcher("/admin/**", "/seller/**", "/login", "/do-login") // chỉ áp dụng filter này cho các URL
+																					// này
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/", "/login", "/register", "/verify/**", "/assets/**",
-								"/js/**", "/uploads/**", "/details/**", "/cart/**")
-						.permitAll()
-						.requestMatchers("/admin/**").hasRole("ADMIN")
-						.requestMatchers("/seller/**").hasRole("SELLER")
-						.requestMatchers("/customer/**").hasRole("CUSTOMER")
-						.anyRequest().authenticated())
+						.requestMatchers("/assets/**", "/js/**", "/uploads/**").permitAll()
+						.requestMatchers("/login", "/do-login").permitAll()
+						.anyRequest().hasAnyRole("ADMIN", "SELLER"))
 				.formLogin(form -> form
 						.loginPage("/login")
-						.defaultSuccessUrl("/admin/home", true)
 						.loginProcessingUrl("/do-login")
 						.usernameParameter("username")
 						.passwordParameter("password")
@@ -52,19 +51,47 @@ public class SecurityConfig {
 						.permitAll())
 				.logout(logout -> logout
 						.logoutUrl("/logout")
-						.logoutSuccessUrl("/login?logout")
-						.permitAll())
-				.exceptionHandling()
-				.authenticationEntryPoint((request, response, authException) -> {
-					String ajaxHeader = request.getHeader("X-Requested-With");
-					if ("XMLHttpRequest".equals(ajaxHeader)) {
-						response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session expired");
-					} else {
-						response.sendRedirect("/login");
-					}
-				});
+						.logoutSuccessUrl("/login?logout"))
+				.csrf().disable();
 
 		return http.build();
+	}
+
+	// 🧩 2️⃣ SECURITY CHO KHÁCH HÀNG
+	@Bean
+	@Order(2)
+	public SecurityFilterChain customerSecurity(HttpSecurity http) throws Exception {
+		http
+				.securityMatcher("/customer/**", "/", "/details/**", "/cart/**", "/customer/auth/**")
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(
+								"/", "/register", "/verify/**",
+								"/assets/**", "/js/**", "/uploads/**", "/details/**", "/cart/**",
+								"/customer/auth/**")
+						.permitAll()
+						.anyRequest().hasRole("CUSTOMER"))
+				.formLogin(form -> form
+						.loginPage("/customer/auth/") // login page cho khách hàng
+						.loginProcessingUrl("/customer/do-login")
+						.usernameParameter("username")
+						.passwordParameter("password")
+						.successHandler(customSuccessHandler())
+						.failureHandler(customAuthenticationFailureHandler)
+						.permitAll())
+				.logout(logout -> logout
+						.logoutUrl("/customer/logout")
+						.logoutSuccessUrl("/customer/auth/?logout"))
+				.csrf().disable();
+
+		return http.build();
+	}
+
+	@Bean
+	public DaoAuthenticationProvider authProvider() {
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+		provider.setUserDetailsService(userDetailsService);
+		provider.setPasswordEncoder(passwordEncoder());
+		return provider;
 	}
 
 	@Bean
@@ -75,23 +102,13 @@ public class SecurityConfig {
 
 			switch (role) {
 				case "ROLE_ADMIN":
-					response.sendRedirect("/admin/home");
-					break;
 				case "ROLE_SELLER":
 					response.sendRedirect("/admin/home");
 					break;
 				default:
-					response.sendRedirect("/customer/home");
+					response.sendRedirect("/");
 					break;
 			}
 		};
-	}
-
-	@Bean
-	public DaoAuthenticationProvider authProvider() {
-		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-		authProvider.setUserDetailsService(userDetailsService);
-		authProvider.setPasswordEncoder(passwordEncoder());
-		return authProvider;
 	}
 }

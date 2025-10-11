@@ -20,7 +20,6 @@ public class ProductVariantDTO {
 
 	private Integer id;
 	private String variantCode;
-	private String sku;
 	private BigDecimal price;
 	private Integer quantity;
 	private Boolean status;

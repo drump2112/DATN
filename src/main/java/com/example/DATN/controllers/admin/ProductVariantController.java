@@ -83,20 +83,17 @@ public class ProductVariantController {
 		try {
 			// Xử lý quantities và skus
 			Map<Integer, Integer> quantities = new HashMap<>();
-			Map<Integer, String> skus = new HashMap<>();
+			// Map<Integer, String> skus = new HashMap<>();
 			for (Map.Entry<String, String> entry : allParams.entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue();
 				if (key.startsWith("quantities[")) {
 					Integer sizeId = Integer.parseInt(key.replaceAll("quantities\\[(\\d+)\\]", "$1"));
 					quantities.put(sizeId, Integer.parseInt(value));
-				} else if (key.startsWith("skus[")) {
-					Integer sizeId = Integer.parseInt(key.replaceAll("skus\\[(\\d+)\\]", "$1"));
-					skus.put(sizeId, value);
 				}
 			}
 			req.setQuantities(quantities);
-			req.setSkus(skus);
+			// req.setSkus(skus);
 
 			// Validate
 			if (req.getSizeIds() == null || req.getSizeIds().isEmpty()) {
@@ -104,7 +101,7 @@ public class ProductVariantController {
 			}
 
 			for (Integer sizeId : req.getSizeIds()) {
-				if (!quantities.containsKey(sizeId) || !skus.containsKey(sizeId)) {
+				if (!quantities.containsKey(sizeId)) {
 					return ResponseEntity.badRequest()
 							.body(Map.of("message", "Số lượng hoặc SKU không đầy đủ cho kích cỡ " + sizeId));
 				}

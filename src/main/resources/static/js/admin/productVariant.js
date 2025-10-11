@@ -6,9 +6,9 @@ $(document).ready(function () {
     .steps({
       bodyTag: "fieldset",
       labels: {
-        next: 'Tiếp theo',
-        previous: 'Quay lại',
-        finish: 'Thêm',
+        next: "Tiếp theo",
+        previous: "Quay lại",
+        finish: "Thêm",
       },
       onStepChanging: function (event, currentIndex, newIndex) {
         var form = $(this);
@@ -545,7 +545,7 @@ $(document).ready(function () {
   function initSelect2s() {
     $("#sanPham")
       .select2({
-        dropdownParent: $("#myModal"),
+        // dropdownParent: $("#myModal"),
         placeholder: "Chọn Sản Phẩm",
         allowClear: true,
         ajax: {
@@ -562,7 +562,7 @@ $(document).ready(function () {
 
     $("#mauSac")
       .select2({
-        dropdownParent: $("#myModal"),
+        // dropdownParent: $("#myModal"),
         placeholder: "Chọn Màu Sắc",
         allowClear: true,
         ajax: {
@@ -579,7 +579,7 @@ $(document).ready(function () {
 
     $("#kichCo")
       .select2({
-        dropdownParent: "#myModal",
+        // dropdownParent: "#myModal",
         placeholder: "Chọn Kích Thước",
         allowClear: true,
         ajax: {
@@ -671,6 +671,8 @@ $(document).ready(function () {
     min: 0,
     max: 999999999,
     step: 1000,
+    forcestepdivisibility: "none",
+
     buttondown_class: "btn btn-white",
     buttonup_class: "btn btn-white",
   });
@@ -679,7 +681,7 @@ $(document).ready(function () {
   function collectFormData() {
     const formData = new FormData();
     formData.append("sku", $("#maSp").val());
-    formData.append("price", $("#price").val());
+    formData.append("price", Number($("#price").val()));
     formData.append("status", $("#status").val());
     formData.append("productId", $("#sanPham").val());
     formData.append("colorId", $("#mauSac").val());
@@ -806,8 +808,8 @@ $(document).ready(function () {
     });
   }
 
-  $(document).on('hidden.bs.modal', '.modal', function () {
-    $('.modal:visible').length && $(document.body).addClass('modal-open');
+  $(document).on("hidden.bs.modal", ".modal", function () {
+    $(".modal:visible").length && $(document.body).addClass("modal-open");
   });
 
   $("#btnAddColor").click(function () {
@@ -836,25 +838,26 @@ $(document).ready(function () {
           success: function (response) {
             toastr.success("Thêm màu sắc thành công !");
 
-            $("#mauSac").select2({
-              dropdownParent: $("#myModal"),
-              placeholder: "Chọn Màu Sắc",
-              allowClear: true,
-              ajax: {
-                url: "/admin/color/select2",
-                dataType: "json",
-                delay: 50,
-                data: (params) => ({ q: params.term }),
-                processResults: (data) => ({ results: data }),
-                cache: true,
-              },
-            }).val(null).trigger("change.select2");
+            $("#mauSac")
+              .select2({
+                // dropdownParent: $("#myModal"),
+                placeholder: "Chọn Màu Sắc",
+                allowClear: true,
+                ajax: {
+                  url: "/admin/color/select2",
+                  dataType: "json",
+                  delay: 50,
+                  data: (params) => ({ q: params.term }),
+                  processResults: (data) => ({ results: data }),
+                  cache: true,
+                },
+              })
+              .val(null)
+              .trigger("change.select2");
             $("#fastAddColorModal").modal("hide");
           },
           error: function (xhr) {
-            toastr.error(
-              xhr.responseJSON?.message || "Thêm màu sắc thất bại"
-            );
+            toastr.error(xhr.responseJSON?.message || "Thêm màu sắc thất bại");
           },
         });
       }
@@ -886,12 +889,11 @@ $(document).ready(function () {
           contentType: false,
           data: formData,
           success: function (response) {
-            // Swal.fire("Thành công!", response.message, "success");
             toastr.success("Thêm kích thước thành công !");
 
             $("#kichCo")
               .select2({
-                dropdownParent: "#myModal",
+                // dropdownParent: "#myModal",
                 placeholder: "Chọn Kích Thước",
                 allowClear: true,
                 ajax: {
@@ -906,18 +908,16 @@ $(document).ready(function () {
               .val(null)
               .trigger("change.select2");
             $("#fastAddSizeModal").modal("hide");
-
           },
           error: function (xhr) {
             toastr.error(
-              xhr.responseJSON?.message || "Thêm kích thước thất bại"
+              xhr.responseJSON?.message || "Thêm kích thước thất bại",
             );
           },
         });
       }
     });
   });
-
 
   $("#resetFilterBtn").on("click", function () {
     $("#colorFilter").val(null).trigger("change");

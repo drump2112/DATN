@@ -1,0 +1,61 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="shop/fragments/base :: base"
+>
+  <section class="container features" th:fragment="content">
+  <div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="navy-line"></div>
+        <h1 class="text-center">
+          ĐĂNG NHẬP<br />
+        </h1>
+        <div class="loginColumns animated fadeInDown">
+          <div class="row">
+            <div class="col-md-6">
+              <h1 class="font-bold">Chào Mừng Đến Với DTD</h1>
+              <p>
+                Hy vọng bạn sẽ có những trải nghiệm tuyệt vời khi mua sắm tại cửa hàng của chúng tôi !
+              </p>
+
+              <p>
+                Đăng nhập để tiếp tục mua sắm và tận hưởng những ưu đãi hấp dẫn từ chúng tôi.
+              </p>
+
+              <h2>
+               <small>Chúc bạn một ngày tốt lành!</small>
+              </h2>
+            </div>
+            <div class="col-md-6">
+              <div class="ibox-content">
+                <form class="m-t" role="form" action="index.html">
+                  <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Tên Đăng Nhập/ Email" required="">
+                  </div>
+                  <div class="form-group">
+                    <input type="password" class="form-control" placeholder="Mật Khẩu" required="">
+                  </div>
+                  <button type="submit" class="btn btn-primary block full-width m-b">Đăng Nhập</button>
+
+                  <a href="#">
+                    <small>Quên Mật Khẩu?</small>
+                  </a>
+
+                  <!-- <p class="text-muted text-center">
+                    <small>Do not have an account?</small>
+                  </p> -->
+                  <a class="btn btn-sm btn-white btn-block" th:href="@{/customer/auth/register}">Tạo Tài Khoản</a>
+                </form>
+                <!-- <p class="m-t">
+                  <small>Inspinia we app framework base on Bootstrap 3 © 2014</small>
+                </p> -->
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
+      </div>
+    </div>
+</section>
+</html>
