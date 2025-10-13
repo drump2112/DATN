@@ -1,197 +1,160 @@
 <!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  th:replace="admin/layout/base :: base"
->
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
 <th:block th:fragment="content">
-    <div class="row">
+	<div class="row">
 		<div class="col-lg-12">
 			<div class="ibox float-e-margins">
-				<div class="ibox-title">
-					<h5>Danh Sách Voucher</h5>
-					<div class="ibox-tools">
-						<a class="collapse-link">
-							<i class="fa fa-chevron-up"></i>
-						</a>
-					</div>
-				</div>
-				<div class="ibox-content">
-					<div class="row">
-						<div class="col-sm-2 m-b-xs">
-							<select class="input-sm form-control input-s-sm inline" id="statusFilter">
-								<option value="">Chọn trạng thái</option>
-								<option value="1">Đang Hoạt Động</option>
-								<option value="0">Ngừng Hoạt Động</option>
-							</select>
-						</div>
-						<div class="col-sm-3 m-b-xs">
-							<div class="input-group">
-								<input type="text" placeholder="Tìm Kiếm" class="input-sm form-control" id="searchInput">
-								<span class="input-group-btn">
-									<button type="button" class="btn btn-sm btn-primary" onclick="searchVoucher(0)">
-										<i class="fa fa-search"></i>
-									</button>
-								</span>
+				<div class="tabs-container">
+					<ul class="nav nav-tabs">
+						<li class="active"><a data-toggle="tab" href="#tab-1" aria-expanded="false"> Voucher</a></li>
+						<li class=""><a data-toggle="tab" href="#tab-2" aria-expanded="false">Đợt Giảm Giá</a></li>
+					</ul>
+					<div class="tab-content">
+						<div id="tab-1" class="tab-pane active">
+							<div class="panel-body">
+								<div class="ibox-title">
+									<h5>Danh Sách Voucher</h5>
+								</div>
+								<div class="ibox-content">
+									<div class="row">
+										<div class="col-sm-2 m-b-xs">
+											<select class="input-sm form-control input-s-sm inline" id="statusFilter">
+												<option value="">Chọn trạng thái</option>
+												<option value="1">Đang Hoạt Động</option>
+												<option value="0">Ngừng Hoạt Động</option>
+											</select>
+										</div>
+										<div class="col-sm-3 m-b-xs">
+											<div class="input-group">
+												<input type="text" placeholder="Tìm Kiếm" class="input-sm form-control" id="searchInput">
+												<span class="input-group-btn">
+													<button type="button" class="btn btn-sm btn-primary" onclick="searchVoucher(0)">
+														<i class="fa fa-search"></i>
+													</button>
+												</span>
+											</div>
+										</div>
+										<div class="col-sm-7">
+											<span class="input-group-btn">
+												<button type="button" class="btn btn-sm btn-primary pull-right" id="btnAddVoucher">
+													<i class="fa fa-plus-circle"></i> Thêm
+												</button>
+											</span>
+										</div>
+									</div>
+									<div class="table-responsive" id="voucherTableContainer">
+										<th:block th:replace="admin/voucher/tableVoucher :: table"></th:block>
+									</div>
+								</div>
 							</div>
 						</div>
-						<div class="col-sm-7">
-							<span class="input-group-btn">
-								<button
-									type="button"
-									class="btn btn-sm btn-primary pull-right"
-									id="btnAdd"
-									onclick="openAddModal()"
-								>
-									<i class="fa fa-plus-circle"></i> Thêm
-								</button>
-							</span>
+						<div id="tab-2" class="tab-pane">
+							<div class="panel-body">
+								<div class="ibox-title">
+									<h5>Danh Sách Đợt Giảm Giá</h5>
+								</div>
+								<div class="ibox-content">
+									<div class="row">
+										<div class="col-sm-2 m-b-xs">
+											<select class="input-sm form-control input-s-sm inline" id="statusFilter">
+												<option value="">Chọn trạng thái</option>
+												<option value="1">Đang Hoạt Động</option>
+												<option value="0">Ngừng Hoạt Động</option>
+											</select>
+										</div>
+										<div class="col-sm-3 m-b-xs">
+											<div class="input-group">
+												<input type="text" placeholder="Tìm Kiếm" class="input-sm form-control" id="searchInput">
+												<span class="input-group-btn">
+													<button type="button" class="btn btn-sm btn-primary" onclick="searchVoucher(0)">
+														<i class="fa fa-search"></i>
+													</button>
+												</span>
+											</div>
+										</div>
+										<div class="col-sm-7">
+											<span class="input-group-btn">
+												<button type="button" class="btn btn-sm btn-primary pull-right" id="btnAddEvent">
+													<i class="fa fa-plus-circle"></i> Thêm
+												</button>
+											</span>
+										</div>
+									</div>
+									<div class="table-responsive" id="voucherTableContainer">
+										<th:block th:replace="admin/voucher/tableEvent :: table"></th:block>
+									</div>
+								</div>
+							</div>
 						</div>
-					</div>
-					<div class="table-responsive" id="voucherTableContainer">
-						<th:block th:replace="admin/voucher/table :: table"></th:block>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<!-- Modal Add/Edit Voucher -->
-	<div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" 
-		data-focus="false" style="padding-right: 15px;" data-backdrop="static" data-keyboard="false">
-		<div class="modal-dialog" style="width: 1200px;">
+	<div class="modal inmodal" id="modalVoucher" tabindex="-1" role="dialog" aria-hidden="true"
+		style="padding-right: 15px;" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog" style="width: 1200px;	">
 			<div class="modal-content animated bounceInRight">
 				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal">
-						<span aria-hidden="true">×</span><span class="sr-only">Close</span>
-					</button>
-					<h4 class="modal-title" id="modalTitle">Thêm Voucher</h4>
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+							class="sr-only">Close</span></button>
+					<h4 class="modal-title" id="modalTitle">Modal title</h4>
 				</div>
 				<div class="modal-body">
 					<div class="row">
-						<form id="voucherForm" role="form">
-							<div class="row">
-								<!-- Cột trái -->
-								<div class="col-sm-4 b-r"> 
-									<h3 class="m-t-none m-b">I - Thông tin cơ bản</h3>
-									<input type="hidden" id="voucherId" name="voucherId">
-
-									<div class="form-group">
-										<label>Mã voucher:</label>
-										<input type="text" id="voucherCode" name="voucherCode" 
-											placeholder="Tự sinh dạng VC-XXX" class="form-control" readonly>
-									</div>
-
-									<div class="form-group">
-										<label>Tên Voucher:</label>
-										<input type="text" id="voucherName" name="voucherName" 
-											placeholder="Nhập Tên Voucher" class="form-control">
-										<span class="text-danger" id="error-voucherName"></span>
-									</div>
-
-									<div class="form-group">
-										<label>Loại Voucher: </label>
-										<select id="voucherType" name="voucherType" class="form-control" style="width: 100%;">
-											<option value="PERCENT">Giảm theo %</option>
-											<option value="AMOUNT">Giảm theo số tiền</option>
-											<!-- <option value="FREESHIP">Miễn phí vận chuyển</option> -->
-										</select>
-										<span class="text-danger" id="error-voucherType"></span>
-									</div>
-									<div class="form-group">
-									<label>Giá Trị Giảm:</label>
-									<div class="input-group">
-										<input type="number" id="discountValue" name="discountValue"
-											class="form-control" style="border-radius: 6px;" min="1">
-										<span class="input-group-addon" id="discountUnit">%</span>
-									</div>
-									</div>
-									<div class="form-group">
-										<label>Giảm Tối Đa: </label>
-										<input type="number" id="maxDiscount" name="maxDiscount" 
-											placeholder="Số tiền giảm tối đa" class="form-control">
-									</div>
-									<div class="form-group">
-										<label>Đơn Tối Thiểu: </label>
-										<div class="input-group i-checks">
-											<span class="input-group-addon">
-												<input type="checkbox"></span> <input type="number" id="minOrderAmount" name="minOrderAmount" 
-													placeholder="Giá trị đơn hàng tối thiểu" class="form-control" style="height: 36px;">
-										</div>
-									</div>
+						<form id="employeeForm" role="form">
+							<div class="col-sm-6 b-r">
+								<input type="hidden" id="voucherId" name="voucherId">
+								<div class="form-group">
+									<label>Mã Giảm Giá</label>
+									<input type="text" id="maNv" name="maNv"
+										placeholder="Mã Giảm Giá" class="form-control" >
 								</div>
-
-								<!-- Cột giữa -->
-								<div class="col-sm-4 b-r"> 
-									<h3 class="m-t-none m-b">II - Thời gian và trạng thái</h3>
-
-									<div class="form-group">
-										<label for="startDate">Ngày Bắt Đầu: </label>
-										<input type="date" id="startDate" name="startDate" class="form-control">
-									</div>
-
-									<div class="form-group">
-										<label for="endDate">Ngày Kết Thúc: </label>
-										<input type="date" id="endDate" name="endDate" class="form-control">
-									</div>
-
-									<div class="form-group">
-										<label>Trạng Thái: </label> 
-										<select class="form-control select2" id="status" name="status" style="width: 100%;"> 
-											<option value="1">Hoạt Động</option>		 
-											<option value="0">Ngừng Hoạt Động</option> 
-										</select> 
-									</div>
-
-									<hr>
-									<h3 class="m-t-none m-b">III - Giới Hạn Sử Dụng</h3>
-									<div class="form-group">
-										<label for="usageLimit">Tổng Lượt Sử Dụng:</label>
-										<input type="number" id="usageLimit" name="usageLimit" class="form-control">
-									</div>
-									<div class="form-group">
-										<label for="usagePerUser">Lượt Dùng/User:</label>
-										<input type="number" id="usagePerUser" name="usagePerUser" class="form-control">
-									</div>
+								<div class="form-group">
+									<label>Tên Mã Giảm Giá</label>
+									<input type="text" id="hoTen" name="fullName" placeholder="Nhập Tên Giảm Giá" class="form-control">
 								</div>
-
-								<!-- Cột phải -->
-								<div class="col-sm-4"> 
-									<h3 class="m-t-none m-b">IV - Đối Tượng Áp Dụng</h3>
-									<div class="form-group">
-										<label>Target Type:</label> 
-										<select class="form-control select2" id="targetType" name="targetType" style="width: 100%;"> 
-											<option value="ALL">Tất cả sản phẩm</option>
-											<option value="PRODUCT">Theo sản phẩm</option>
-											<option value="CATEGORY">Theo danh mục</option>
-											<option value="BRAND">Theo thương hiệu</option>
-											<option value="USER">Theo khách hàng</option>
-										</select> 
-									</div>
-									<div class="form-group" id="targetProductGroup" style="display:none;">
-										<label>Chọn sản phẩm:</label>
-										<select id="targetProduct" name="targetProduct" class="form-control select2" style="width:100%;"></select>
-									</div>
-									<div class="form-group" id="targetBrandGroup" style="display:none;">
-										<label>Chọn thương hiệu:</label>
-										<select id="targetBrand" name="targetBrand" class="form-control select2" style="width:100%;"></select>
-									</div>
-									<div class="form-group" id="targetCategoryGroup" style="display:none;">
-										<label>Chọn danh mục:</label>
-										<select id="targetCategory" name="targetCategory" class="form-control select2" style="width:100%;"></select>
-									</div>
-									<div class="form-group" id="targetUserGroup" style="display:none;">
-										<label>Chọn khách hàng:</label>
-										<select id="targetUser" name="targetUser" class="form-control select2" style="width:100%;"></select>
-									</div>
-									<hr>
-									<h3 class="m-t-none m-b">V - Tùy Chọn Nâng Cao</h3>
-									<label for="extraConfig">Cấu Hình Mở Rộng</label>
-									<textarea class="form-control" id="extraConfig" name="extraConfig" rows="8" 
-										placeholder="Nhập cấu hình JSON hoặc ghi chú" style="resize: none;"></textarea>
+								<div class="form-group">
+									<label>Loại Gỉảm Giá</label>
+									<input type="text" id="email" name="email" placeholder="Nhập Email" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Giá Trị Giảm</label>
+									<input type="text" id="sdt" name="phone" placeholder="Nhập Số Điện Thoại" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Giá Trị Đơn Hàng Tối Thiểu</label>
+									<input type="text" id="sdt" name="phone" placeholder="Nhập Số Điện Thoại" class="form-control">
 								</div>
 							</div>
-
-							<div style="margin-right: 14px; margin-top: 20px;">
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>Giá Trị Giảm Tối Đa</label>
+									<input type="text" id="sdt" name="phone" placeholder="Nhập Số Điện Thoại" class="form-control">
+								</div>
+								<div class="form-group" id="ngaySinhGroup">
+									<label>Ngày Bắt Đầu</label>
+									<input type="date" id="dob" name="dateOfBirth" lang="vi" class="form-control">
+									<span class="text-danger" id="error-dob"></span>
+								</div>
+								<div class="form-group" id="ngaySinhGroup">
+									<label>Ngày Kết Thúc</label>
+									<input type="date" id="dob" name="dateOfBirth" lang="vi" class="form-control">
+									<span class="text-danger" id="error-dob"></span>
+								</div>
+								<div class="form-group" id="usernameGroup">
+									<label>Trạng Thái</label>
+									<select class="form-control m-b" id="vaiTro" name="roleId">
+										<option value="1">Hoạt Động</option>
+										<option value="0">Không Hoạt Động</option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label>Số Lượng</label>
+									<input type="text" id="sdt" name="phone" placeholder="Nhập Số Điện Thoại" class="form-control">
+								</div>
+							</div>
+							<div style="margin-right: 14px">
 								<button id="btnUpdateVoucher" class="btn btn-sm btn-success pull-right m-t-n-xs" type="button">
 									<strong>Cập Nhật</strong>
 								</button>
@@ -200,27 +163,76 @@
 									<strong>Thêm</strong>
 								</button>
 							</div>
-							<!-- <script> -->
-							<!-- 	$(document).on("change", "#voucherType", function () { -->
-							<!-- 	console.log("function is call"); -->
-							<!-- 	let type = $(this).val(); -->
-							<!-- 	if (type === "PERCENT") { -->
-							<!-- 		$("#discountUnit").text("%"); -->
-							<!-- 		$("#discountValue").attr({ -->
-							<!-- 		min: 1, -->
-							<!-- 		max: 100, -->
-							<!-- 		placeholder: "Nhập % giảm", -->
-							<!-- 		}); -->
-							<!-- 	} else { -->
-							<!-- 		$("#discountUnit").text("₫"); -->
-							<!-- 		$("#discountValue").attr({ -->
-							<!-- 		min: 1000, -->
-							<!-- 		max: "", -->
-							<!-- 		placeholder: "Nhập số tiền giảm", -->
-							<!-- 		}); -->
-							<!-- 	} -->
-							<!-- 	}); -->
-							<!-- </script> -->
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<div class="modal inmodal" id="modalEvent" tabindex="-1" role="dialog" aria-hidden="true"
+		style="padding-right: 15px;" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog" style="width: 1200px;	">
+			<div class="modal-content animated bounceInRight">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+							class="sr-only">Close</span></button>
+					<h4 class="modal-title" id="modalTitle">Modal title</h4>
+				</div>
+				<div class="modal-body">
+					<div class="row">
+						<form id="employeeForm" role="form">
+							<div class="col-sm-6 b-r">
+								<input type="hidden" id="eventId" name="userId">
+								<div class="form-group">
+									<label>Mã Sự Kiện</label>
+									<input type="text" id="maNv" name="maNv"
+										placeholder="Mã Sự Kiện" class="form-control" >
+								</div>
+								<div class="form-group">
+									<label>Tên Sự Kiện</label>
+									<input type="text" id="hoTen" name="fullName" placeholder="Nhập Họ Tên" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Kiểu Giảm Giá</label>
+									<input type="text" id="email" name="email" placeholder="Nhập Email" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Giá Trị Giảm</label>
+									<input type="text" id="sdt" name="phone" placeholder="Nhập Số Điện Thoại" class="form-control">
+								</div>
+
+							</div>
+							<div class="col-sm-6">
+								<div class="form-group">
+									<label>Giá Trị Giảm Tối Đa</label>
+									<input type="text" id="sdt" name="phone" placeholder="Nhập Số Điện Thoại" class="form-control">
+								</div>
+								<div class="form-group" >
+									<label>Ngày Bắt Đầu</label>
+									<input type="date" id="d" name="dateOfBirth" lang="vi" class="form-control">
+								</div>
+								<div class="form-group" id="ngaySinhGroup">
+									<label>Ngày Kết Thúc</label>
+									<input type="date" id="dob" name="dateOfBirth" lang="vi" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Trạng Thái</label>
+									<select class="form-control m-b" id="vaiTro" name="roleId">
+										<option value="1">Hoạt Động</option>
+										<option value="2">Không Hoạt Động</option>
+									</select>
+								</div>
+							</div>
+							<div style="margin-right: 14px">
+								<button id="btnUpdate" class="btn btn-sm btn-success pull-right m-t-n-xs" type="button">
+									<strong>Cập Nhật</strong>
+								</button>
+								<button id="btnAdd" class="btn btn-sm btn-primary pull-right m-t-n-xs" type="button"
+									style="margin-right:6px;">
+									<strong>Thêm</strong>
+								</button>
+							</div>
 						</form>
 					</div>
 				</div>
@@ -230,6 +242,8 @@
 
 	<th:block th:fragment="script">
 		<script th:src="@{/js/admin/voucher.js}"></script>
+		<script th:src="@{/js/admin/event.js}"></script>
 	</th:block>
 </th:block>
+
 </html>

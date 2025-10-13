@@ -32,7 +32,7 @@ public class CustomUserDetails implements UserDetails {
 	// Cho phép đăng nhập bằng username hoặc email
 	@Override
 	public String getUsername() {
-		return user.getUserName(); // giữ nguyên, bạn sẽ xử lý ở service
+		return user.getUserName();
 	}
 
 	@Override

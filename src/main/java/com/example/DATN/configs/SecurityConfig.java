@@ -7,13 +7,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -97,6 +95,10 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationSuccessHandler customSuccessHandler() {
 		return (request, response, authentication) -> {
+
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			request.getSession().setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
 			CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 			String role = userDetails.getAuthorities().iterator().next().getAuthority();
 

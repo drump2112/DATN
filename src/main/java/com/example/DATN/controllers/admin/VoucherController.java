@@ -1,4 +1,4 @@
-package com.example.DATN.controllers;
+package com.example.DATN.controllers.admin;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

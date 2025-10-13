@@ -1,4 +1,4 @@
-package com.example.DATN.controllers;
+package com.example.DATN.controllers.shop;
 
 import java.util.List;
 

@@ -680,7 +680,7 @@ $(document).ready(function () {
   // Hàm thu thập dữ liệu form
   function collectFormData() {
     const formData = new FormData();
-    formData.append("sku", $("#maSp").val());
+    // formData.append("sku", $("#maSp").val());
     formData.append("price", Number($("#price").val()));
     formData.append("status", $("#status").val());
     formData.append("productId", $("#sanPham").val());

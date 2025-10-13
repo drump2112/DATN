@@ -3,9 +3,7 @@ Dropzone.autoDiscover = false;
 var avatarDropzone = null;
 
 $(document).ready(function () {
-
   console.log("load register.js");
-
 
   avatarDropzone = new Dropzone("#avatarDropzone", {
     url: "/dummy-upload",
@@ -19,14 +17,13 @@ $(document).ready(function () {
     dictInvalidFileType: "Chỉ chấp nhận định dạng hình ảnh!",
     previewsContainer: "#avatarDropzone",
     thumbnailWidth: 140,
-    thumbnailHeight: 140
+    thumbnailHeight: 140,
   });
 
   $(".i-checks input").iCheck({
     checkboxClass: "icheckbox_square-green",
     radioClass: "iradio_square-green",
   });
-
 
   $("#btnAdd").click(function (e) {
     e.preventDefault();
@@ -40,7 +37,6 @@ $(document).ready(function () {
       cancelButtonText: "Hủy",
     }).then((result) => {
       if (result.isConfirmed) {
-
         const formData = new FormData();
 
         const dz = Dropzone.forElement("#avatarDropzone");
@@ -91,3 +87,4 @@ $(document).ready(function () {
     });
   });
 });
+
