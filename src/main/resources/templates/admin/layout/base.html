@@ -8,6 +8,12 @@
     />
     <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
 
+    <link th:href="@{/assets/css/plugins/slick/slick.css}" rel="stylesheet" />
+    <link
+      th:href="@{/assets/css/plugins/slick/slick-theme.css}"
+      rel="stylesheet"
+    />
+
     <link
       th:href="@{/assets/css/plugins/dataTables/datatables.min.css}"
       rel="stylesheet"
@@ -36,8 +42,6 @@
       rel="stylesheet"
     />
     <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
-    <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
-
     <style>
       table td,
       table th {
@@ -81,6 +85,6 @@
       </div>
     </div>
     <th:block th:replace="admin/layout/fragments/scripts :: scripts"></th:block>
-    <th:block th:replace="~{::script}"></th:block>
+    <!-- <th:block th:replace="~{::script}"></th:block> -->
   </body>
 </html>
