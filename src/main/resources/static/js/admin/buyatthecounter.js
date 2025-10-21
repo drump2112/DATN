@@ -442,6 +442,29 @@ $(document).ready(function () {
     toastr.info("Thanh toán hoàn tất, không in hóa đơn.");
   });
 
+
+  // Ẩn kết quả khi nhấn ESC trong input hoặc ngoài vùng tìm kiếm
+  $("#searchInput").on("keydown", function (e) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      $("#searchResults").hide();
+      $(this).blur();
+    }
+  });
+
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape") {
+      $("#searchResults").hide();
+    }
+  });
+
+  // Ẩn khi click ra ngoài
+  $(document).on("click", function (e) {
+    if (!$(e.target).closest("#searchResults, #searchInput").length) {
+      $("#searchResults").hide();
+    }
+  });
+
   // ===== Hàm render HTML hóa đơn =====
   function renderInvoiceHTML(invoice) {
     return `
@@ -538,27 +561,7 @@ $(document).ready(function () {
 `;
   }
 
-  // Ẩn kết quả khi nhấn ESC trong input hoặc ngoài vùng tìm kiếm
-  $("#searchInput").on("keydown", function (e) {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      $("#searchResults").hide();
-      $(this).blur();
-    }
-  });
-
-  $(document).on("keydown", function (e) {
-    if (e.key === "Escape") {
-      $("#searchResults").hide();
-    }
-  });
-
-  // Ẩn khi click ra ngoài
-  $(document).on("click", function (e) {
-    if (!$(e.target).closest("#searchResults, #searchInput").length) {
-      $("#searchResults").hide();
-    }
-  });
+  // +++++++++++++ VOUCHER ++++++++++++++//
 
   $(document).on("click", "#showListVoucher", function () {
     $.ajax({
@@ -595,7 +598,7 @@ $(document).ready(function () {
           <div class="col-12 col-sm-6 col-md-4 mb-3">
             <div data-voucher="${item.id}"
                 class="voucher-item card shadow-sm h-100 cursor-pointer"
-                style="border: 1px solid #9caec2; border-radius: 10px; padding: 12px; margin-bottom: 5px">
+                style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 10px">
               <div class="card-body d-flex flex-column justify-content-between"
                   style="padding: 16px;">
                 <div>
@@ -615,7 +618,7 @@ $(document).ready(function () {
           <div class="col-12 col-sm-6 col-md-4 mb-3">
             <div data-voucher="${item.id}"
                 class="voucher-item card shadow-sm h-100 cursor-pointer"
-                style="border: 1px solid #9caec2; border-radius: 10px; padding: 12px; margin-bottom: 5px">
+                style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 5px">
               <div class="card-body d-flex flex-column justify-content-between"
                   style="padding: 16px;">
                 <div>
@@ -642,25 +645,80 @@ $(document).ready(function () {
       ${html}
     </div>
   `);
-
     handleClickVoucher(voucherList);
   }
 
   function handleClickVoucher(voucherList) {
     $(".voucher-item").on("click", function () {
       const voucherId = $(this).data("voucher");
-      const item = voucherList.find(v => v.id == voucherId);
-      console.log("Voucher đã chọn:", item);
+      const voucher = voucherList.find(v => v.id == voucherId);
 
-      // Ẩn modal sau khi chọn
+      if (!voucher) return;
+
+      // Giả sử bạn có biến lưu tổng tiền đơn hàng:
+      const totalOrderAmount = parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
+
+      // Kiểm tra điều kiện áp dụng
+      const now = new Date();
+      const start = new Date(voucher.startDate);
+      const end = new Date(voucher.endDate);
+
+      if (totalOrderAmount < voucher.minOrderAmount) {
+        Swal.fire("Không đủ điều kiện!", "Đơn hàng chưa đạt giá trị tối thiểu để áp dụng voucher này.", "warning");
+        return;
+      }
+      if (now < start || now > end) {
+        Swal.fire("Voucher hết hạn hoặc chưa đến ngày áp dụng!", "", "error");
+        return;
+      }
+
+      // Tính giá trị giảm
+      let discountAmount = 0;
+      if (voucher.discountType === "PERCENT") {
+        discountAmount = (totalOrderAmount * voucher.discountValue) / 100;
+        if (voucher.maxDiscountValue && discountAmount > voucher.maxDiscountValue) {
+          discountAmount = voucher.maxDiscountValue;
+        }
+      } else {
+        discountAmount = voucher.discountValue;
+      }
+
+      // Cập nhật giao diện
       $("#listVoucher").modal("hide");
+      $("#showListVoucher").hide();
 
-      // Hiển thị tóm tắt mã giảm giá đã chọn
-      Swal.fire({
-        icon: "success",
-        title: "Đã chọn voucher",
-        text: `Mã giảm ${item.discountValue}đ - HSD: ${new Date(item.endDate).toLocaleDateString('vi-VN')}`
-      });
+      $("#voucherDescription").html(
+        `Đang áp dụng: <strong>${voucher.code}</strong>
+      (${voucher.discountType === "PERCENT" ? voucher.discountValue + "%" : voucher.discountValue.toLocaleString() + "đ"})`
+      );
+      $("#selectedVoucherInfo").show();
+
+      // Cập nhật tiền giảm & tổng thanh toán
+      $("#discountAmount").text(discountAmount.toLocaleString() + " đ");
+      const newTotal = totalOrderAmount - discountAmount;
+      $("#finalTotal").text(newTotal.toLocaleString() + " đ");
+
+      // Lưu voucher đã chọn nếu cần
+      window.selectedVoucher = voucher;
+
+      Swal.fire("Áp dụng thành công!", "Voucher đã được áp dụng vào đơn hàng.", "success");
     });
   }
+
+  $(document).on("click", "#cancelVoucher", function () {
+    $("#selectedVoucherInfo").hide();
+    $("#showListVoucher").show();
+
+    // Reset tiền giảm
+    $("#discountAmount").text("0 đ");
+
+    const totalOrderAmount = parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
+    $("#finalTotal").text(totalOrderAmount.toLocaleString() + " đ");
+
+    window.selectedVoucher = null;
+
+    Swal.fire("Đã hủy voucher", "Bạn có thể chọn lại voucher khác.", "info");
+  });
+
+
 });

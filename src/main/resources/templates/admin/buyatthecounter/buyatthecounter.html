@@ -100,15 +100,24 @@
                     Khách Hàng :
                   </li>
                   <li class="list-group-item">
-                    <span class="pull-right"> 0 VNĐ</span> Tổng Tiền Hàng :
+                    <span class="pull-right" id="totalOrderAmount"> 0 VNĐ</span> Tổng Tiền Hàng :
                   </li>
                   <li class="list-group-item" style="border: none;">
-                    <span class="pull-right"><button class="btn" id="showListVoucher">Chọn mã giảm giá</button></span>
+                    <div id="voucherSection" class="d-flex justify-content-between align-items-center">
+                      <button class="btn btn-sm btn-outline-primary" id="showListVoucher">Chọn mã giảm giá</button>
+                      <div id="selectedVoucherInfo" style="display: none; width: 100%;">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span id="voucherDescription" class="text-success"></span>
+                          <button id="cancelVoucher" class="btn btn-sm btn-outline-danger">Hủy</button>
+                        </div>
+                      </div>
+                    </div>
                     Giảm giá :
                   </li>
+
                   <br>
                   <li class="list-group-item">
-                    <span class="pull-right">0đ</span> <b> Tổng Thanh Toán :</b>
+                    <span class="pull-right" id="finalTotal">0đ</span> <b> Tổng Thanh Toán :</b>
                   </li>
                   <li class="list-group-item">
                     <span class="pull-right"><input type="text" class="form-control" value="0"></span>
