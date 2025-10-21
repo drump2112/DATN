@@ -30,8 +30,11 @@ public class HomeController {
 
 	@GetMapping("/")
 	public String getProducts(Model model) {
+
 		List<ProductDTO> list = service.getProductActive();
+
 		model.addAttribute("listProducts", list);
+
 		return "shop/index";
 	}
 
@@ -48,6 +51,7 @@ public class HomeController {
 			log.info(variant.toString());
 		}
 		model.addAttribute("product", product);
+		model.addAttribute("showSlide", false);
 		try {
 			String variantsJson = new ObjectMapper().writeValueAsString(variants);
 			model.addAttribute("variants", variantsJson);
@@ -58,4 +62,12 @@ public class HomeController {
 
 		return "shop/product-detail";
 	}
+
+	@GetMapping("/profile")
+	public String getProfile(Model model) {
+		model.addAttribute("showSlide", false);
+
+		return "shop/profile";
+	}
+
 }

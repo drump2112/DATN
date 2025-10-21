@@ -38,4 +38,8 @@ public class ProductDTO {
 	private Boolean isActive;
 
 	private String thumbnail;
+
+	private Double minPrice;
+
+	private Double maxPrice;
 }

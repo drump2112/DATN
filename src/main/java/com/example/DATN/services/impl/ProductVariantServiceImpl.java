@@ -79,30 +79,24 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 	@Override
 	public boolean addProductVariant(ProductVariantRequest req) {
 		// Kiểm tra biến thể đã tồn tại
-		List<String> existingSizes = new ArrayList<>(); // Danh sách size đã tồn tại
+		List<String> existingSizes = new ArrayList<>();
 		for (Integer sizeId : req.getSizeIds()) {
 			boolean exists = productVariantRepository.existsByProductIdAndColorIdAndSizeId(
 					req.getProductId(), req.getColorId(), sizeId);
 			if (exists) {
-				existingSizes.add(sizeRepository.findById(sizeId).get().getName()); // Thêm vào list thay vì throw ngay
+				existingSizes.add(sizeRepository.findById(sizeId).get().getName());
 			}
 		}
-		// Xử lý message dựa trên số lượng size tồn tại
 		if (!existingSizes.isEmpty()) {
-			String message;
-			if (existingSizes.size() == 1) {
-				message = "Size " + existingSizes.get(0) + " đã tồn tại";
-			} else {
-				StringBuilder sb = new StringBuilder("Các size \n");
-				for (String size : existingSizes) {
-					sb.append("Size ").append(size);
-				}
-				sb = sb.append(" đã tồn tại\n");
-				message = sb.toString();
-			}
-
+			String message = existingSizes.size() == 1
+					? "Size " + existingSizes.get(0) + " đã tồn tại"
+					: "Các size " + String.join(", ", existingSizes) + " đã tồn tại";
 			throw new BusinessException(message);
 		}
+
+		// Kiểm tra màu có tồn tại hay chưa trước khi lưu
+		boolean colorExists = productVariantRepository.existsByProductIdAndColorId(req.getProductId(),
+				req.getColorId());
 
 		// Kiểm tra giá chung
 		Optional<BigDecimal> existingPrice = productVariantRepository
@@ -117,9 +111,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		List<ProductVariant> variants = fromRequest(req);
 		productVariantRepository.saveAll(variants);
 
-		// Lưu ảnh (chung cho 1 màu)
-		boolean colorExists = productVariantRepository.existsByProductIdAndColorId(req.getProductId(),
-				req.getColorId());
+		// Chỉ lưu ảnh nếu đây là màu mới
 		if (!colorExists) {
 			saveProductVariantImages(variants.get(0), req.getImages());
 		}
@@ -136,7 +128,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		List<ProductVariant> variants = new ArrayList<>();
 
-		// ✅ Lấy VariantCode lớn nhất hiện có
+		// Lấy VariantCode lớn nhất hiện có
 		String maxCode = productVariantRepository.findMaxVariantCode();
 		int nextNumber = 1;
 		if (maxCode != null) {
@@ -154,7 +146,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 			Integer quantity = req.getQuantities().get(sizeId);
 
-			// ✅ Tạo code duy nhất cho từng vòng lặp
+			// Tạo code duy nhất cho từng vòng lặp
 			String variantCode = String.format("PV-%03d", nextNumber);
 			nextNumber++;
 
@@ -182,6 +174,68 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		productVariantRepository.save(productVariant);
 		return true;
 	}
+
+//    @Override
+    public List<ProductVariantDTO> search(String keyword) {
+        List<ProductVariant> list = productVariantRepository.searchByKeyword(keyword);
+
+        return list.stream().map(pv -> ProductVariantDTO.builder()
+                .id(pv.getId())
+                .variantCode(pv.getVariantCode())
+                .productId(pv.getProduct() != null ? pv.getProduct().getId() : null)
+                .productName(pv.getProduct() != null ? pv.getProduct().getName() : null)
+                .colorId(pv.getColor() != null ? pv.getColor().getId() : null)
+                .colorName(pv.getColor() != null ? pv.getColor().getName() : null)
+                .sizeId(pv.getSize() != null ? pv.getSize().getId() : null)
+                .sizeName(pv.getSize() != null ? pv.getSize().getName() : null)
+                .price(pv.getPrice())
+                .quantity(pv.getQuantity())
+                .status(pv.getStatus())
+                .imageUrls(
+                        pv.getProduct() != null && pv.getProduct().getProductVariantImages() != null
+                                ? pv.getProduct().getProductVariantImages().stream()
+                                .filter(img -> pv.getColor() != null && img.getColor().getId().equals(pv.getColor().getId()))
+                                .map(ProductVariantImage::getImageUrl)
+                                .collect(Collectors.toList())
+                                : new ArrayList<>()
+                )
+                .build()
+        ).collect(Collectors.toList());
+    }
+//@Override
+//public List<ProductVariantDTO> search(String keyword) {
+//    List<ProductVariant> list = productVariantRepository.searchByKeyword(keyword);
+//
+//    return list.stream().map(pv -> {
+//        String imageUrl = null;
+//
+//        if (pv.getProduct() != null
+//                && pv.getProduct().getProductVariantImages() != null
+//                && pv.getColor() != null) {
+//            imageUrl = pv.getProduct().getProductVariantImages().stream()
+//                    .filter(img -> img.getColor().getId().equals(pv.getColor().getId()))
+//                    .map(ProductVariantImage::getImageUrl)
+//                    .findFirst()
+//                    .orElse(null);
+//        }
+//
+//        return ProductVariantDTO.builder()
+//                .id(pv.getId())
+//                .variantCode(pv.getVariantCode())
+//                .productId(pv.getProduct() != null ? pv.getProduct().getId() : null)
+//                .productName(pv.getProduct() != null ? pv.getProduct().getName() : null)
+//                .colorId(pv.getColor() != null ? pv.getColor().getId() : null)
+//                .colorName(pv.getColor() != null ? pv.getColor().getName() : null)
+//                .sizeId(pv.getSize() != null ? pv.getSize().getId() : null)
+//                .sizeName(pv.getSize() != null ? pv.getSize().getName() : null)
+//                .price(pv.getPrice())
+//                .quantity(pv.getQuantity())
+//                .status(pv.getStatus())
+//                .imageUrls(imageUrl != null ? List.of(imageUrl) : new ArrayList<>())
+//                .build();
+//    }).collect(Collectors.toList());
+//}
+
 
 	@Override
 	public Page<ProductVariantDTO> searchProductVariants(
@@ -317,14 +371,14 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		ProductVariant variant = productVariantRepository.findById(id)
 				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
 
-		// ✅ Cập nhật giá nếu có
+		// Cập nhật giá nếu có
 		if (request.getPrice() != null) {
 			variant.setPrice(BigDecimal.valueOf(request.getPrice()));
 		}
 
 		productVariantRepository.save(variant);
 
-		// ✅ Cập nhật ảnh nếu có upload mới
+		// Cập nhật ảnh nếu có upload mới
 		if (request.getImages() != null && !request.getImages().isEmpty()) {
 			// Lấy ảnh cũ
 			List<ProductVariantImage> oldImages = variantImageRepository.findByProductIdAndColorIdOrderBySortOrder(

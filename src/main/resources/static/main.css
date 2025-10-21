@@ -13,3 +13,25 @@
 .text-danger {
   margin-top: 4px;
 }
+
+/* Giữ vùng input-group làm vị trí tham chiếu */
+.buyatthecounter .input-group {
+  position: relative;
+}
+
+/* Dropdown kết quả hiển thị nổi (giống Select2) */
+#searchResults {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  display: none;
+}

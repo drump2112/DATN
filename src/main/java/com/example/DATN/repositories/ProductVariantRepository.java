@@ -49,4 +49,19 @@ public interface ProductVariantRepository
 			"JOIN FETCH pv.size " +
 			"WHERE pv.id = :id")
 	Optional<ProductVariant> findDetailById(@Param("id") Integer id);
+
+	@Query("""
+			    SELECT pv FROM ProductVariant pv
+			    JOIN FETCH pv.product p
+			    JOIN FETCH pv.color c
+			    JOIN FETCH pv.size s
+			    WHERE pv.status = true
+			      AND pv.quantity >= 0
+			      AND (
+			        LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			        OR LOWER(pv.variantCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			      )
+			""")
+	List<ProductVariant> searchByKeyword(@Param("keyword") String keyword);
+
 }

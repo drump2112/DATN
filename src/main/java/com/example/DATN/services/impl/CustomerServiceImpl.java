@@ -5,13 +5,18 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.DATN.configs.email.EmailService;
+import com.example.DATN.dtos.CategoryDTO;
+import com.example.DATN.dtos.CustomerDTO;
 import com.example.DATN.exception.BusinessException;
+import com.example.DATN.models.Category;
 import com.example.DATN.models.Role;
 import com.example.DATN.models.User;
 import com.example.DATN.models.VerificationToken;
@@ -23,60 +28,61 @@ import com.example.DATN.request.EmployeeRequest;
 import com.example.DATN.services.CustomerService;
 import com.example.DATN.services.ImageService;
 
+@Service
 public class CustomerServiceImpl implements CustomerService {
 
-  @Autowired
-  private UserRepository userRepository;
+	@Autowired
+	private UserRepository userRepository;
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-  @Autowired
-  private VerificationTokenRepository tokenRepository;
+	@Autowired
+	private VerificationTokenRepository tokenRepository;
 
-  @Autowired
-  private EmailService emailService;
+	@Autowired
+	private EmailService emailService;
 
-  @Autowired
-  private ImageService imageService;
+	@Autowired
+	private ImageService imageService;
 
-  @Autowired
-  private RoleRepository roleRepository;
+	@Autowired
+	private RoleRepository roleRepository;
 
-  @Override
-  public boolean addCustomer(CustomerRequest customerRequest) {
-    List<Integer> checkRoles = List.of(1, 2);
+	@Override
+	public boolean addCustomer(CustomerRequest customerRequest) {
+		List<Integer> checkRoles = List.of(1, 2);
 
-    if (userRepository.existsByEmailAndRoleIdIn(customerRequest.getEmail(), checkRoles)) {
-      throw new BusinessException("Email đã được sử dụng.");
-    }
+		if (userRepository.existsByEmailAndRoleIdIn(customerRequest.getEmail(), checkRoles)) {
+			throw new BusinessException("Email đã được sử dụng.");
+		}
 
-    if (userRepository.existsByPhoneAndRoleIdIn(customerRequest.getPhone(), checkRoles)) {
-      throw new BusinessException("Số điện thoại đã được sử dụng.");
-    }
+		if (userRepository.existsByPhoneAndRoleIdIn(customerRequest.getPhone(), checkRoles)) {
+			throw new BusinessException("Số điện thoại đã được sử dụng.");
+		}
 
-    if (userRepository.existsByUserNameAndRoleIdIn(customerRequest.getUserName(), checkRoles)) {
-      throw new BusinessException("Tên đăng nhập đã tồn tại");
-    }
+		if (userRepository.existsByUserNameAndRoleIdIn(customerRequest.getUserName(), checkRoles)) {
+			throw new BusinessException("Tên đăng nhập đã tồn tại");
+		}
 
-    User customer = fromRequest(customerRequest);
+		User customer = fromRequest(customerRequest);
 
-    userRepository.save(customer);
+		userRepository.save(customer);
 
-    String token = UUID.randomUUID().toString();
-    VerificationToken verificationToken = new VerificationToken();
-    verificationToken.setToken(token);
-    verificationToken.setUser(customer);
-    verificationToken.setExpiryDate(LocalDateTime.now().plusDays(1));
+		String token = UUID.randomUUID().toString();
+		VerificationToken verificationToken = new VerificationToken();
+		verificationToken.setToken(token);
+		verificationToken.setUser(customer);
+		verificationToken.setExpiryDate(LocalDateTime.now().plusDays(1));
 
-    tokenRepository.save(verificationToken);
+		tokenRepository.save(verificationToken);
 
-    emailService.sendVerificationEmail(customer, token);
+		emailService.sendVerificationEmail(customer, token);
 
-    return true;
-  };
+		return true;
+	};
 
-  public User fromRequest(CustomerRequest req) {
+	public User fromRequest(CustomerRequest req) {
 
 		User.UserBuilder userBuilder = User.builder()
 				.userName(req.getUserName())
@@ -108,7 +114,7 @@ public class CustomerServiceImpl implements CustomerService {
 		return userBuilder.build();
 	}
 
-  private String generateUserCode(Integer roleId) {
+	private String generateUserCode(Integer roleId) {
 		String prefix;
 		switch (roleId) {
 			case 1:
@@ -137,11 +143,36 @@ public class CustomerServiceImpl implements CustomerService {
 		return userCode;
 	}
 
-  	private String uploadAvatar(MultipartFile avatar) {
+	private String uploadAvatar(MultipartFile avatar) {
 		try {
 			return imageService.saveImage(avatar, "customer");
 		} catch (IOException e) {
 			throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
 		}
 	}
+
+	@Override
+	public List<CustomerDTO> getCustomers(String keyword) {
+		List<User> customers;
+		if (keyword != null && !keyword.isBlank()) {
+			customers = userRepository.searchByNameOrPhone(keyword);
+		} else {
+			customers = userRepository.findByRole_Id(3);
+		}
+
+		return customers.stream()
+				.map((User customer) -> CustomerDTO.builder()
+						.id(customer.getId())
+						.fullName(customer.getFullName())
+						.email(customer.getEmail())
+						.phone(customer.getPhone())
+						.address(customer.getAddress())
+						.gender(customer.isGender())
+						.dateOfBirth(customer.getDateOfBirth())
+						.build())
+				.collect(Collectors.toList());
+	}
+
+
+
 }

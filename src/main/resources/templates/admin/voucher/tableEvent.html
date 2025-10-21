@@ -1,20 +1,82 @@
 <th:block th:fragment="table">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Mã Sự Kiện Giảm Giá</th>
-        <th>Tên Sự Kiện</th>
-        <th>Kiểu Giảm</th>
-        <th>Giá Trị Giảm Tối Đa</th>
-        <th>Ngày Bắt Đầu</th>
-        <th>Ngày Kết Thúc</th>
-        <th>Trạng Thái</th>
-        <th>Hành Động</th>
-      </tr>
-    </thead>
-    <tbody>
-
-    </tbody>
-  </table>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mã Sự Kiện Giảm Giá</th>
+                <th>Tên Sự Kiện</th>
+                <th>Kiểu Giảm</th>
+                <th>Giá Trị Giảm Tối Đa</th>
+                <th>Ngày Bắt Đầu</th>
+                <th>Ngày Kết Thúc</th>
+                <th>Trạng Thái</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${events}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${item.code}"></td>
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.discountType}"></td>
+                <td th:text="${item.discountValue}"></td>
+                <td th:text="${item.maxDiscountValue}"></td>
+                <td th:text="${#temporals.format(item.startDate, 'dd/MM/yyyy')}"></td>
+                <td th:text="${#temporals.format(item.endDate, 'dd/MM/yyyy')}"></td>
+                <td th:switch="${item.isActive}">
+                    <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+                    <span th:case="false" class="badge badge-danger">Ngừng</span>
+                </td>
+                <td>
+                    <button class="btn btn-info dim" type="button" th:attr="data-id=${item.id},
+                                data-code=${item.code},
+                                data-name=${item.name},
+                                data-discounttype=${item.discountType},
+                                data-discountvalue=${item.discountValue},
+                                data-maxdiscountvalue=${item.maxDiscountValue},
+                                data-startdate=${item.startDate},
+                                data-enddate=${item.endDate},
+                                data-isactive=${item.isActive}" th:title="'Thông tin và cập nhật'"
+                        onclick="handleEventDetailClick(this)">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                    <button th:id="'btn-status-' + ${item.id}"
+                        th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+                        th:onclick="|toggleEventStatus( ${item.id}, ${item.isActive} )|"
+                        th:title="${item.isActive} ? 'Khóa mã giảm giá' : 'Kích hoạt mã giảm giá'">
+                        <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate"
+        th:if="${eventTotalPages > 0}" style="text-align: right">
+        <ul class="pagination" id="paginationContainer"
+            th:attr="data-total-pages=${eventTotalPages}, data-current-page=${eventCurrentPage}">
+            <!-- Nút Previous -->
+            <li class="paginate_button previous" th:classappend="${eventCurrentPage == 0} ? ' disabled'">
+                <a href="#" tabindex="0" th:onclick="'searchEvent(' + (${eventCurrentPage - 1}) + ')'">
+                    Trước
+                </a>
+            </li>
+            <!-- Nút số trang 1..totalPages -->
+            <li class="paginate_button" th:each="i : ${#numbers.sequence(1, eventTotalPages)}"
+                th:classappend="${i - 1 == eventCurrentPage} ? ' active'">
+                <a href="#" tabindex="0" th:text="${i}" th:onclick="'searchEvent(' + (${i} - 1) + ')'">
+                </a>
+            </li>
+            <!-- Nút Next -->
+            <li class="paginate_button next" th:if="${eventCurrentPage + 1 < eventTotalPages}">
+                <a href="#" tabindex="0" th:onclick="'searchEvent(' + (${eventCurrentPage + 1}) + ')'">
+                    Tiếp
+                </a>
+            </li>
+            <li class="paginate_button next disabled" th:unless="${eventCurrentPage + 1 < totalPages}">
+                <a href="#" tabindex="0" th:onclick="'searchEvent(' + (${eventTotalPages - 1}) + ')'">
+                    Tiếp
+                </a>
+            </li>
+        </ul>
+    </div>
 </th:block>

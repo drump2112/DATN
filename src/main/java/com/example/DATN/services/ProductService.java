@@ -3,7 +3,6 @@ package com.example.DATN.services;
 import java.util.List;
 
 import com.example.DATN.dtos.ProductDTO;
-import com.example.DATN.models.Product;
 import com.example.DATN.request.ProductRequest;
 
 import org.springframework.data.domain.Page;
@@ -29,6 +28,6 @@ public interface ProductService {
 
 	ProductDTO getById(Integer id);
 
-  long countAll();
+	long countAll();
 
 }

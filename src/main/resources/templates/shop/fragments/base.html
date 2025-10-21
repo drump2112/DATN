@@ -1,88 +1,76 @@
 <!doctype html>
-<html
-  lang="vi"
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  th:fragment="base"
->
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  th:fragment="base">
 
-    <title>Trang Chủ</title>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
 
-    <!-- Bootstrap core CSS -->
-    <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" />
+  <title>Trang Chủ</title>
 
-    <!-- Animation CSS -->
-    <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
-    <link th:href="@{/assets/css/plugins/slick/slick.css}" rel="stylesheet" />
-    <link
-      th:href="@{/assets/css/plugins/slick/slick-theme.css}"
-      rel="stylesheet"
-    />
-    <link
-      th:href="@{/assets/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css}"
-      rel="stylesheet"
-      class="__web-inspector-hide-shortcut__"
-    />
-    <link
-      th:href="@{/assets/font-awesome/css/font-awesome.min.css}"
-      rel="stylesheet"
-    />
-    <link
-      th:href="@{/assets/css/plugins/dropzone/dropzone.css}"
-      rel="stylesheet"
-    />
+  <!-- Bootstrap core CSS -->
+  <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" />
 
-    <link
-      rel="stylesheet"
-      th:href="@{/assets/css/plugins/dropzone/basic.css}"
-    />
-    <!-- Custom styles for this template -->
-    <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
-    <link th:href="@{/assets/css/plugins/iCheck/custom.css}" rel="stylesheet" />
+  <!-- Animation CSS -->
+  <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
+  <link th:href="@{/assets/css/plugins/slick/slick.css}" rel="stylesheet" />
+  <link th:href="@{/assets/css/plugins/slick/slick-theme.css}" rel="stylesheet" />
+  <link th:href="@{/assets/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css}" rel="stylesheet"
+    class="__web-inspector-hide-shortcut__" />
+  <link th:href="@{/assets/font-awesome/css/font-awesome.min.css}" rel="stylesheet" />
+  <link th:href="@{/assets/css/plugins/dropzone/dropzone.css}" rel="stylesheet" />
 
-    <style>
-      /* Ẩn radio gốc */
-      .size input[type="radio"],
-      .color input[type="radio"] {
-        display: none;
-      }
+  <link rel="stylesheet" th:href="@{/assets/css/plugins/dropzone/basic.css}" />
+  <!-- Custom styles for this template -->
+  <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
+  <link th:href="@{/assets/css/plugins/iCheck/custom.css}" rel="stylesheet" />
 
-      /* Label styled như button */
-      .size label,
-      .color label {
-        display: inline-block;
-        font-weight: 400;
-        padding: 7px 14px;
-        background-color: #f0f0f0;
-        color: #333;
-        border: 2px solid transparent;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        margin: 5px;
-      }
+  <style>
+    /* Ẩn radio gốc */
+    .size input[type="radio"],
+    .color input[type="radio"] {
+      display: none;
+    }
 
-      /* Khi radio được chọn */
-      .size input[type="radio"]:checked + label,
-      .color input[type="radio"]:checked + label {
-        background-color: #1bb394;
-        color: white;
-        border-color: #1bb394;
-      }
-    </style>
-  </head>
+    /* Label styled như button */
+    .size label,
+    .color label {
+      display: inline-block;
+      font-weight: 400;
+      padding: 7px 14px;
+      background-color: #f0f0f0;
+      color: #333;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      margin: 5px;
+    }
 
-  <body id="page-top" class="landing-page no-skin-config">
-    <th:block th:replace="shop/fragments/header :: header"> </th:block>
-    <th:block th:replace="shop/fragments/slide :: slide"></th:block>
-    <th:block th:replace="~{::content}"></th:block>
-    <th:block th:replace="shop/fragments/footer :: footer"></th:block>
-    <th:block th:replace="shop/fragments/script :: script"></th:block>
-  </body>
+    /* Khi radio được chọn */
+    .size input[type="radio"]:checked+label,
+    .color input[type="radio"]:checked+label {
+      background-color: #1bb394;
+      color: white;
+      border-color: #1bb394;
+    }
+
+    .dropdown-menu {
+      z-index: 1050;
+      /* hoặc cao hơn nếu cần */
+    }
+  </style>
+</head>
+
+<body id="page-top" class="landing-page no-skin-config">
+  <th:block th:replace="shop/fragments/header :: header"> </th:block>
+  <th:block th:if="${showSlide}" th:replace="shop/fragments/slide :: slide"></th:block>
+  <th:block th:replace="~{::content}"></th:block>
+  <th:block th:replace="shop/fragments/footer :: footer"></th:block>
+  <th:block th:replace="shop/fragments/script :: script"></th:block>
+</body>
+
 </html>

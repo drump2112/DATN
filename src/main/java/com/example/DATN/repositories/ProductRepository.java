@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.example.DATN.dtos.ProductDTO;
 import com.example.DATN.models.Product;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -21,5 +22,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
 
 	List<Product> findByNameContainingIgnoreCase(String name);
 
-	List<Product> findByIsActive(Boolean isActive);
+	@EntityGraph(attributePaths = { "variants" })
+	List<Product> findByIsActive(boolean isActive);
+
 }

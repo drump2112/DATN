@@ -10,8 +10,7 @@ public class OrderController {
 
     @GetMapping("/")
     public String getAllOrders() {
-//        return "admin/order/list";
-        return "order";
+       return "admin/order/list";
     }
 
 

@@ -34,7 +34,7 @@ public class SecurityConfig {
 	public SecurityFilterChain adminSecurity(HttpSecurity http) throws Exception {
 		http
 				.securityMatcher("/admin/**", "/seller/**", "/login", "/do-login") // chỉ áp dụng filter này cho các URL
-																					// này
+				// này
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/assets/**", "/js/**", "/uploads/**").permitAll()
 						.requestMatchers("/login", "/do-login").permitAll()
@@ -55,7 +55,7 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-	// 🧩 2️⃣ SECURITY CHO KHÁCH HÀNG
+	// SECURITY CHO KHÁCH HÀNG
 	@Bean
 	@Order(2)
 	public SecurityFilterChain customerSecurity(HttpSecurity http) throws Exception {

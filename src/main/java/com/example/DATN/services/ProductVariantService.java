@@ -9,10 +9,14 @@ import com.example.DATN.request.ProductVariantUpdateRequest;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProductVariantService {
 
 	Page<ProductVariantDTO> getAllProducts(int page, int size);
+
+	List<ProductVariantDTO> search(String keyword);
 
 	boolean toggleStatus(Integer id);
 
@@ -35,6 +39,8 @@ public interface ProductVariantService {
 			Integer sizeId,
 			Integer cateId,
 			Pageable pageable);
+
+
 
 	public long countAll();
 

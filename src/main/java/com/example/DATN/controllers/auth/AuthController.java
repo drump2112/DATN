@@ -46,7 +46,7 @@ public class AuthController {
 			Authentication authentication) {
 
 		if (authentication != null && authentication.isAuthenticated()) {
-			return "redirect:/home";
+			return "redirect:/admin/home";
 		}
 
 		Object lastUsername = session.getAttribute("lastUsername");

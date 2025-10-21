@@ -3,6 +3,7 @@ package com.example.DATN.repositories;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.DATN.models.Category;
 import com.example.DATN.models.User;
 
 import org.springframework.data.domain.Page;
@@ -48,6 +49,17 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 			"FROM User u WHERE u.userName = :userName AND u.role IS NOT NULL AND u.role.id IN :roleIds")
 	boolean existsByUserNameAndRoleIdIn(@Param("userName") String userName,
 			@Param("roleIds") List<Integer> roleIds);
+
+	@Query("""
+			    SELECT u FROM User u
+			    WHERE u.role.id = 3
+			      AND (LOWER(u.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+			           OR LOWER(u.phone) LIKE LOWER(CONCAT('%', :keyword, '%')))
+			""")
+	List<User> searchByNameOrPhone(@Param("keyword") String keyword);
+
+	List<User> findByRole_Id(Integer roleId);
+
 
 	boolean existsByEmail(String email);
 }

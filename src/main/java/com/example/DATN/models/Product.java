@@ -3,6 +3,8 @@ package com.example.DATN.models;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,9 +59,16 @@ public class Product {
 	@Column(name = "IsActive")
 	private Boolean isActive;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+		@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+
 	private List<ProductVariant> variants;
 
 	@Column(name = "Thumbnail")
 	private String thumbnail;
+
+	@JsonIgnore
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<ProductVariantImage> productVariantImages;
+
+
 }

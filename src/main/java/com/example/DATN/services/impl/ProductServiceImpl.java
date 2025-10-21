@@ -8,10 +8,12 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.ProductDTO;
+import com.example.DATN.dtos.ProductVariantDTO;
 import com.example.DATN.exception.BusinessException;
 import com.example.DATN.models.Brand;
 import com.example.DATN.models.Category;
 import com.example.DATN.models.Product;
+import com.example.DATN.models.ProductVariant;
 import com.example.DATN.repositories.BrandRepository;
 import com.example.DATN.repositories.CategoryRepository;
 import com.example.DATN.repositories.ProductRepository;
@@ -224,11 +226,51 @@ public class ProductServiceImpl implements ProductService {
 
 	}
 
+	// @Override
+	// public List<ProductDTO> getProductActive() {
+	// return productRepository.findByIsActive(true).stream()
+	// .map(entity -> {
+	// ProductDTO dto = modelMapper.map(entity, ProductDTO.class);
+
+	// if (entity.getVariants() != null && !entity.getVariants().isEmpty()) {
+	// double minPrice = entity.getVariants().stream()
+	// .mapToDouble(v -> v.getPrice().doubleValue())
+	// .min()
+	// .orElse(0);
+	// double maxPrice = entity.getVariants().stream()
+	// .mapToDouble(v -> v.getPrice().doubleValue())
+	// .max()
+	// .orElse(0);
+	// dto.setMinPrice(minPrice);
+	// dto.setMaxPrice(maxPrice);
+	// }
+
+	// return dto;
+	// })
+	// .toList();
+	// }
+
 	@Override
 	public List<ProductDTO> getProductActive() {
 		return productRepository.findByIsActive(true).stream()
-				.map(product -> modelMapper.map(product, ProductDTO.class))
-				.collect(Collectors.toList());
+				.filter(entity -> entity.getVariants() != null && !entity.getVariants().isEmpty()) // Lọc sản phẩm có biến thể
+				.map(entity -> {
+					ProductDTO dto = modelMapper.map(entity, ProductDTO.class);
+
+					double minPrice = entity.getVariants().stream()
+							.mapToDouble(v -> v.getPrice().doubleValue())
+							.min()
+							.orElse(0);
+					double maxPrice = entity.getVariants().stream()
+							.mapToDouble(v -> v.getPrice().doubleValue())
+							.max()
+							.orElse(0);
+					dto.setMinPrice(minPrice);
+					dto.setMaxPrice(maxPrice);
+
+					return dto;
+				})
+				.toList();
 	}
 
 	@Override
