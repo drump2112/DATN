@@ -21,11 +21,17 @@
                 <td th:text="${item.id}"></td>
                 <td th:text="${item.code}"></td>
                 <td th:text="${item.name}"></td>
-                <td th:text="${item.discountType}"></td>
-                <td th:text="${item.discountValue}"></td>
-                <td th:text="${item.minOrderAmount}"></td>
-                <td th:text="${item.maxDiscountValue}"></td>
-                <td th:text="${item.quantity}"></td>
+                <td th:switch="${item.discountType}">
+                    <span th:case="'FIXED'" class="badge badge-success">Cố Định</span>
+                    <span th:case="'PERCENT'" class="badge badge-info">Theo %</span>
+                    <span th:case="*">Unknown</span>
+                </td>
+                <td
+                    th:text="${#numbers.formatDecimal(item.discountValue, 0, 0)} + ' ' + (${#strings.toUpperCase(item.discountType)} == 'FIXED' ? 'VNĐ' : '%')">
+                </td>
+                <td th:text="${#numbers.formatDecimal(item.minOrderAmount, 0, 0)} + ' VNĐ'"></td>
+                <td th:text="${#numbers.formatDecimal(item.maxDiscountValue, 0, 0)} + ' VNĐ'"></td>
+                <td th:text="${#numbers.formatDecimal(item.quantity, 0, 0)}"></td>
                 <td th:text="${#temporals.format(item.startDate, 'dd/MM/yyyy')}"></td>
                 <td th:text="${#temporals.format(item.endDate, 'dd/MM/yyyy')}"></td>
                 <td th:switch="${item.isActive}">

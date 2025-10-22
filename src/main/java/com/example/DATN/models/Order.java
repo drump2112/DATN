@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Builder;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -64,5 +67,6 @@ public class Order {
     private Voucher voucher;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<OrderItem> items = new ArrayList<>();
 }

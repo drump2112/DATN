@@ -303,7 +303,6 @@ function clearValidationErrors() {
 $(document).on("click", "#btnSaveVoucher", function () {
     if (!validateVoucher()) return;
 
-
     Swal.fire({
         title: "Xác nhận thêm voucher?",
         icon: "question",

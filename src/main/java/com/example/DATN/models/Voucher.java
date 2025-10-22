@@ -10,6 +10,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(name = "Voucher")
 @Data
@@ -52,5 +55,6 @@ public class Voucher {
     private Boolean isActive;
 
     @OneToMany(mappedBy = "voucher", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Order> orders;
 }

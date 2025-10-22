@@ -10,6 +10,7 @@ import com.example.DATN.models.User;
 import com.example.DATN.repositories.OrderRepository;
 import com.example.DATN.repositories.ProductVariantRepository;
 import com.example.DATN.repositories.UserRepository;
+import com.example.DATN.repositories.VoucherRepository;
 import com.example.DATN.request.CounterOrderRequest;
 import com.example.DATN.services.OrderService;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,6 +35,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private VoucherRepository voucherRepository;
 
     @Override
     @Transactional
@@ -85,9 +89,21 @@ public class OrderServiceImpl implements OrderService {
             items.add(item);
         }
 
+        BigDecimal discountAmount = BigDecimal.ZERO;
+
+        if (request.getVoucherId() != null) {
+            order.setDiscountAmount(request.getDiscountAmount());
+            discountAmount = request.getDiscountAmount();
+            order.setVoucher(voucherRepository.findById(request.getVoucherId()).orElse(null));
+        } else {
+            order.setDiscountAmount(BigDecimal.ZERO);
+            order.setVoucher(null);
+
+        }
+
         order.setItems(items);
         order.setTotalAmount(totalAmount);
-        order.setFinalAmount(totalAmount); // chưa tính giảm giá
+        order.setFinalAmount(totalAmount.subtract(discountAmount)); // chưa tính giảm giá
         return orderRepository.save(order);
     }
 
