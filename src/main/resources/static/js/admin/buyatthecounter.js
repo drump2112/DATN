@@ -421,11 +421,9 @@ $(document).ready(function () {
       const orderCode = "HD" + Date.now();
       const qrUrl = `https://img.vietqr.io/image/970436-0691000350665-compact.png?amount=${totalAmount}&addInfo=${orderCode}`;
 
-      // Truyền đủ dữ liệu để showQrModal() tạo đơn khi xác nhận
       showQrModal(qrUrl, orderCode, tabId, userId, paymentMethod, orderItems, voucherId, discountAmount);
 
     } else {
-      // Thanh toán khác (tiền mặt, v.v.)
       createCounterOrder(userId, paymentMethod, orderItems, tabId, voucherId, discountAmount);
     }
   }
