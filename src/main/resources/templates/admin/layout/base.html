@@ -51,9 +51,32 @@
       transition: all 0.2s ease-in-out;
       box-shadow: 1px 4px 10px rgba(0, 123, 255, 0.2);
     }
+
+    .product-imitation {
+      width: 100% !important;
+      height: 150px !important;
+      /* ép có chiều cao */
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 6px;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 0 !important;
+    }
+
+    .product-imitation img {
+      display: block !important;
+      width: auto !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      object-fit: contain !important;
+    }
   </style>
   <title th:text="${pageTitle}">Default title</title>
 </head>
+
 
 <body>
   <div id="wrapper">

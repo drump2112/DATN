@@ -62,10 +62,23 @@
       z-index: 1050;
       /* hoặc cao hơn nếu cần */
     }
+
+    .logo-area {
+      display: inline-block;
+      width: 120px;
+      height: 20px;
+    }
+
+    .logo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      /* Hoặc "cover" nếu bạn muốn ảnh cắt cho vừa */
+    }
   </style>
 </head>
 
-<body id="page-top" class="landing-page no-skin-config">
+<body id="page-top" class="landing-page no-skin-config" style="position: relative;">
   <th:block th:replace="shop/fragments/header :: header"> </th:block>
   <th:block th:if="${showSlide}" th:replace="shop/fragments/slide :: slide"></th:block>
   <th:block th:replace="~{::content}"></th:block>

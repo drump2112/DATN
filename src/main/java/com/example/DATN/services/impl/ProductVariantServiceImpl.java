@@ -175,66 +175,69 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		return true;
 	}
 
-//    @Override
-    public List<ProductVariantDTO> search(String keyword) {
-        List<ProductVariant> list = productVariantRepository.searchByKeyword(keyword);
+	@Override
+	public List<ProductVariantDTO> search(String keyword) {
+		List<ProductVariant> list = productVariantRepository.searchByKeyword(keyword);
 
-        return list.stream().map(pv -> ProductVariantDTO.builder()
-                .id(pv.getId())
-                .variantCode(pv.getVariantCode())
-                .productId(pv.getProduct() != null ? pv.getProduct().getId() : null)
-                .productName(pv.getProduct() != null ? pv.getProduct().getName() : null)
-                .colorId(pv.getColor() != null ? pv.getColor().getId() : null)
-                .colorName(pv.getColor() != null ? pv.getColor().getName() : null)
-                .sizeId(pv.getSize() != null ? pv.getSize().getId() : null)
-                .sizeName(pv.getSize() != null ? pv.getSize().getName() : null)
-                .price(pv.getPrice())
-                .quantity(pv.getQuantity())
-                .status(pv.getStatus())
-                .imageUrls(
-                        pv.getProduct() != null && pv.getProduct().getProductVariantImages() != null
-                                ? pv.getProduct().getProductVariantImages().stream()
-                                .filter(img -> pv.getColor() != null && img.getColor().getId().equals(pv.getColor().getId()))
-                                .map(ProductVariantImage::getImageUrl)
-                                .collect(Collectors.toList())
-                                : new ArrayList<>()
-                )
-                .build()
-        ).collect(Collectors.toList());
-    }
-//@Override
-//public List<ProductVariantDTO> search(String keyword) {
-//    List<ProductVariant> list = productVariantRepository.searchByKeyword(keyword);
-//
-//    return list.stream().map(pv -> {
-//        String imageUrl = null;
-//
-//        if (pv.getProduct() != null
-//                && pv.getProduct().getProductVariantImages() != null
-//                && pv.getColor() != null) {
-//            imageUrl = pv.getProduct().getProductVariantImages().stream()
-//                    .filter(img -> img.getColor().getId().equals(pv.getColor().getId()))
-//                    .map(ProductVariantImage::getImageUrl)
-//                    .findFirst()
-//                    .orElse(null);
-//        }
-//
-//        return ProductVariantDTO.builder()
-//                .id(pv.getId())
-//                .variantCode(pv.getVariantCode())
-//                .productId(pv.getProduct() != null ? pv.getProduct().getId() : null)
-//                .productName(pv.getProduct() != null ? pv.getProduct().getName() : null)
-//                .colorId(pv.getColor() != null ? pv.getColor().getId() : null)
-//                .colorName(pv.getColor() != null ? pv.getColor().getName() : null)
-//                .sizeId(pv.getSize() != null ? pv.getSize().getId() : null)
-//                .sizeName(pv.getSize() != null ? pv.getSize().getName() : null)
-//                .price(pv.getPrice())
-//                .quantity(pv.getQuantity())
-//                .status(pv.getStatus())
-//                .imageUrls(imageUrl != null ? List.of(imageUrl) : new ArrayList<>())
-//                .build();
-//    }).collect(Collectors.toList());
-//}
+		return list.stream().map(pv -> ProductVariantDTO.builder()
+				.id(pv.getId())
+				.variantCode(pv.getVariantCode())
+				.productId(pv.getProduct() != null ? pv.getProduct().getId() : null)
+				.productName(pv.getProduct() != null ? pv.getProduct().getName() : null)
+				.colorId(pv.getColor() != null ? pv.getColor().getId() : null)
+				.colorName(pv.getColor() != null ? pv.getColor().getName() : null)
+				.sizeId(pv.getSize() != null ? pv.getSize().getId() : null)
+				.sizeName(pv.getSize() != null ? pv.getSize().getName() : null)
+				.price(pv.getPrice())
+				.quantity(pv.getQuantity())
+				.status(pv.getStatus())
+				.imageUrls(
+						pv.getProduct() != null && pv.getProduct().getProductVariantImages() != null
+								? pv.getProduct().getProductVariantImages().stream()
+										.filter(img -> pv.getColor() != null && img.getColor().getId().equals(pv.getColor().getId()))
+										.map(ProductVariantImage::getImageUrl)
+										.collect(Collectors.toList())
+								: new ArrayList<>())
+				.build()).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductVariantDTO> findAllActive() {
+		List<ProductVariant> list = productVariantRepository.findByStatusTrue();
+
+		return list.stream().map(pv -> ProductVariantDTO.builder()
+				.id(pv.getId())
+				.variantCode(pv.getVariantCode())
+				.productId(pv.getProduct() != null ? pv.getProduct().getId() : null)
+				.productName(pv.getProduct() != null ? pv.getProduct().getName() : null)
+				.productDescription(pv.getProduct() != null ? pv.getProduct().getDescription() : null)
+				.brandId(
+						pv.getProduct() != null && pv.getProduct().getBrand() != null ? pv.getProduct().getBrand().getId() : null)
+				.brandName(
+						pv.getProduct() != null && pv.getProduct().getBrand() != null ? pv.getProduct().getBrand().getName() : null)
+				.categoryId(
+						pv.getProduct() != null && pv.getProduct().getCategory() != null ? pv.getProduct().getCategory().getId()
+								: null)
+				.categoryName(
+						pv.getProduct() != null && pv.getProduct().getCategory() != null ? pv.getProduct().getCategory().getName()
+								: null)
+				.colorId(pv.getColor() != null ? pv.getColor().getId() : null)
+				.colorName(pv.getColor() != null ? pv.getColor().getName() : null)
+				.sizeId(pv.getSize() != null ? pv.getSize().getId() : null)
+				.sizeName(pv.getSize() != null ? pv.getSize().getName() : null)
+				.price(pv.getPrice())
+				.quantity(pv.getQuantity())
+				.status(pv.getStatus())
+				.imageUrls(
+						pv.getProduct() != null && pv.getProduct().getProductVariantImages() != null
+								? pv.getProduct().getProductVariantImages().stream()
+										.filter(img -> pv.getColor() != null && img.getColor().getId().equals(pv.getColor().getId()))
+										.map(ProductVariantImage::getImageUrl)
+										.collect(Collectors.toList())
+								: new ArrayList<>())
+				.build()).collect(Collectors.toList());
+	}
+
 
 
 	@Override

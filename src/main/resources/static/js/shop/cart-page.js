@@ -1,74 +1,104 @@
-// cart-page.js
 $(document).ready(function () {
-  function renderCart() {
-    const cart = Cart.loadCart();
+  function renderCart(cart) {
     const $tbody = $(".shoping-cart-table tbody");
     $tbody.empty();
 
-    if (cart.length === 0) {
+    if (!cart || cart.length === 0) {
       $tbody.append(`
-        <tr>
-          <td colspan="5" class="text-center">Giỏ hàng trống</td>
-        </tr>
-      `);
-      $(".cart-summary-total").text("0 đ");
+      <tr>
+        <td colspan="5" class="text-center">Giỏ hàng trống</td>
+      </tr>
+    `);
+      $(".cart-summary-total").text("0 VNĐ");
+      $(".ibox-title .pull-right strong").text("0");
       return;
     }
 
     cart.forEach((item, index) => {
-      console.log(item.name); // Giày Nike Air
-      console.log(item.colorName); // Đỏ
-      console.log(item.sizeName);
       $tbody.append(`
-        <tr data-index="${index}">
-          <td width="90">
-            <img src="${item.image}" alt="${item.name}" style="width:80px;height:auto;"/>
-          </td>
-          <td class="desc">
-            <h3>${item.name}</h3>
-            <p><small>Màu: ${item.colorName} | Size: ${item.sizeName}</small></p> 
-		  </td>
-          <td>${item.price.toLocaleString()} đ</td>
-          <td>
-            <input type="number" min="1" class="form-control quantity-input" value="${item.quantity}" style="width:80px"/>
-          </td>
-          <td>
-            <strong>${(item.price * item.quantity).toLocaleString()} đ</strong>
-          </td>
-          <td>
-			<button class="btn btn-danger btn-sm remove-item" data-index="${index}">
-              <i class="fa fa-trash"></i>
-            </button>
-          </td>
-        </tr>
-      `);
+      <tr data-variant-id="${item.variantId}">
+        <td width="90">
+          <img src="${item.image}" alt="${item.name}" style="width:80px;height:auto;"/>
+        </td>
+        <td class="desc">
+          <h3>${item.name}</h3>
+          <p><small>Màu: ${item.colorName} | Size: ${item.sizeName}</small></p>
+        </td>
+        <td>${item.price.toLocaleString()} VNĐ</td>
+        <td>
+          <input type="number" min="1" class="form-control quantity-input" value="${item.quantity}" style="width:80px"/>
+        </td>
+        <td>
+          <strong>${(item.price * item.quantity).toLocaleString()} VNĐ</strong>
+        </td>
+        <td>
+          <button class="btn btn-danger btn-sm remove-item">
+            <i class="fa fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `);
     });
 
-    // cập nhật tổng
-    $(".cart-summary-total").text(Cart.getTotal().toLocaleString() + " đ");
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    $(".cart-summary-total").text(total.toLocaleString() + " VNĐ");
+
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    $(".ibox-title .pull-right strong").text(totalItems);
   }
 
-  // Render lần đầu
-  renderCart();
+  // Load cart from server
+  function loadCart() {
+    $.get("/cart/items")
+      .done(function(cart) {
+        renderCart(cart);
+        // Cập nhật số lượng trên cart icon
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        $("#cart-count").text(totalItems);
+      })
+      .fail(function(xhr) {
+        console.error("Error loading cart:", xhr);
+      });
+  }
 
-  // Xóa sản phẩm
+  loadCart();
+
   $(document).on("click", ".remove-item", function () {
-    const index = $(this).closest("tr").data("index");
-    let cart = Cart.loadCart();
-    cart.splice(index, 1); // xóa 1 phần tử
-    Cart.saveCart(cart);
-    renderCart();
+    const variantId = $(this).closest("tr").data("variant-id");
+    $.ajax({
+      url: `/cart/remove/${variantId}`,
+      method: "DELETE",
+      success: function(cart) {
+        renderCart(cart);
+        // Cập nhật số lượng trên cart icon
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        $("#cart-count").text(totalItems);
+      },
+      error: function(xhr) {
+        console.error("Error removing item:", xhr);
+      }
+    });
   });
 
   // Cập nhật số lượng
   $(document).on("change", ".quantity-input", function () {
-    const index = $(this).closest("tr").data("index");
+    const variantId = $(this).closest("tr").data("variant-id");
     const newQuantity = parseInt($(this).val());
-    let cart = Cart.loadCart();
     if (newQuantity > 0) {
-      cart[index].quantity = newQuantity;
-      Cart.saveCart(cart);
-      renderCart();
+      $.ajax({
+        url: `/cart/update/${variantId}`,
+        method: "POST",
+        data: { quantity: newQuantity },
+        success: function(cart) {
+          renderCart(cart);
+          // Cập nhật số lượng trên cart icon
+          const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+          $("#cart-count").text(totalItems);
+        },
+        error: function(xhr) {
+          console.error("Error updating quantity:", xhr);
+        }
+      });
     }
   });
 });

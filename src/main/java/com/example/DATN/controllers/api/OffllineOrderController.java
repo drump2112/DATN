@@ -1,4 +1,4 @@
-package com.example.DATN.controllers.admin;
+package com.example.DATN.controllers.api;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +22,7 @@ import com.example.DATN.services.CustomerService;
 
 @Controller
 @RequestMapping("/seller/buyatthecounter")
-public class CounterSaleController {
+public class OffllineOrderController {
 
 	@Autowired
 	private CustomerService customerService;
@@ -49,7 +49,7 @@ public class CounterSaleController {
 				.map(user -> {
 					Map<String, Object> item = new HashMap<>();
 					item.put("id", user.getId());
-					item.put("text", user.getFullName());
+					item.put("text", user.getFullName() + " - " + user.getPhone());
 					return item;
 				})
 				.collect(Collectors.toList());

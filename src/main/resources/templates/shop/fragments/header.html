@@ -1,107 +1,88 @@
 <th:block th:fragment="header">
-  <div class="navbar-wrapper">
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="row" style="min-height: 210px">
-          <div class="col-lg-7">
-            <div class="navbar-header page-scroll">
-              <button
-                type="button"
-                class="navbar-toggle collapsed"
-                data-toggle="collapse"
-                data-target="#navbar"
-                aria-expanded="false"
-                aria-controls="navbar"
-              >
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              <a class="navbar-brand" th:href="@{/}">DTD-Sneaker</a>
+    <div class="navbar-wrapper">
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-2 d-flex align-items-center">
+                        <a th:href="@{/}" class="navbar-brand logo-area">
+                            <img th:src="@{/assets/img/landing/img_logo1.png}">
+                        </a>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="navbar-header page-scroll">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                        </div>
+                        <div id="navbar" class="navbar-collapse collapse">
+                            <ul class="nav navbar-nav navbar-right">
+                                <li><a class="page-scroll" href="#page-top">Trang Chủ</a></li>
+                                <li><a class="page-scroll" href="#features">Adidas</a></li>
+                                <li><a class="page-scroll" href="#team">Nike</a></li>
+                                <li><a class="page-scroll" href="#testimonials">Puma</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <ul class="nav navbar-nav">
+                            <li id="cart-icon" style="position: relative">
+                                <a th:href="@{/cart}">
+                                    <i class="fa fa-shopping-cart" style="font-size: 20px; position: relative">
+                                        <span class="badge badge-primary" id="cart-count" style="
+                       position: absolute;
+                       top: -10px;
+                       right: -12px;
+                       border-radius: 50%;
+                       padding: 1px 5px;
+                       font-size: 11px;
+                       line-height: 1;
+                     ">
+                                            0
+                                        </span>
+                                    </i>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="dungchung"
+                            th:if="${#authentication != null and #authentication.isAuthenticated() and #authentication.getPrincipal() != 'anonymousUser'}">
+                            <div class="dropdown" style="display: inline-block; margin-left: 20px;">
+                                <a href="#" class="navbar-brand dropdown-toggle" data-toggle="dropdown" role="button"
+                                    aria-haspopup="true" aria-expanded="false">
+                                    <span th:text="${#authentication.principal.user.FullName ?: 'Người Dùng'}">Người
+                                        Dùng</span>
+                                    <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu animated fadeInRight" style="
+                                         position: absolute;
+                                         top: 100%;
+                                         left: 0;
+                                         z-index: 9999;
+                                         margin-top: 0;
+                                         border: 1px solid #ccc; /* Tùy chọn: thêm border để dễ thấy */
+                                         border-radius: 4px;
+                                         box-shadow: 0 6px 12px rgba(0,0,0,.175); /* Shadow mặc định Bootstrap */
+                                       ">
+                                    <li><a th:href="@{/profile}">Thông tin cá nhân</a></li>
+                                    <li class="divider"></li>
+                                    <li><a th:href="@{/customer/logout}">Đăng xuất</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div
+                            th:unless="${#authentication != null and #authentication.isAuthenticated() and #authentication.getPrincipal() != 'anonymousUser'}">
+                            <a th:href="@{/customer/auth/}" class="navbar-brand" style="margin-left: 20px;">
+                                Đăng nhập
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="navbar" class="navbar-collapse collapse">
-              <ul class="nav navbar-nav navbar-right">
-                <li><a class="page-scroll" href="#page-top">Trang Chủ</a></li>
-                <li><a class="page-scroll" href="#features">Adidas</a></li>
-                <li><a class="page-scroll" href="#team">Nike</a></li>
-                <li><a class="page-scroll" href="#testimonials">Puma</a></li>
-              </ul>
-            </div>
-          </div>
-          <div class="col-lg-2"></div>
-          <div class="col-lg-3">
-            <ul class="nav navbar-nav">
-              <li id="cart-icon" style="position: relative">
-                <a th:href="@{/cart}">
-                  <i
-                    class="fa fa-shopping-cart"
-                    style="font-size: 20px; position: relative"
-                  >
-                    <span
-                      class="badge badge-primary"
-                      id="cart-count"
-                      style="
-                        position: absolute;
-                        top: -10px;
-                        right: -12px;
-                        border-radius: 50%;
-                        padding: 1px 5px;
-                        font-size: 11px;
-                        line-height: 1;
-                      "
-                    >
-                      0
-                    </span>
-                  </i>
-                </a>
-              </li>
-            </ul>
+        </nav>
+    </div>
 
-            <div
-              th:if="${#authentication != null and #authentication.isAuthenticated() and #authentication.getPrincipal() != 'anonymousUser'}"
-            >
-              <div
-                class="dropdown"
-                style="display: inline-block; margin-left: 20px"
-              >
-                <a
-                  href="#"
-                  class="navbar-brand dropdown-toggle"
-                  data-toggle="dropdown"
-                  role="button"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  <span
-                    th:text="${#authentication.getPrincipal().username ?: 'Người Dùng'}"
-                    >Người Dùng</span
-                  >
-                  <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                  <li><a th:href="@{/profile}">Thông tin cá nhân </a></li>
-                  <li><a href="/contacts">Lịch Sử Đơn Hàng</a></li>
-                  <li class="divider"></li>
-                  <li><a th:href="@{/customer/logout}">Logout</a></li>
-                </ul>
-              </div>
-            </div>
-            <div
-              th:unless="${#authentication != null and #authentication.isAuthenticated() and #authentication.getPrincipal() != 'anonymousUser'}"
-            >
-              <a
-                th:href="@{/customer/auth/}"
-                class="navbar-brand"
-                style="margin-left: 20px"
-              >
-                Đăng nhập
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-  </div>
+    <script th:src="@{/js/shop/cart-icon.js}"></script>
 </th:block>
-

@@ -1,9 +1,6 @@
 <!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  th:replace="shop/fragments/base :: base"
->
-  <section class="container features" th:fragment="content">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<section class="container features" th:fragment="content">
   <div class="wrapper wrapper-content animated fadeInRight">
     <div class="row">
       <div class="col-lg-12">
@@ -24,18 +21,24 @@
               </p>
 
               <h2>
-               <small>Chúc bạn một ngày tốt lành!</small>
+                <small>Chúc bạn một ngày tốt lành!</small>
               </h2>
             </div>
             <div class="col-md-6">
               <div class="ibox-content">
-                <form class="m-t" role="form" th:action="@{/customer/do-login}" method="post" >
+                <form class="m-t" role="form" th:action="@{/customer/do-login}"
+                  method="post">
+                  <!-- Ensure redirectUrl is sent in POST so the success handler can redirect back -->
+                  <input type="hidden" name="redirectUrl" th:value="${session.REDIRECT_URL}" />
+
                   <div class="form-group">
-                    <input type="text" class="form-control" name="username" placeholder="Tên Đăng Nhập/ Email" required="">
+                    <input type="text" class="form-control" name="username" th:value="${lastUsername}"
+                      placeholder="Tên Đăng Nhập/ Email" required="">
                   </div>
                   <div class="form-group">
                     <input type="password" class="form-control" name="password" placeholder="Mật Khẩu" required="">
                   </div>
+
                   <button type="submit" class="btn btn-primary block full-width m-b">Đăng Nhập</button>
 
                   <a href="#">
@@ -51,4 +54,5 @@
       </div>
     </div>
 </section>
+
 </html>

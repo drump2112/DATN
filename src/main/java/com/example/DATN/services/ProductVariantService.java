@@ -40,13 +40,13 @@ public interface ProductVariantService {
 			Integer cateId,
 			Pageable pageable);
 
-
-
 	public long countAll();
 
 	public void updateProductVariant(Integer id, ProductVariantUpdateRequest request);
 
 	public ProductVariantDTO findById(Integer id);
+
+	List<ProductVariantDTO> findAllActive();
 
 	public List<ProductVariantDTO> getVariantsByProductId(Integer productId);
 }

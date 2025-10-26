@@ -94,6 +94,5 @@ $(document).ready(function () {
 
   if (uniqueColors.length > 0) renderSizesAndInfo(uniqueColors[0][0]);
 
-  // expose biến thể cho file khác (giỏ hàng)
   window.productVariants = variants;
 });

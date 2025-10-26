@@ -19,13 +19,24 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
 			AuthenticationException exception) throws IOException, ServletException {
 		String username = request.getParameter("username"); // lấy username từ form
 		request.getSession().setAttribute("lastUsername", username);
+		// Lưu lại redirectUrl nếu có
+		String redirectUrl = request.getParameter("redirectUrl");
+		String errorParam = "";
+
 		if (exception instanceof DisabledException) {
-			setDefaultFailureUrl("/login?error=disabled");
+			errorParam = "disabled";
 		} else if (exception instanceof BadCredentialsException) {
-			setDefaultFailureUrl("/login?error=bad");
+			errorParam = "bad";
 		} else {
-			setDefaultFailureUrl("/login?error=unknown");
+			errorParam = "unknown";
 		}
+
+		String failureUrl = "/customer/auth/?error=" + errorParam;
+		if (redirectUrl != null && !redirectUrl.isEmpty()) {
+			failureUrl += "&redirectUrl=" + redirectUrl;
+		}
+
+		setDefaultFailureUrl(failureUrl);
 		super.onAuthenticationFailure(request, response, exception);
 	}
 }

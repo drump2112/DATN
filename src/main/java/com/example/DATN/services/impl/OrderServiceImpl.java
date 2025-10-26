@@ -90,7 +90,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         BigDecimal discountAmount = BigDecimal.ZERO;
-
         if (request.getVoucherId() != null) {
             order.setDiscountAmount(request.getDiscountAmount());
             discountAmount = request.getDiscountAmount();

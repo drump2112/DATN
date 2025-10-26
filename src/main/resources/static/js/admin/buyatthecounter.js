@@ -3,10 +3,12 @@ $(document).ready(function () {
   updateClock();
   setInterval(updateClock, 1000);
 
+  loadQuickProductList();
+
 
   // Khởi tạo Select2 cho khách hàng
   $("#customerFilter").select2({
-    placeholder: "Tìm Kiếm Khách Hàng",
+    placeholder: "Tìm Kiếm Khách Hàng (Tên hoặc SĐT)",
     allowClear: true,
     ajax: {
       url: "/seller/buyatthecounter/select2",
@@ -18,9 +20,20 @@ $(document).ready(function () {
     },
   });
 
+  // Khi chọn khách hàng, lưu vào state của tab hiện tại
+  $("#customerFilter").on("select2:select select2:clear", function (e) {
+    const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
+    if (!orders[activeTabId]) return;
+    const val = $(this).val();
+    orders[activeTabId].customerId = val ? val : null;
+  });
 
-  let tabCount = 1;
-  let orders = {}; // lưu dữ liệu của từng tab theo id
+
+  // orders will hold per-tab state: { items: [...], customerId: null, voucher: null, discountAmount: 0 }
+  let orders = {};
+  let tabIndex = 1; // chỉ đếm thứ tự thực tế
+  const MAX_TABS = 6;
+
 
 
   // ====== Hàm tính số lượng còn lại so với tồn kho và các tab khác ======
@@ -30,7 +43,7 @@ $(document).ready(function () {
 
     // Lấy maxQuantity từ một tab có sản phẩm này hoặc mặc định
     for (let tab in orders) {
-      const item = orders[tab].find((i) => i.code === variantCode);
+      const item = orders[tab].items ? orders[tab].items.find((i) => i.code === variantCode) : null;
       if (item) {
         maxQuantity = item.maxQuantity;
         break;
@@ -41,7 +54,7 @@ $(document).ready(function () {
     let totalOtherTabs = 0;
     for (let tab in orders) {
       if (tab !== currentTabId) {
-        const item = orders[tab].find((i) => i.code === variantCode);
+        const item = orders[tab].items ? orders[tab].items.find((i) => i.code === variantCode) : null;
         if (item) totalOtherTabs += item.quantity;
       }
     }
@@ -54,49 +67,47 @@ $(document).ready(function () {
   // ========== Thêm tab mới ==========
   $(document).on("click", "#addTab", function (e) {
     e.preventDefault();
-    tabCount++;
-    const newTabId = "tab-" + tabCount;
 
+    const currentTabCount = Object.keys(orders).length;
+    if (currentTabCount >= MAX_TABS) {
+      toastr.warning(`Hoàn thành các đơn `);
+      return;
+    }
+
+    const newTabId = `tab-${Date.now()}`; // id duy nhất
+    const orderNumber = currentTabCount + 1;
 
     const newTab = `
-     <li>
-       <a data-toggle="tab" href="#${newTabId}">
-         <i class="fa fa-bell"></i> Đơn Hàng ${tabCount}
-         <button type="button" class="close close-tab" data-tab="#${newTabId}" style="font-size:12px;margin-left:6px;">×</button>
-       </a>
-     </li>`;
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#${newTabId}">
+          <i class="fa fa-shopping-basket"></i> Đơn Hàng ${orderNumber}
+          <button type="button" class="close close-tab" data-tab="#${newTabId}" style="font-size:12px;margin-left:6px;">×</button>
+        </a>
+      </li>`;
     $("#addTab").closest("li").before(newTab);
 
-
     const newTabContent = `
-     <div id="${newTabId}" class="tab-pane">
-       <div class="table-responsive">
-         <table class="table table-striped table-hover" id="table-${newTabId}">
-           <thead>
-             <tr>
-               <th>Ảnh</th>
-               <th>Mã SPCT</th>
-               <th>Tên sản phẩm</th>
-               <th>Màu</th>
-               <th>Size</th>
-               <th>Số lượng</th>
-               <th>Đơn giá</th>
-               <th>Thành tiền</th>
-               <th>Thao tác</th>
-             </tr>
-           </thead>
-           <tbody></tbody>
-         </table>
-       </div>
-     </div>`;
+      <div id="${newTabId}" class="tab-pane">
+        <div class="table-responsive">
+          <table class="table table-striped table-hover" id="table-${newTabId}">
+
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>`;
+
     $("#orderTabContent").append(newTabContent);
 
+    // thêm dữ liệu vào orders (per-tab state)
+    orders[newTabId] = { items: [], customerId: null, voucher: null, discountAmount: 0 };
 
-    orders[newTabId] = [];
+    // active tab mới
     $(".nav-tabs li").removeClass("active");
     $(`.nav-tabs a[href="#${newTabId}"]`).parent().addClass("active");
     $(".tab-pane").removeClass("active");
     $(`#${newTabId}`).addClass("active");
+
+    updateTabLabels();
     updateClientDetail(newTabId);
   });
 
@@ -105,16 +116,36 @@ $(document).ready(function () {
   $(document).on("click", ".close-tab", function (e) {
     e.stopPropagation();
     const tabId = $(this).data("tab");
-    $(`a[href='${tabId}']`).parent().remove();
+    $(`a[href='${tabId}']`).closest("li").remove();
     $(tabId).remove();
     delete orders[tabId.replace("#", "")];
 
+    // Nếu không còn tab nào thì tạo lại tab đầu tiên
+    if (Object.keys(orders).length === 0) {
+      $("#addTab").trigger("click");
+      return;
+    }
 
-    const firstTab = $("#orderTabs li:first-child a").attr("href");
-    $(".nav-tabs li:first-child").addClass("active");
-    $(".tab-pane:first-child").addClass("active");
+    // Kích hoạt tab đầu tiên
+    const firstTab = $(".nav-tabs li:not(:last) a").first().attr("href");
+    $(".nav-tabs li").removeClass("active");
+    $(`a[href='${firstTab}']`).parent().addClass("active");
+    $(".tab-pane").removeClass("active");
+    $(firstTab).addClass("active");
+
+    updateTabLabels();
     updateClientDetail(firstTab.replace("#", ""));
   });
+
+  function updateTabLabels() {
+    $(".nav-tabs li:not(:last) a").each(function (index) {
+      const orderNumber = index + 1;
+      $(this).html(`
+        <i class="fa fa-shopping-basket"></i> Đơn Hàng ${orderNumber}
+        <button type="button" class="close close-tab" data-tab="${$(this).attr("href")}" style="font-size:12px;margin-left:6px;">×</button>
+      `);
+    });
+  }
 
 
   // ========== Khi chuyển tab ==========
@@ -150,26 +181,26 @@ $(document).ready(function () {
 
 
           const item = `
-           <a href="#" class="list-group-item list-group-item-action ${outOfStock ? "text-muted" : ""}"
-             data-id="${p.id}"
-             data-name="${p.productName}"
-             data-color="${p.colorName}"
-             data-size="${p.sizeName}"
-             data-price="${p.price}"
-             data-quantity="${quantity}"
-             data-image="${img}"
-             data-code="${p.variantCode}">
-             <div class="d-flex align-items-center row">
-               <div class="col-sm-1">
-                 <img src="${img}" width="40" height="40" class="me-2 rounded" style="${outOfStock ? "opacity:0.5" : ""}">
-               </div>
-               <div class="col-sm-10">
-                 <div><b>${p.productName}</b> (${p.colorName} / ${p.sizeName})</div>
-                 <small>Mã: ${p.variantCode} | ${p.price.toLocaleString()}đ</small>
-               </div>
-               ${outOfStock ? `<div class="text-danger"><span class="badge badge-danger">Hết hàng</span></div>` : `<span class="badge badge-info">Số lượng: ${quantity}</span>`}
-             </div>
-           </a>`;
+            <a href="#" class="list-group-item list-group-item-action ${outOfStock ? "text-muted" : ""}"
+              data-id="${p.id}"
+              data-name="${p.productName}"
+              data-color="${p.colorName}"
+              data-size="${p.sizeName}"
+              data-price="${p.price}"
+              data-quantity="${quantity}"
+              data-image="${img}"
+              data-code="${p.variantCode}">
+              <div class="d-flex align-items-center row">
+                <div class="col-sm-1">
+                  <img src="${img}" width="40" height="40" class="me-2 rounded" style="${outOfStock ? "opacity:0.5" : ""}">
+                </div>
+                <div class="col-sm-10">
+                  <div><b>${p.productName}</b> (${p.colorName} / ${p.sizeName})</div>
+                  <small>Mã: ${p.variantCode} | ${p.price.toLocaleString()}đ</small>
+                </div>
+                ${outOfStock ? `<div class="text-danger"><span class="badge badge-danger">Hết hàng</span></div>` : `<span class="badge badge-info">Số lượng: ${quantity}</span>`}
+              </div>
+            </a>`;
           resultsBox.append(item);
         });
       }
@@ -177,18 +208,15 @@ $(document).ready(function () {
     });
   });
 
-
   // ========== Chọn sản phẩm từ kết quả tìm kiếm ==========
   $(document).on("click", "#searchResults a", function (e) {
     e.preventDefault();
-
 
     const quantityAvailable = parseInt($(this).data("quantity")); // tồn kho thực tế
     if (quantityAvailable === 0) {
       toastr.warning("<b>Sản phẩm này đã hết hàng!</b>");
       return;
     }
-
 
     const activeTabId = $(".nav-tabs li.active a")
       .attr("href")
@@ -197,14 +225,12 @@ $(document).ready(function () {
     const price = parseFloat($(this).data("price"));
     const variantCode = $(this).data("code");
 
-
     // Tính tổng số lượng đã thêm ở tất cả các tab
     let totalAdded = 0;
     for (let tab in orders) {
-      const item = orders[tab].find((i) => i.code === variantCode);
+      const item = orders[tab].items ? orders[tab].items.find((i) => i.code === variantCode) : null;
       if (item) totalAdded += item.quantity;
     }
-
 
     const remainingQuantity = quantityAvailable - totalAdded;
     if (remainingQuantity <= 0) {
@@ -212,15 +238,12 @@ $(document).ready(function () {
       return;
     }
 
-
-    const existingItem = orders[activeTabId].find(
-      (i) => i.code === variantCode,
-    );
+    // find existing in this tab
+    const existingItem = orders[activeTabId].items.find((i) => i.code === variantCode);
     if (existingItem) {
       if (existingItem.quantity < remainingQuantity) {
         existingItem.quantity++;
         existingItem.total = existingItem.price * existingItem.quantity;
-
 
         const row = tbody.find(`tr[data-code="${variantCode}"]`);
         row.find(".quantity-input").val(existingItem.quantity);
@@ -242,24 +265,23 @@ $(document).ready(function () {
         total: price,
         quantityAvailable, // lưu tồn kho thực tế
       };
-      orders[activeTabId].push(product);
-
+      orders[activeTabId].items.push(product);
 
       const row = `
-       <tr data-code="${product.code}">
-           <td><img src="${product.image}" width="50"></td>
-           <td>${product.code}</td>
-           <td>${product.name}</td>
-           <td>${product.color}</td>
-           <td>${product.size}</td>
-           <td>
-               <input type="number" class="form-control form-control-sm quantity-input"
-                      min="1" max="${remainingQuantity}" value="1" style="width:70px;">
-           </td>
-           <td>${product.price.toLocaleString()}đ</td>
-           <td class="total">${product.total.toLocaleString()}đ</td>
-           <td><button class="btn btn-danger btn-sm delete-row"><i class="fa fa-trash"></i></button></td>
-       </tr>`;
+        <tr data-code="${product.code}">
+            <td><img src="${product.image}" width="50"></td>
+            <td>${product.code}</td>
+            <td>${product.name}</td>
+            <td>${product.color}</td>
+            <td>${product.size}</td>
+            <td style="text-align: center;">
+                <input type="number" class="form-control form-control-sm quantity-input"
+                        min="1" max="${remainingQuantity}" value="1" style="width:70px; margin: 0 auto;">
+            </td>
+            <td>${product.price.toLocaleString()}đ</td>
+            <td class="total">${product.total.toLocaleString()}đ</td>
+            <td><button class="btn btn-danger btn-sm delete-row"><i class="fa fa-trash"></i></button></td>
+        </tr>`;
       tbody.append(row);
     }
 
@@ -277,7 +299,7 @@ $(document).ready(function () {
       .attr("href")
       .replace("#", "");
     const index = row.index();
-    const product = orders[activeTabId][index];
+    const product = orders[activeTabId].items[index];
     if (!product) return;
 
     let newQuantity = parseInt($(this).val());
@@ -286,14 +308,12 @@ $(document).ready(function () {
     let totalOtherTabs = 0;
     for (let tab in orders) {
       if (tab !== activeTabId) {
-        const item = orders[tab].find((i) => i.code === product.code);
+        const item = orders[tab].items.find((i) => i.code === product.code);
         if (item) totalOtherTabs += item.quantity;
       }
     }
 
-
     const maxAvailable = product.quantityAvailable - totalOtherTabs;
-
 
     if (newQuantity > maxAvailable) {
       // Hiển thị cảnh báo trước khi reset
@@ -307,15 +327,12 @@ $(document).ready(function () {
     product.quantity = newQuantity;
     product.total = product.price * product.quantity;
 
-
     // Cập nhật giao diện
     row.find(".quantity-input").val(product.quantity);
     row.find(".total").text(product.total.toLocaleString() + "đ");
 
-
     updateClientDetail(activeTabId);
   });
-
 
   // ========== Xóa dòng sản phẩm ==========
   $(document).on("click", ".delete-row", function () {
@@ -323,7 +340,7 @@ $(document).ready(function () {
       .attr("href")
       .replace("#", "");
     const index = $(this).closest("tr").index();
-    orders[activeTabId].splice(index, 1);
+    orders[activeTabId].items.splice(index, 1);
     $(this).closest("tr").remove();
     updateClientDetail(activeTabId);
   });
@@ -331,13 +348,95 @@ $(document).ready(function () {
 
   // ========== Cập nhật tổng tiền ==========
   function updateClientDetail(tabId) {
-    const list = orders[tabId] || [];
+    const state = orders[tabId] || { items: [], customerId: null, voucher: null, discountAmount: 0 };
+    const list = state.items;
     const total = list.reduce((sum, item) => sum + item.total, 0);
+
+
+    if (list.length === 0) {
+      state.voucher = null;
+      state.discountValue = 0;
+      state.discountAmount = 0
+      $("#voucherDescription").html('');
+      $("#discountValue").text("0 VNĐ");
+      $("#finalTotal").text("0 VNĐ");
+      $("#selectedVoucherInfo").hide();
+      // $("#showListVoucher").show();
+    }
+
+
+    if (total > 0 && !state.voucher) {
+      $.get(`/api/vouchers/suggest?orderTotal=${total}`)
+        .done(function (suggestion) {
+          if (suggestion) {
+            // Hiển thị voucher gợi ý
+            $("#voucherSuggest").show();
+            $("#suggestVoucherDesc").html(
+              `<strong>${suggestion.code}</strong> - ${suggestion.name}<br>`
+            );
+            $("#suggestVoucherSaving").text(
+              `Tiết kiệm: ${suggestion.discountAmount.toLocaleString()} VNĐ`
+            );
+            $("#applySuggestedVoucher").data('suggestion', suggestion);
+          } else {
+            $("#voucherSuggest").hide();
+          }
+        })
+        .fail(function () {
+          $("#voucherSuggest").hide();
+        });
+    } else {
+      $("#voucherSuggest").hide();
+    }
+
+    // Cập nhật tổng tiền hàng
     $("#clientDetail")
       .find('.list-group-item:contains("Tổng Tiền Hàng") span.pull-right')
       .text(total.toLocaleString() + " VNĐ");
-  }
 
+    // Cập nhật tổng thanh toán (finalTotal) dựa trên tổng tiền hàng và giảm giá
+    const discount = parseFloat(state.discountAmount) || 0;
+    const finalTotal = total - discount;
+    console.log("Final Total:", finalTotal);
+    $("#finalTotal").text(finalTotal.toLocaleString() + " VNĐ");
+
+    // Update totalOrderAmount UI
+    $("#totalOrderAmount").text(total.toLocaleString() + " VNĐ");
+
+    // Update customer select UI to reflect per-tab customer
+    if (state.customerId) {
+      // set select2 value (assumes option may not exist locally)
+      const currentVal = $("#customerFilter").val();
+      if (currentVal !== String(state.customerId)) {
+        // Try setting value; if option doesn't exist, create a temporary option
+        if ($("#customerFilter option[value='" + state.customerId + "']").length === 0) {
+          const opt = new Option("Khách #" + state.customerId, state.customerId, true, true);
+          $("#customerFilter").append(opt).trigger('change');
+        } else {
+          $("#customerFilter").val(state.customerId).trigger('change');
+        }
+      }
+    } else {
+      // clear select2
+      $("#customerFilter").val(null).trigger('change');
+    }
+    // Update voucher UI per tab
+    if (state.voucher) {
+      $("#voucherDescription").html(
+        `Đang áp dụng: <strong>${state.voucher.code}</strong> (${state.voucher.discountType === 'PERCENT' ? state.voucher.discountValue + '%' : state.voucher.discountValue.toLocaleString() + ' VNĐ'})`
+      );
+      $("#discountValue").text((state.discountAmount || 0).toLocaleString() + " VNĐ");
+      $("#discountAmount").text((state.discountAmount || 0).toLocaleString() + " đ");
+      $("#selectedVoucherInfo").show();
+      $("#showListVoucher").hide();
+    } else {
+      $("#voucherDescription").html('');
+      $("#discountValue").text("0 VNĐ");
+      $("#discountAmount").text("0 đ");
+      $("#selectedVoucherInfo").hide();
+      $("#showListVoucher").show();
+    }
+  }
 
   // ========== Hiển thị đồng hồ thực tế ==========
   function updateClock() {
@@ -352,13 +451,160 @@ $(document).ready(function () {
     $("#realtime-clock").text(timeString);
   }
 
-  // Khởi tạo tab đầu tiên
-  orders["tab-1"] = [];
+  // Khởi tạo tab đầu tiên (per-tab state)
+  orders["tab-1"] = { items: [], customerId: null, voucher: null, discountAmount: 0 };
   updateClientDetail("tab-1");
 
+
+
+  // cache products for quick list so addToCurrentOrder can access full object
+  let productsCache = [];
+  function loadQuickProductList() {
+    $.ajax({
+      url: '/api/product-variants/variants',
+      method: 'GET',
+      success: function (products) {
+        productsCache = products || [];
+        renderProductList(productsCache);
+      },
+      error: function () {
+        $('#quickProductList').html('<p class="text-danger">Không thể tải danh sách sản phẩm.</p>');
+      }
+    });
+  }
+
+  // Render danh sách sản phẩm ra HTML
+  function renderProductList(products) {
+    const container = $('#quickProductList');
+    container.empty();
+    if (!products || products.length === 0) {
+      container.html('<p class="text-muted">Không có sản phẩm nào.</p>');
+      return;
+    }
+
+    products.forEach((p, idx) => {
+      const html = `
+            <div class="col-md-3 mb-3">
+              <div class="ibox">
+                <div class="ibox-content product-box">
+                  <div class="product-imitation">
+                    <img src="${p.imageUrls && p.imageUrls.length > 0 ? p.imageUrls[0] : '/img/no-image.png'}"
+                      alt="${p.productName}">
+                  </div>
+                  <div class="product-desc">
+                    <span class="product-price">${p.price.toLocaleString()} VNĐ</span>
+                    <a href="#" class="product-name d-block mt-1">${p.productName} - ${p.variantCode}</a>
+                    <small class="text-muted">${p.colorName} / ${p.sizeName} - SL: ${p.quantity}</small>
+                    <div class="m-t text-right mt-2">
+                      <button class="btn btn-xs btn-outline btn-primary addToOrderBtn" data-idx="${idx}"
+                        data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
+                        <i class="fa fa-cart-plus"></i> Thêm
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+      container.append(html);
+    });
+
+    // Gắn sự kiện thêm sản phẩm vào đơn: truyền toàn bộ object sản phẩm
+    $('.addToOrderBtn').click(function () {
+      const idx = $(this).data('idx');
+      const product = productsCache[idx];
+      if (!product) {
+        toastr.error('Sản phẩm không hợp lệ');
+        return;
+      }
+      addToCurrentOrder(product);
+    });
+  }
+
+  // Hàm thêm sản phẩm vào đơn hàng giống hành vi khi chọn từ search
+  function addToCurrentOrder(product) {
+    // product cần có các trường: id, variantCode (hoặc variant code), productName, imageUrls, colorName, sizeName, price, quantity (tồn kho)
+    const activeTabId = $('.nav-tabs li.active a').attr('href').replace('#', '');
+    if (!orders[activeTabId]) orders[activeTabId] = { items: [], customerId: null, voucher: null, discountAmount: 0 };
+
+    const tbody = $(`#table-${activeTabId} tbody`);
+
+    const variantCode = product.variantCode || product.id || product.variant_code || product.code;
+    const quantityAvailable = parseInt(product.quantity ?? product.qty ?? 0);
+    const price = parseFloat(product.price ?? 0);
+
+    if (quantityAvailable === 0) {
+      toastr.warning('<b>Sản phẩm này đã hết hàng!</b>');
+      return;
+    }
+
+    // Tính tổng đã thêm ở các tab
+    let totalAdded = 0;
+    for (let tab in orders) {
+      const item = orders[tab].items ? orders[tab].items.find((i) => i.code === variantCode) : null;
+      if (item) totalAdded += item.quantity;
+    }
+
+    const remainingQuantity = quantityAvailable - totalAdded;
+    if (remainingQuantity <= 0) {
+      toastr.warning('Sản phẩm này đã hết hàng theo tồn kho thực tế!');
+      return;
+    }
+
+    // Nếu đã tồn tại trong tab hiện tại, tăng số lượng
+    const existingItem = orders[activeTabId].items.find((i) => i.code === variantCode);
+    if (existingItem) {
+      if (existingItem.quantity < remainingQuantity) {
+        existingItem.quantity++;
+        existingItem.total = existingItem.price * existingItem.quantity;
+
+        const row = tbody.find(`tr[data-code="${variantCode}"]`);
+        row.find('.quantity-input').val(existingItem.quantity);
+        row.find('.total').text(existingItem.total.toLocaleString() + 'đ');
+      } else {
+        toastr.warning('Đã đạt tối đa số lượng tồn kho còn lại!');
+      }
+    } else {
+      // Thêm mới
+      const prodObj = {
+        id: product.id,
+        image: (product.imageUrls && product.imageUrls.length > 0) ? product.imageUrls[0] : (product.image || '/img/no-image.png'),
+        code: variantCode,
+        name: product.productName || product.name || product.title || 'Sản phẩm',
+        color: product.colorName || product.color || '-',
+        size: product.sizeName || product.size || '-',
+        price: price,
+        quantity: 1,
+        total: price,
+        quantityAvailable: quantityAvailable,
+      };
+
+      orders[activeTabId].items.push(prodObj);
+
+      const row = `
+        <tr data-code="${prodObj.code}">
+            <td><img src="${prodObj.image}" width="50"></td>
+            <td>${prodObj.code}</td>
+            <td>${prodObj.name}</td>
+            <td>${prodObj.color}</td>
+            <td>${prodObj.size}</td>
+            <td style="text-align: center;">
+                <input type="number" class="form-control form-control-sm quantity-input"
+                        min="1" max="${remainingQuantity}" value="1" style="width:70px; margin: 0 auto;">
+            </td>
+            <td>${prodObj.price.toLocaleString()}đ</td>
+            <td class="total">${prodObj.total.toLocaleString()}đ</td>
+            <td><button class="btn btn-danger btn-sm delete-row"><i class="fa fa-trash"></i></button></td>
+        </tr>`;
+      tbody.append(row);
+
+      // Cập nhật lại giá và gợi ý voucher sau khi thêm sản phẩm
+      updateClientDetail(activeTabId);
+    }
+
+    updateClientDetail(activeTabId);
+  }
+
   // ========== Xử lý thanh toán ==========
-
-
   $(document).on("click", "#checkoutCounter", function () {
     const activeTabId = $(".nav-tabs li.active a")
       .attr("href")
@@ -399,9 +645,11 @@ $(document).ready(function () {
 
   }
 
-
-  function checkOutCounterOrder(tabId, userId) {
-    const orderItems = orders[tabId].map((i) => ({
+  // Unified checkout that uses per-tab state
+  function checkOutCounterOrder(tabId) {
+    const state = orders[tabId];
+    if (!state) return;
+    const orderItems = state.items.map((i) => ({
       productVariantId: i.id,
       quantity: i.quantity,
       unitPrice: i.price,
@@ -413,8 +661,9 @@ $(document).ready(function () {
     }
 
     const paymentMethod = $('input[name="paymentMethod"]:checked').val();
-    const voucherId = window.selectedVoucher ? window.selectedVoucher.id : null;
-    const discountAmount = parseFloat($("#discountValue").text().replace(/[^\d]/g, "")) || 0;
+    const voucherId = state.voucher ? state.voucher.id : null;
+    const discountAmount = state.discountAmount || 0;
+    const userId = state.customerId || null;
 
     if (paymentMethod === "TRANSFER") {
       const totalAmount = parseFloat($("#finalTotal").text().replace(/[^\d]/g, "")) || 0;
@@ -427,7 +676,6 @@ $(document).ready(function () {
       createCounterOrder(userId, paymentMethod, orderItems, tabId, voucherId, discountAmount);
     }
   }
-
 
   function createCounterOrder(userId, paymentMethod, orderItems, tabId, voucherId, discountAmount) {
     $.ajax({
@@ -446,75 +694,6 @@ $(document).ready(function () {
           toastr.success(`Tạo đơn hàng thành công! Mã đơn: ${res.orderCode}`);
 
           $.get(`/api/orders/${res.orderCode}/details`, function (invoice) {
-            showInvoiceModal(invoice); // ✅ hiển thị hóa đơn
-          }).fail(function () {
-            toastr.error("Không thể tải chi tiết hóa đơn!");
-          });
-
-          $("#showListVoucher").show();
-          $("#selectedVoucherInfo").hide();
-          $("#discountValue").text("0 VNĐ");
-          $("#finalTotal").text("0 VNĐ");
-          window.selectedVoucher = null;
-
-          // Reset tab
-          orders[tabId] = [];
-          $(`#table-${tabId} tbody`).empty();
-          updateClientDetail(tabId);
-        } else {
-          toastr.error(res.message || "Tạo đơn hàng thất bại!");
-        }
-      },
-      error: function (err) {
-        toastr.error(err.responseJSON?.message || "Lỗi khi tạo đơn hàng!");
-      },
-    });
-  }
-
-
-  function checkOutCounterOrder(tabId, userId) {
-    const orderItems = orders[tabId].map((i) => ({
-      productVariantId: i.id,
-      quantity: i.quantity,
-      unitPrice: i.price,
-    }));
-
-    if (orderItems.length === 0) {
-      toastr.warning("Chưa có sản phẩm nào trong đơn!");
-      return;
-    }
-
-    const paymentMethod = $('input[name="paymentMethod"]:checked').val();
-
-    if (paymentMethod === "TRANSFER") {
-      const totalAmount = parseFloat($("#finalTotal").text().replace(/[^\d]/g, "")) || 0;
-      const orderCode = "HD" + Date.now();
-      const qrUrl = `https://img.vietqr.io/image/970436-0691000350665-compact.png?amount=${totalAmount}&addInfo=${orderCode}`;
-
-      showQrModal(qrUrl, orderCode, tabId, userId, paymentMethod, orderItems);
-    }
-    else {
-      createCounterOrder(userId, paymentMethod, orderItems, tabId);
-    }
-  }
-
-  function createCounterOrder(userId, paymentMethod, orderItems, tabId) {
-    $.ajax({
-      url: "/api/orders/counter",
-      method: "POST",
-      contentType: "application/json",
-      data: JSON.stringify({
-        userId: userId,
-        paymentMethod: paymentMethod,
-        items: orderItems,
-        voucherId: voucherId,
-        discountAmount: discountAmount,
-      }),
-      success: function (res) {
-        if (res.success) {
-          toastr.success(`Tạo đơn hàng thành công! Mã đơn: ${res.orderCode}`);
-
-          $.get(`/api/orders/${res.orderCode}/details`, function (invoice) {
             showInvoiceModal(invoice);
           }).fail(function () {
             toastr.error("Không thể tải chi tiết hóa đơn!");
@@ -524,10 +703,9 @@ $(document).ready(function () {
           $("#selectedVoucherInfo").hide();
           $("#discountValue").text("0 VNĐ");
           $("#finalTotal").text("0 VNĐ");
-          window.selectedVoucher = null;
 
-          // Reset tab
-          orders[tabId] = [];
+          // Reset tab to empty per-tab state
+          orders[tabId] = { items: [], customerId: null, voucher: null, discountAmount: 0 };
           $(`#table-${tabId} tbody`).empty();
           updateClientDetail(tabId);
         } else {
@@ -539,6 +717,9 @@ $(document).ready(function () {
       },
     });
   }
+
+
+
 
 
   let currentInvoice = null;
@@ -567,16 +748,16 @@ $(document).ready(function () {
     const win = window.open("", "", "height=700,width=900");
     win.document.write("<html><head><title>In hóa đơn</title>");
     win.document.write(`
-   <link rel="stylesheet" href="/css/bootstrap.min.css">
-   <style>
-     body { font-family: Arial, sans-serif; padding: 20px; }
-     .ibox-content { border: none !important; }
-     .text-right { text-align: right; }
-     .text-navy { color: #1ab394; font-weight: bold; }
-     .well { background: #f5f5f5; padding: 10px; border-radius: 5px; }
-     table { width: 100%; }
-   </style>
- `);
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <style>
+      body { font-family: Arial, sans-serif; padding: 20px; }
+      .ibox-content { border: none !important; }
+      .text-right { text-align: right; }
+      .text-navy { color: #1ab394; font-weight: bold; }
+      .well { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+      table { width: 100%; }
+    </style>
+  `);
     win.document.write("</head><body>");
     win.document.write(html);
     win.document.write("</body></html>");
@@ -621,103 +802,103 @@ $(document).ready(function () {
   // ===== Hàm render HTML hóa đơn =====
   function renderInvoiceHTML(invoice) {
     return `
-   <div class="ibox-content p-xl">
-     <div class="row">
-       <div class="col-sm-6">
-         <address>
-           <strong> DTD- Sneaker</strong><br>
-           123 Trịnh Văn Bô, Hà Nội<br>
-           <abbr title="Phone">SĐT:</abbr> 0975-478-916
-         </address>
-       </div>
+    <div class="ibox-content p-xl">
+      <div class="row">
+        <div class="col-sm-6">
+          <address>
+            <strong> DTD- Sneaker</strong><br>
+            123 Trịnh Văn Bô, Hà Nội<br>
+            <abbr title="Phone">SĐT:</abbr> 0975-478-916
+          </address>
+        </div>
 
 
-       <div class="col-sm-6 text-right">
-         <h4>Mã Đơn Hàng.</h4>
-         <h4 class="text-navy">${invoice.orderCode}</h4>
-         <address>
-           <strong>${invoice.customerName || "Khách lẻ"}</strong><br>
-           ${invoice.shippingAddress || "Tại quầy"}<br>
-           <abbr title="Phone">SĐT:</abbr> ${invoice.customerPhone || "-"}
-         </address>
-         <p>
-           <span><strong>Ngày lập hóa đơn:</strong> ${new Date(invoice.orderDate).toLocaleString()}</span><br>
-           <span><strong>Trạng Thái:</strong> ${invoice.status || "Đã thanh toán"}</span>
-         </p>
-       </div>
-     </div>
+        <div class="col-sm-6 text-right">
+          <h4>Mã Đơn Hàng.</h4>
+          <h4 class="text-navy">${invoice.orderCode}</h4>
+          <address>
+            <strong>${invoice.customerName || "Khách lẻ"}</strong><br>
+            ${invoice.shippingAddress || "Tại quầy"}<br>
+            <abbr title="Phone">SĐT:</abbr> ${invoice.customerPhone || "-"}
+          </address>
+          <p>
+            <span><strong>Ngày lập hóa đơn:</strong> ${new Date(invoice.orderDate).toLocaleString()}</span><br>
+            <span><strong>Trạng Thái:</strong> ${invoice.status || "Đã thanh toán"}</span>
+          </p>
+        </div>
+      </div>
 
 
-     <div class="table-responsive m-t">
-       <table class="invoice-table" style="width:100%; border-collapse: collapse; margin-top:20px;">
-         <thead>
-           <tr style="background:#f3f3f3; border-bottom:2px solid #ddd;">
-             <th style="text-align:left; padding:8px; width:30%;">Tên sản phẩm</th>
-             <th style="text-align:center; padding:8px; width:10%;">Màu</th>
-             <th style="text-align:center; padding:8px; width:10%;">Size</th>
-             <th style="text-align:center; padding:8px; width:10%;">SL</th>
-             <th style="text-align:right; padding:8px; width:20%;">Đơn giá</th>
-             <th style="text-align:right; padding:8px; width:20%;">Thành tiền</th>
-           </tr>
-         </thead>
-         <tbody>
-           ${invoice.items
+      <div class="table-responsive m-t">
+        <table class="invoice-table" style="width:100%; border-collapse: collapse; margin-top:20px;">
+          <thead>
+            <tr style="background:#f3f3f3; border-bottom:2px solid #ddd;">
+              <th style="text-align:left; padding:8px; width:30%;">Tên sản phẩm</th>
+              <th style="text-align:center; padding:8px; width:10%;">Màu</th>
+              <th style="text-align:center; padding:8px; width:10%;">Size</th>
+              <th style="text-align:center; padding:8px; width:10%;">SL</th>
+              <th style="text-align:right; padding:8px; width:20%;">Đơn giá</th>
+              <th style="text-align:right; padding:8px; width:20%;">Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${invoice.items
         .map(
           (i) => `
-             <tr style="border-bottom:1px solid #eee;">
-               <td style="padding:6px;">${i.productName}</td>
-               <td style="text-align:center;">${i.color || "-"}</td>
-               <td style="text-align:center;">${i.size || "-"}</td>
-               <td style="text-align:center;">${i.quantity}</td>
-               <td style="text-align:right;">${i.unitPrice.toLocaleString()}đ</td>
-               <td style="text-align:right;">${i.totalPrice.toLocaleString()}đ</td>
-             </tr>
-           `,
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:6px;">${i.productName}</td>
+                <td style="text-align:center;">${i.color || "-"}</td>
+                <td style="text-align:center;">${i.size || "-"}</td>
+                <td style="text-align:center;">${i.quantity}</td>
+                <td style="text-align:right;">${i.unitPrice.toLocaleString()}đ</td>
+                <td style="text-align:right;">${i.totalPrice.toLocaleString()}đ</td>
+              </tr>
+            `,
         )
         .join("")}
-         </tbody>
-       </table>
-     </div>
+          </tbody>
+        </table>
+      </div>
 
 
-     <table class="invoice-total" style="width:100%; margin-top:20px; border-collapse: collapse;">
-       <tbody>
-         <tr>
-           <td style="text-align:right; padding:6px;"><strong>Tổng tiền hàng:</strong></td>
-           <td style="text-align:right; padding:6px; width:150px;">${invoice.totalAmount.toLocaleString()}đ</td>
-         </tr>
-         <tr>
-           <td style="text-align:right; padding:6px;"><strong>Giảm giá:</strong></td>
-           <td style="text-align:right; padding:6px;">${(invoice.discountAmount || 0).toLocaleString()}đ</td>
-         </tr>
-         <tr>
-           <td style="text-align:right; padding:6px;"><strong>Tổng thanh toán:</strong></td>
-           <td style="text-align:right; padding:6px;"><span class="text-navy" style="color:#1ab394; font-weight:bold;">${invoice.finalAmount.toLocaleString()}đ</span></td>
-         </tr>
-       </tbody>
-     </table>
+      <table class="invoice-total" style="width:100%; margin-top:20px; border-collapse: collapse;">
+        <tbody>
+          <tr>
+            <td style="text-align:right; padding:6px;"><strong>Tổng tiền hàng:</strong></td>
+            <td style="text-align:right; padding:6px; width:150px;">${invoice.totalAmount.toLocaleString()}đ</td>
+          </tr>
+          <tr>
+            <td style="text-align:right; padding:6px;"><strong>Giảm giá:</strong></td>
+            <td style="text-align:right; padding:6px;">${(invoice.discountAmount || 0).toLocaleString()}đ</td>
+          </tr>
+          <tr>
+            <td style="text-align:right; padding:6px;"><strong>Tổng thanh toán:</strong></td>
+            <td style="text-align:right; padding:6px;"><span class="text-navy" style="color:#1ab394; font-weight:bold;">${invoice.finalAmount.toLocaleString()}đ</span></td>
+          </tr>
+        </tbody>
+      </table>
 
 
-     <div class="well m-t" style="margin-top:20px; background:#f9f9f9; padding:10px; border-radius:5px;">
-       <strong>Ghi chú:</strong> Cảm ơn quý khách đã mua hàng tại DTD-Sneaker!
-     </div>
+      <div class="well m-t" style="margin-top:20px; background:#f9f9f9; padding:10px; border-radius:5px;">
+        <strong>Ghi chú:</strong> Cảm ơn quý khách đã mua hàng tại DTD-Sneaker!
+      </div>
 
 
-  ${invoice.paymentMethod === "BANK_TRANSFER"
+    ${invoice.paymentMethod === "BANK_TRANSFER"
         ? `
-     <div style="text-align:center; margin-top:20px;">
-       <h4>Mã QR Thanh Toán</h4>
-       <img src="https://img.vietqr.io/image/MB-9704223451-compact.png?amount=${invoice.finalAmount}&addInfo=ThanhToan-${invoice.orderCode}"
-            alt="QR Thanh Toán" width="200" height="200">
-       <p><i>Quét mã để thanh toán chuyển khoản</i></p>
-     </div>
-   `
+      <div style="text-align:center; margin-top:20px;">
+        <h4>Mã QR Thanh Toán</h4>
+        <img src="https://img.vietqr.io/image/MB-9704223451-compact.png?amount=${invoice.finalAmount}&addInfo=ThanhToan-${invoice.orderCode}"
+              alt="QR Thanh Toán" width="200" height="200">
+        <p><i>Quét mã để thanh toán chuyển khoản</i></p>
+      </div>
+    `
         : ""
       }
 
 
-</div>
-`;
+  </div>
+  `;
   }
 
 
@@ -747,6 +928,7 @@ $(document).ready(function () {
   });
 
 
+
   function loadHtmlVoucherSelectList(voucherList) {
     let html = '';
 
@@ -759,44 +941,44 @@ $(document).ready(function () {
         const discountType = item.discountType;
         if (discountType === 'FIXED') {
           html += `
-         <div class="col-12 col-sm-6 col-md-4 mb-3">
-           <div data-voucher="${item.id}"
-               class="voucher-item card shadow-sm h-100 cursor-pointer"
-               style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 10px">
-             <div class="card-body d-flex flex-column justify-content-between"
-                 style="padding: 16px;">
-               <div>
-                 <h5 class="text-primary mb-2" style="font-weight: 600;">
-                   Giảm <strong>${amount.toLocaleString()} VNĐ</strong>
-                 </h5>
-                 <p class="text-muted mb-5" style="font-size: 14px;">HSD: ${formattedDate}</p>
-               </div>
-               <button class="btn btn-outline-primary btn-sm w-100 select-voucher">
-                 Chọn
-               </button>
-             </div>
-           </div>
-         </div>`;
+          <div class="col-12 col-sm-6 col-md-4 mb-3">
+            <div data-voucher="${item.id}"
+                class="voucher-item card shadow-sm h-100 cursor-pointer"
+                style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 10px">
+              <div class="card-body d-flex flex-column justify-content-between"
+                  style="padding: 16px;">
+                <div>
+                  <h5 class="text-primary mb-2" style="font-weight: 600;">
+                    Giảm <strong>${amount.toLocaleString()} VNĐ</strong>
+                  </h5>
+                  <p class="text-muted mb-5" style="font-size: 14px;">HSD: ${formattedDate}</p>
+                </div>
+                <button class="btn btn-outline-primary btn-sm w-100 select-voucher">
+                  Chọn
+                </button>
+              </div>
+            </div>
+          </div>`;
         } else {
           html += `
-         <div class="col-12 col-sm-6 col-md-4 mb-3">
-           <div data-voucher="${item.id}"
-               class="voucher-item card shadow-sm h-100 cursor-pointer"
-               style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 5px">
-             <div class="card-body d-flex flex-column justify-content-between"
-                 style="padding: 16px;">
-               <div>
-                 <h5 class="text-primary mb-2" style="font-weight: 600;">
-                   Giảm <strong>${amount.toLocaleString()} %</strong>
-                 </h5>
-                 <p class="text-muted mb-5" style="font-size: 14px;">HSD: ${formattedDate}</p>
-               </div>
-               <button class="btn btn-outline-primary btn-sm w-100 select-voucher">
-                 Chọn
-               </button>
-             </div>
-           </div>
-         </div>`;
+          <div class="col-12 col-sm-6 col-md-4 mb-3">
+            <div data-voucher="${item.id}"
+                class="voucher-item card shadow-sm h-100 cursor-pointer"
+                style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 5px">
+              <div class="card-body d-flex flex-column justify-content-between"
+                  style="padding: 16px;">
+                <div>
+                  <h5 class="text-primary mb-2" style="font-weight: 600;">
+                    Giảm <strong>${amount.toLocaleString()} %</strong>
+                  </h5>
+                  <p class="text-muted mb-5" style="font-size: 14px;">HSD: ${formattedDate}</p>
+                </div>
+                <button class="btn btn-outline-primary btn-sm w-100 select-voucher">
+                  Chọn
+                </button>
+              </div>
+            </div>
+          </div>`;
         }
 
 
@@ -807,23 +989,21 @@ $(document).ready(function () {
 
 
     $("#listVoucher .modal-body").html(`
-   <div class="row vourcher-list" style="max-height: 400px; overflow-y: auto;">
-     ${html}
-   </div>
- `);
+    <div class="row vourcher-list" style="max-height: 400px; overflow-y: auto;">
+      ${html}
+    </div>
+  `);
     handleClickVoucher(voucherList);
   }
 
 
-  let discountAmount = 0;
-  let voucherId = null;
+  // voucher and discount are stored per-tab in orders[tabId].voucher and orders[tabId].discountAmount
 
   function handleClickVoucher(voucherList) {
     $(".voucher-item").on("click", function () {
+      const selectedVoucherId = $(this).data("voucher");
 
-      voucherId = $(this).data("voucher");
-
-      const voucher = voucherList.find(v => v.id == voucherId);
+      const voucher = voucherList.find(v => v.id == selectedVoucherId);
       if (!voucher) return;
 
       // Giả sử bạn có biến lưu tổng tiền đơn hàng:
@@ -845,38 +1025,40 @@ $(document).ready(function () {
       }
 
 
-      // Tính giá trị giảm
+      // Tính giá trị giảm (local)
+      let computedDiscount = 0;
       if (voucher.discountType === "PERCENT") {
-        discountAmount = (totalOrderAmount * voucher.discountValue) / 100;
-        if (voucher.maxDiscountValue && discountAmount > voucher.maxDiscountValue) {
-          discountAmount = voucher.maxDiscountValue;
+        computedDiscount = (totalOrderAmount * voucher.discountValue) / 100;
+        if (voucher.maxDiscountValue && computedDiscount > voucher.maxDiscountValue) {
+          computedDiscount = voucher.maxDiscountValue;
         }
       } else {
-        discountAmount = voucher.discountValue;
+        computedDiscount = voucher.discountValue;
       }
 
       // Cập nhật giao diện
       $("#listVoucher").modal("hide");
       $("#showListVoucher").hide();
 
-
       $("#voucherDescription").html(
-        `Đang áp dụng: <strong>${voucher.code}</strong>
-     (${voucher.discountType === "PERCENT" ? voucher.discountValue + "%" : voucher.discountValue.toLocaleString() + " VNĐ"})`
+        `Đang áp dụng: <strong>${voucher.code}</strong>\n     (${voucher.discountType === "PERCENT" ? voucher.discountValue + "%" : voucher.discountValue.toLocaleString() + " VNĐ"})`
       );
 
-      $("#discountValue").text(discountAmount.toLocaleString() + " VNĐ");
+      $("#discountValue").text(computedDiscount.toLocaleString() + " VNĐ");
 
       $("#selectedVoucherInfo").show();
 
       // Cập nhật tiền giảm & tổng thanh toán
-      $("#discountAmount").text(discountAmount.toLocaleString() + " đ");
-      const newTotal = totalOrderAmount - discountAmount;
+      $("#discountAmount").text(computedDiscount.toLocaleString() + " đ");
+      const newTotal = totalOrderAmount - computedDiscount;
       $("#finalTotal").text(newTotal.toLocaleString() + " đ");
 
-      // Lưu voucher đã chọn nếu cần
-      window.selectedVoucher = voucher;
-
+      // Lưu voucher đã chọn vào tab hiện tại
+      const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
+      if (orders[activeTabId]) {
+        orders[activeTabId].voucher = voucher;
+        orders[activeTabId].discountAmount = computedDiscount;
+      }
 
       Swal.fire("Áp dụng thành công!", "Voucher đã được áp dụng vào đơn hàng.", "success");
     });
@@ -887,16 +1069,51 @@ $(document).ready(function () {
     $("#selectedVoucherInfo").hide();
     $("#showListVoucher").show();
 
-    // Reset tiền giảm
-    $("#discountAmount").text("0 VNĐ");
+    // Reset tiền giảm cho tab hiện tại
+    const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
+    if (orders[activeTabId]) {
+      orders[activeTabId].voucher = null;
+      orders[activeTabId].discountAmount = 0;
+    }
+
+    $("#discountValue").text("0 VNĐ");
 
     const totalOrderAmount = parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
     $("#finalTotal").text(totalOrderAmount.toLocaleString() + " VNĐ");
 
-    window.selectedVoucher = null;
-
     Swal.fire("Đã hủy voucher", "Bạn có thể chọn lại voucher khác.", "info");
+
+    // Sau khi hủy voucher, cập nhật lại gợi ý
+    updateClientDetail(activeTabId);
   });
+
+  // Xử lý khi bấm áp dụng voucher gợi ý
+  $(document).on("click", "#applySuggestedVoucher", function () {
+    const suggestion = $(this).data('suggestion');
+    if (!suggestion) return;
+
+    const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
+    if (!orders[activeTabId]) return;
+
+    // Cập nhật UI và state giống như khi chọn voucher từ danh sách
+    $("#voucherSuggest").hide();
+    $("#showListVoucher").hide();
+    $("#voucherDescription").html(
+      `Đang áp dụng: <strong>${suggestion.code}</strong> (${suggestion.discountType === 'PERCENT' ? suggestion.discountValue + '%' : suggestion.discountValue.toLocaleString() + ' VNĐ'})`
+    );
+    $("#selectedVoucherInfo").show();
+
+    // Cập nhật giá trị giảm giá
+    $("#discountValue").text(suggestion.discountAmount.toLocaleString() + " VNĐ");
+    $("#finalTotal").text(suggestion.totalAfter.toLocaleString() + " VNĐ");
+
+    // Lưu voucher vào state
+    orders[activeTabId].voucher = suggestion;
+    orders[activeTabId].discountAmount = suggestion.discountAmount;
+
+    toastr.success("Đã áp dụng voucher gợi ý thành công!");
+  });
+
 
 });
 

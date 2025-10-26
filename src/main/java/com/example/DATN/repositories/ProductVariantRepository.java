@@ -28,6 +28,7 @@ public interface ProductVariantRepository
 
 	List<ProductVariant> findByProductId(Integer productId);
 
+
 	boolean existsByVariantCode(String variantCode);
 
 	boolean existsByProductIdAndColorId(Integer productId, Integer colorId);
@@ -64,4 +65,5 @@ public interface ProductVariantRepository
 			""")
 	List<ProductVariant> searchByKeyword(@Param("keyword") String keyword);
 
+	List<ProductVariant> findByStatusTrue();
 }

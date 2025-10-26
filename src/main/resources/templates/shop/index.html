@@ -22,7 +22,7 @@
 
                 <span class="product-price"
                   th:if="${item.minPrice != null and item.maxPrice != null and item.minPrice != item.maxPrice}"
-                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 0)} + ' - ' + ${#numbers.formatDecimal(item.maxPrice, 0, 0)} + ' VNĐindex'">
+                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 0)} + ' - ' + ${#numbers.formatDecimal(item.maxPrice, 0, 0)} + ' VNĐ'">
                 </span>
                 <small class="text-muted" th:text="${item.brandName}">Category</small>
                 <a href="#" class="product-name" th:text="${item.name}">

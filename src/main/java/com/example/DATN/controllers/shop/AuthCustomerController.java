@@ -22,12 +22,30 @@ public class AuthCustomerController {
 	private UserService userService;
 
 	@GetMapping("/")
-	public String getPageLogin(@RequestParam(value = "error", required = false) String error,
+	public String getPageLogin(
+			@RequestParam(value = "error", required = false) String error,
+			@RequestParam(value = "redirectUrl", required = false) String redirectUrl,
 			Model model,
 			HttpSession session,
 			Authentication authentication) {
 
+			// Lưu redirectUrl vào session nếu có
+			if (redirectUrl != null && !redirectUrl.isEmpty()) {
+				session.setAttribute("REDIRECT_URL", redirectUrl);
+			} else {
+				// Nếu không có redirectUrl trong parameter, kiểm tra trong session
+				String savedRedirectUrl = (String) session.getAttribute("REDIRECT_URL");
+				if (savedRedirectUrl != null) {
+					model.addAttribute("redirectUrl", savedRedirectUrl);
+				}
+			}
+
 		if (authentication != null && authentication.isAuthenticated()) {
+				String redirectTo = (String) session.getAttribute("REDIRECT_URL");
+				if (redirectTo != null) {
+					session.removeAttribute("REDIRECT_URL");
+					return "redirect:" + redirectTo;
+			}
 			return "redirect:/";
 		}
 

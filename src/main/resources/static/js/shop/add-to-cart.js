@@ -12,31 +12,33 @@ $(document).ready(function () {
     );
     if (!selectedVariant) return;
 
-    const existingItem = cart.find(
-      (item) =>
-        item.variantId === selectedVariant.id &&
-        item.colorId === selectedColorId &&
-        item.sizeId === selectedSizeId,
-    );
+    const cartItem = {
+      variantId: selectedVariant.id,
+      colorId: selectedColorId,
+      colorName: selectedVariant.colorName,
+      sizeId: selectedSizeId,
+      sizeName: selectedVariant.sizeName,
+      name: selectedVariant.productName,
+      price: selectedVariant.price,
+      image: selectedVariant.imageUrls?.[0] || "",
+      quantity: 1
+    };
 
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.push({
-        variantId: selectedVariant.id,
-        colorId: selectedColorId,
-        colorName: selectedVariant.colorName, // thêm
-        sizeId: selectedSizeId,
-        sizeName: selectedVariant.sizeName, // thêm
-        name: selectedVariant.productName,
-        price: selectedVariant.price,
-        image: selectedVariant.imageUrls?.[0] || "",
-        quantity: 1,
-      });
-    }
-
-    window.Cart.saveCart(cart);
-    window.cartData = cart;
+    $.ajax({
+      url: "/cart/add",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(cartItem),
+      success: function(updatedCart) {
+        window.cartData = updatedCart;
+        // Cập nhật số lượng trên cart icon
+        const totalItems = updatedCart.reduce((sum, item) => sum + item.quantity, 0);
+        $("#cart-count").text(totalItems);
+      },
+      error: function(xhr) {
+        console.error("Error adding to cart:", xhr);
+      }
+    });
 
     // Animation bay ảnh
     const productImg = $(".product-images img").first();
