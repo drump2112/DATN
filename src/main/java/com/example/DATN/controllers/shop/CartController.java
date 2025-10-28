@@ -56,7 +56,7 @@ public class CartController {
     @PostMapping("/update/{variantId}")
     @ResponseBody
     public ResponseEntity<List<CartItemDTO>> updateCartItem(
-            @PathVariable Long variantId,
+            @PathVariable Integer variantId,
             @RequestParam int quantity,
             HttpSession session) {
         List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute(CART_SESSION_KEY);
@@ -75,13 +75,28 @@ public class CartController {
     @DeleteMapping("/remove/{variantId}")
     @ResponseBody
     public ResponseEntity<List<CartItemDTO>> removeCartItem(
-            @PathVariable Long variantId,
+            @PathVariable Integer variantId,
             HttpSession session) {
+        System.out.println("Attempting to remove item with variantId: " + variantId);
         List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute(CART_SESSION_KEY);
         if (cart != null) {
-            cart.removeIf(item -> item.getVariantId().equals(variantId));
+            boolean removed = cart.removeIf(item -> item.getVariantId().equals(variantId));
+            System.out.println("Item removed: " + removed);
+            System.out.println("Cart size after removal: " + cart.size());
             session.setAttribute(CART_SESSION_KEY, cart);
+        } else {
+            System.out.println("Cart is null");
+            cart = new ArrayList<>();
         }
-        return ResponseEntity.ok(cart != null ? cart : new ArrayList<>());
+        return ResponseEntity.ok(cart);
+    }
+
+    // Alternative POST method for removing items (in case DELETE is blocked)
+    @PostMapping("/remove/{variantId}")
+    @ResponseBody
+    public ResponseEntity<List<CartItemDTO>> removeCartItemPost(
+            @PathVariable Integer variantId,
+            HttpSession session) {
+        return removeCartItem(variantId, session);
     }
 }

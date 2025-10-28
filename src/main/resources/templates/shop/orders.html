@@ -88,18 +88,17 @@
                           <i class="fa fa-bank"></i> Chuyển khoản
                         </span>
                       </td>
-                      <td class="text-center">
+                      <!-- <td class="text-center">
                         <a th:href="@{/checkorder(orderCode=${order.orderCode})}"
                            class="btn btn-primary btn-sm"
                            title="Xem chi tiết">
                           <i class="fa fa-eye"></i> Chi tiết
                         </a>
-                      </td>
+                      </td> -->
                     </tr>
                   </tbody>
                 </table>
               </div>
-
               <div class="text-center" th:if="${totalPages > 1}">
                 <ul class="pagination">
                   <li th:class="${currentPage == 0} ? 'disabled' : ''">

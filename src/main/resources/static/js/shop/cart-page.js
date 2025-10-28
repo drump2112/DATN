@@ -47,12 +47,10 @@ $(document).ready(function () {
     $(".ibox-title .pull-right strong").text(totalItems);
   }
 
-  // Load cart from server
   function loadCart() {
     $.get("/cart/items")
       .done(function(cart) {
         renderCart(cart);
-        // Cập nhật số lượng trên cart icon
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         $("#cart-count").text(totalItems);
       })
@@ -64,23 +62,65 @@ $(document).ready(function () {
   loadCart();
 
   $(document).on("click", ".remove-item", function () {
-    const variantId = $(this).closest("tr").data("variant-id");
-    $.ajax({
-      url: `/cart/remove/${variantId}`,
-      method: "DELETE",
-      success: function(cart) {
-        renderCart(cart);
-        // Cập nhật số lượng trên cart icon
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        $("#cart-count").text(totalItems);
-      },
-      error: function(xhr) {
-        console.error("Error removing item:", xhr);
+    const $row = $(this).closest("tr");
+    const variantId = $row.data("variant-id");
+
+    console.log("Remove button clicked, variantId:", variantId);
+
+    if (!variantId) {
+      console.error("Variant ID not found");
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: 'Không thể xóa sản phẩm. Vui lòng thử lại!',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: 'Xác nhận xóa',
+      text: 'Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: `/cart/remove/${variantId}`,
+          method: "POST",
+          success: function(cart) {
+            console.log("Item removed successfully", cart);
+            renderCart(cart);
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            $("#cart-count").text(totalItems);
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Thành công',
+              text: 'Đã xóa sản phẩm khỏi giỏ hàng',
+              timer: 1500,
+              showConfirmButton: false
+            });
+          },
+          error: function(xhr, status, error) {
+            console.error("Error removing item:", xhr, status, error);
+            console.error("Response:", xhr.responseText);
+            Swal.fire({
+              icon: 'error',
+              title: 'Lỗi',
+              text: 'Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại!',
+              confirmButtonText: 'OK'
+            });
+          }
+        });
       }
     });
   });
 
-  // Cập nhật số lượng
   $(document).on("change", ".quantity-input", function () {
     const variantId = $(this).closest("tr").data("variant-id");
     const newQuantity = parseInt($(this).val());
@@ -91,7 +131,6 @@ $(document).ready(function () {
         data: { quantity: newQuantity },
         success: function(cart) {
           renderCart(cart);
-          // Cập nhật số lượng trên cart icon
           const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
           $("#cart-count").text(totalItems);
         },

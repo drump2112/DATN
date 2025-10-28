@@ -246,63 +246,6 @@ $(document).ready(function () {
         return parseFloat(str.replace(/[^\d]/g, "")) || 0;
     }
 
-    // $("#btnConfirmOrder").on("click", function () {
-    //     Swal.fire({
-    //         title: "Xác nhận đặt hàng?",
-    //         text: "Bạn có chắc chắn muốn đặt đơn hàng này không?",
-    //         icon: "question",
-    //         showCancelButton: true,
-    //         confirmButtonText: "Đặt hàng",
-    //         cancelButtonText: "Hủy",
-    //         reverseButtons: true
-    //     }).then((result) => {
-    //         if (result.isConfirmed) {
-    //             const orderData = {
-    //                 userId: $("#userId").val(),
-    //                 customerName: $("#userFullName").text().trim(),
-    //                 paymentMethod: $("input[name='paymentMethod']:checked").val(),
-    //                 voucherCode: $("#voucherCode").val() || null,
-    //                 shippingFee: parseMoney($("#shippingValue").text()),
-    //                 totalAmount: parseMoney($("#totalAmount").text()),
-    //                 discountAmount: parseMoney($("#discountValue").text()),
-    //                 finalAmount: parseMoney($("#totalPayment").text()),
-    //                 shippingAddress: $("#shippingAddress").val(),
-    //                 shippingPhone: $("#shippingPhone").text(),
-    //                 voucherId: appliedVoucher ? appliedVoucher.id : null,
-    //                 items: typeof cartItems !== "undefined" ? cartItems : []
-    //             };
-
-    //             console.table(orderData);
-    //             $.ajax({
-    //                 url: "/api/orders/create",
-    //                 type: "POST",
-    //                 contentType: "application/json",
-    //                 data: JSON.stringify(orderData),
-    //                 success: function (res) {
-    //                     Swal.fire({
-    //                         title: "Thành công!",
-    //                         text: "Đơn hàng của bạn đã được đặt thành công.",
-    //                         icon: "success",
-    //                         confirmButtonText: "OK"
-    //                     }).then(() => {
-    //                         window.location.href = "/orders";
-    //                     });
-    //                 },
-    //                 error: function (err) {
-    //                     console.table(orderData);
-
-    //                     console.error(err);
-    //                     Swal.fire({
-    //                         title: "Lỗi!",
-    //                         text: "Đặt hàng thất bại. Vui lòng thử lại.",
-    //                         icon: "error",
-    //                         confirmButtonText: "Đóng"
-    //                     });
-    //                 }
-    //             });
-    //         }
-    //     });
-    // });
     $("#btnConfirmOrder").on("click", function () {
         Swal.fire({
             title: "Xác nhận đặt hàng?",
