@@ -301,14 +301,16 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+            <span aria-hidden="true">&times;</span>
+          </button>
           <h5 class="modal-title" id="voucherModalLabel">Chọn Mã Giảm Giá</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
         <div class="modal-body">
           <div id="voucherGrid" class="voucher-grid"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <button type="button" class="btn btn-default" data-dismiss="modal">
             Đóng
           </button>
         </div>
@@ -319,8 +321,10 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+          <span aria-hidden="true">&times;</span>
+        </button>
         <h5 class="modal-title" id="otpModalLabel">Xác nhận OTP</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
       </div>
       <div class="modal-body text-center">
         <p>Vui lòng nhập mã OTP được gửi đến email của bạn.</p>
@@ -330,7 +334,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" id="btnVerifyOtp" class="btn btn-success">Xác nhận</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
       </div>
     </div>
   </div>

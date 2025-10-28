@@ -14,6 +14,7 @@ $(document).ready(function () {
 
     const cartItem = {
       variantId: selectedVariant.id,
+      variantCode: selectedVariant.variantCode,
       colorId: selectedColorId,
       colorName: selectedVariant.colorName,
       sizeId: selectedSizeId,

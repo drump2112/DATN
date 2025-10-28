@@ -24,18 +24,16 @@
   <link th:href="@{/assets/css/plugins/dropzone/dropzone.css}" rel="stylesheet" />
 
   <link rel="stylesheet" th:href="@{/assets/css/plugins/dropzone/basic.css}" />
-  <!-- Custom styles for this template -->
   <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
   <link th:href="@{/assets/css/plugins/iCheck/custom.css}" rel="stylesheet" />
+  <link th:href="@{/assets/css/plugins/toastr/toastr.min.css}" rel="stylesheet" />
 
   <style>
-    /* Ẩn radio gốc */
     .size input[type="radio"],
     .color input[type="radio"] {
       display: none;
     }
 
-    /* Label styled như button */
     .size label,
     .color label {
       display: inline-block;
@@ -50,7 +48,6 @@
       margin: 5px;
     }
 
-    /* Khi radio được chọn */
     .size input[type="radio"]:checked+label,
     .color input[type="radio"]:checked+label {
       background-color: #1bb394;
@@ -60,7 +57,6 @@
 
     .dropdown-menu {
       z-index: 1050;
-      /* hoặc cao hơn nếu cần */
     }
 
     .logo-area {
@@ -73,7 +69,6 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      /* Hoặc "cover" nếu bạn muốn ảnh cắt cho vừa */
     }
   </style>
 </head>

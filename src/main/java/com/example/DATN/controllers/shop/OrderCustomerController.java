@@ -1,6 +1,7 @@
 package com.example.DATN.controllers.shop;
 
 import com.example.DATN.dtos.OrderDTO;
+import com.example.DATN.dtos.OrderDetailResponse;
 import com.example.DATN.models.Order;
 import com.example.DATN.models.User;
 import com.example.DATN.repositories.UserRepository;
@@ -74,5 +75,29 @@ public class OrderCustomerController {
         model.addAttribute("totalItems", orders.getTotalElements());
 
         return "shop/orders";
+    }
+
+    @GetMapping("/thank-you")
+    public String thankYou(@RequestParam("orderId") Integer orderId, Model model) {
+        OrderDTO order = orderService.getOrderById(orderId);
+
+        if (order == null) {
+            return "redirect:/orders";
+        }
+
+        model.addAttribute("order", order);
+        return "shop/thank-you";
+    }
+
+    @GetMapping("/detail")
+    public String checkOrder(@RequestParam("orderCode") String orderCode, Model model) {
+        OrderDetailResponse orderDetail = orderService.getOrderDetailByCode(orderCode);
+
+        if (orderDetail == null) {
+            return "redirect:/orders";
+        }
+
+        model.addAttribute("order", orderDetail);
+        return "shop/checkorder";
     }
 }

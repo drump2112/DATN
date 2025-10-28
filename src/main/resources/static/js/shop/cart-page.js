@@ -26,7 +26,7 @@ $(document).ready(function () {
           <img src="${item.image}" alt="${item.name}" style="width:80px;height:auto;"/>
         </td>
         <td class="desc">
-          <h3>${item.name}</h3>
+          <h3>${item.name}-${item.variantCode}</h3>
           <p><small>Màu: ${item.colorName} | Size: ${item.sizeName}</small></p>
         </td>
         <td>${item.price.toLocaleString()} VNĐ</td>
@@ -54,12 +54,12 @@ $(document).ready(function () {
 
   function loadCart() {
     $.get("/cart/items")
-      .done(function(cart) {
+      .done(function (cart) {
         renderCart(cart);
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         $("#cart-count").text(totalItems);
       })
-      .fail(function(xhr) {
+      .fail(function (xhr) {
         console.error("Error loading cart:", xhr);
       });
   }
@@ -97,7 +97,7 @@ $(document).ready(function () {
         $.ajax({
           url: `/cart/remove/${variantId}`,
           method: "POST",
-          success: function(cart) {
+          success: function (cart) {
             console.log("Item removed successfully", cart);
             renderCart(cart);
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -111,7 +111,7 @@ $(document).ready(function () {
               showConfirmButton: false
             });
           },
-          error: function(xhr, status, error) {
+          error: function (xhr, status, error) {
             console.error("Error removing item:", xhr, status, error);
             console.error("Response:", xhr.responseText);
             Swal.fire({
@@ -134,12 +134,12 @@ $(document).ready(function () {
         url: `/cart/update/${variantId}`,
         method: "POST",
         data: { quantity: newQuantity },
-        success: function(cart) {
+        success: function (cart) {
           renderCart(cart);
           const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
           $("#cart-count").text(totalItems);
         },
-        error: function(xhr) {
+        error: function (xhr) {
           console.error("Error updating quantity:", xhr);
         }
       });

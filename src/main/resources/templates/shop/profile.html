@@ -1,179 +1,278 @@
 <!doctype html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  th:fragment="base">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
-
-  <title>Trang Chủ</title>
-
-  <!-- Bootstrap core CSS -->
-  <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" />
-
-  <!-- Animation CSS -->
-  <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
-  <link th:href="@{/assets/css/plugins/slick/slick.css}" rel="stylesheet" />
-  <link th:href="@{/assets/css/plugins/slick/slick-theme.css}" rel="stylesheet" />
-  <link th:href="@{/assets/css/plugins/awesome-bootstrap-checkbox/awesome-bootstrap-checkbox.css}" rel="stylesheet"
-    class="__web-inspector-hide-shortcut__" />
-  <link th:href="@{/assets/font-awesome/css/font-awesome.min.css}" rel="stylesheet" />
-  <link th:href="@{/assets/css/plugins/dropzone/dropzone.css}" rel="stylesheet" />
-
-  <link rel="stylesheet" th:href="@{/assets/css/plugins/dropzone/basic.css}" />
-  <!-- Custom styles for this template -->
-  <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
-  <link th:href="@{/assets/css/plugins/iCheck/custom.css}" rel="stylesheet" />
-
+<section class="container" th:fragment="content">
   <style>
-    /* Ẩn radio gốc */
-    .size input[type="radio"],
-    .color input[type="radio"] {
-      display: none;
+    .profile-wrapper {
+      margin: 80px 0;
     }
 
-    /* Label styled như button */
-    .size label,
-    .color label {
-      display: inline-block;
-      font-weight: 400;
-      padding: 7px 14px;
-      background-color: #f0f0f0;
-      color: #333;
-      border: 2px solid transparent;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      margin: 5px;
+    .profile-card {
+      text-align: center;
     }
 
-    /* Khi radio được chọn */
-    .size input[type="radio"]:checked+label,
-    .color input[type="radio"]:checked+label {
-      background-color: #1bb394;
-      color: white;
-      border-color: #1bb394;
+    .profile-avatar {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #f3f3f4;
     }
 
-    .dropdown-menu {
-      z-index: 1050;
-      /* hoặc cao hơn nếu cần */
+    .profile-name {
+      margin-top: 15px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .profile-meta {
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .nav-tabs.profile-tabs>li>a {
+      padding: 12px 16px;
+      font-weight: 600;
+    }
+
+    .tab-pane {
+      padding: 20px 5px;
+    }
+
+    .form-group.required label:after {
+      content: "*";
+      color: #ed5565;
+      margin-left: 4px;
+    }
+
+    .kv {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 6px 0;
+      color: #555;
+    }
+
+    .kv i {
+      width: 16px;
+      text-align: center;
+      color: #1ab394;
+    }
+
+    .btn-outline {
+      background: #fff;
+      border: 1px solid #e7eaec;
+    }
+
+    @media (max-width: 767px) {
+      .profile-avatar {
+        width: 110px;
+        height: 110px;
+      }
     }
   </style>
-</head>
 
-<body id="page-top" class="landing-page no-skin-config">
-  <th:block th:replace="shop/fragments/header :: header"> </th:block>
-
-<section class="container features" th:fragment="content">
-  <div class="row" style="margin-top: 70px; margin-bottom: 70px">
-    <div class="col-lg-12">
-      <div class="row animated fadeInRight">
-        <div class="col-md-4">
-          <div class="ibox float-e-margins">
-            <div class="ibox-title">
-              <h5>Thông Tin Cá Nhân</h5>
-            </div>
-            <div>
-              <div class="ibox-content no-padding border-left-right">
-                <img alt="image" class="img-responsive" th:src="@{/assets/img/profile_big.jpg}">
-              </div>
-              <div class="ibox-content profile-content">
-                <h4><strong>Monica Smith</strong></h4>
-                <p><i class="fa fa-map-marker"></i> Riviera State 32/106</p>
-                <h5>
-                  About me
-                </h5>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
-                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitat.
-                </p>
-                <div class="row m-t-lg">
-                  <div class="col-md-4">
-                    <span class="bar" style="display: none;">5,3,9,6,5,9,7,3,5,2</span><svg class="peity" height="16"
-                      width="32">
-                      <rect fill="#1ab394" x="0" y="7.111111111111111" width="2.3" height="8.88888888888889"></rect>
-                      <rect fill="#d7d7d7" x="3.3" y="10.666666666666668" width="2.3" height="5.333333333333333"></rect>
-                      <rect fill="#1ab394" x="6.6" y="0" width="2.3" height="16"></rect>
-                      <rect fill="#d7d7d7" x="9.899999999999999" y="5.333333333333334" width="2.3"
-                        height="10.666666666666666"></rect>
-                      <rect fill="#1ab394" x="13.2" y="7.111111111111111" width="2.3" height="8.88888888888889"></rect>
-                      <rect fill="#d7d7d7" x="16.5" y="0" width="2.3" height="16"></rect>
-                      <rect fill="#1ab394" x="19.799999999999997" y="3.555555555555557" width="2.3"
-                        height="12.444444444444443"></rect>
-                      <rect fill="#d7d7d7" x="23.099999999999998" y="10.666666666666668" width="2.3"
-                        height="5.333333333333333"></rect>
-                      <rect fill="#1ab394" x="26.4" y="7.111111111111111" width="2.3" height="8.88888888888889"></rect>
-                      <rect fill="#d7d7d7" x="29.7" y="12.444444444444445" width="2.3" height="3.5555555555555554">
-                      </rect>
-                    </svg>
-                    <h5><strong>169</strong> Posts</h5>
-                  </div>
-                  <div class="col-md-4">
-                    <span class="line" style="display: none;">5,3,9,6,5,9,7,3,5,2</span><svg class="peity" height="16"
-                      width="32">
-                      <polygon fill="#1ab394"
-                        points="0 15 0 7.166666666666666 3.5555555555555554 10.5 7.111111111111111 0.5 10.666666666666666 5.5 14.222222222222221 7.166666666666666 17.77777777777778 0.5 21.333333333333332 3.833333333333332 24.888888888888886 10.5 28.444444444444443 7.166666666666666 32 12.166666666666666 32 15">
-                      </polygon>
-                      <polyline fill="transparent"
-                        points="0 7.166666666666666 3.5555555555555554 10.5 7.111111111111111 0.5 10.666666666666666 5.5 14.222222222222221 7.166666666666666 17.77777777777778 0.5 21.333333333333332 3.833333333333332 24.888888888888886 10.5 28.444444444444443 7.166666666666666 32 12.166666666666666"
-                        stroke="#169c81" stroke-width="1" stroke-linecap="square"></polyline>
-                    </svg>
-                    <h5><strong>28</strong> Following</h5>
-                  </div>
-                  <div class="col-md-4">
-                    <span class="bar" style="display: none;">5,3,2,-1,-3,-2,2,3,5,2</span><svg class="peity" height="16"
-                      width="32">
-                      <rect fill="#1ab394" x="0" y="0" width="2.3" height="10"></rect>
-                      <rect fill="#d7d7d7" x="3.3" y="4" width="2.3" height="6"></rect>
-                      <rect fill="#1ab394" x="6.6" y="6" width="2.3" height="4"></rect>
-                      <rect fill="#d7d7d7" x="9.899999999999999" y="10" width="2.3" height="2"></rect>
-                      <rect fill="#1ab394" x="13.2" y="10" width="2.3" height="6"></rect>
-                      <rect fill="#d7d7d7" x="16.5" y="10" width="2.3" height="4"></rect>
-                      <rect fill="#1ab394" x="19.799999999999997" y="6" width="2.3" height="4"></rect>
-                      <rect fill="#d7d7d7" x="23.099999999999998" y="4" width="2.3" height="6"></rect>
-                      <rect fill="#1ab394" x="26.4" y="0" width="2.3" height="10"></rect>
-                      <rect fill="#d7d7d7" x="29.7" y="6" width="2.3" height="4"></rect>
-                    </svg>
-                    <h5><strong>240</strong> Followers</h5>
-                  </div>
-                </div>
-                <div class="user-button">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <button type="button" class="btn btn-primary btn-sm btn-block"><i class="fa fa-envelope"></i> Send
-                        Message</button>
-                    </div>
-                    <div class="col-md-6">
-                      <button type="button" class="btn btn-default btn-sm btn-block"><i class="fa fa-coffee"></i> Buy a
-                        coffee</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+  <div class="profile-wrapper row animated fadeIn">
+    <div class="col-md-4">
+      <div class="ibox">
+        <div class="ibox-title">
+          <h5>Hồ sơ</h5>
+        </div>
+        <div class="ibox-content profile-card"
+          th:with="u=${#authentication != null && #authentication.isAuthenticated() ? #authentication.principal.user : null},
+                                                     avatarUrl=${u != null && u.avatar != null} ? @{${u.avatar}} : @{/assets/img/profile_big.jpg}">
+          <img class="profile-avatar" th:src="${avatarUrl}" alt="avatar">
+          <div class="profile-name" th:text="${u != null ? u.fullName : 'Người dùng'}">Người dùng</div>
+          <div class="profile-meta">
+            <div class="kv" th:if="${u != null && u.email}"><i class="fa fa-envelope"></i><span
+                th:text="${u.email}">email@example.com</span></div>
+            <div class="kv" th:if="${u != null && u.phone}"><i class="fa fa-phone"></i><span
+                th:text="${u.phone}">0123456789</span></div>
+            <div class="kv" th:if="${u != null && u.address}"><i class="fa fa-map-marker"></i><span
+                th:text="${u.address}">Địa chỉ</span></div>
+          </div>
+          <div class="m-t-sm">
+            <label class="btn btn-white btn-sm">
+              <i class="fa fa-upload"></i>
+              <span>Đổi ảnh đại diện</span>
+              <input id="avatarInput" type="file" accept="image/*" style="display:none">
+            </label>
+            <a th:href="@{/orders}" class="btn btn-outline btn-sm"><i class="fa fa-list"></i> Đơn hàng của tôi</a>
           </div>
         </div>
-        <div class="col-md-8">
-          <div class="ibox float-e-margins">
-            <div class="ibox-title">
-              <h5>Activites</h5>
-            </div>
-            <div class="ibox-content">
+      </div>
+    </div>
 
+    <div class="col-md-8">
+      <div class="ibox">
+        <div class="ibox-title">
+          <h5>Quản lý tài khoản</h5>
+        </div>
+        <div class="ibox-content">
+          <ul class="nav nav-tabs profile-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#tab-info" role="tab" data-toggle="tab">Thông tin</a></li>
+            <li role="presentation"><a href="#tab-address" role="tab" data-toggle="tab">Địa chỉ</a></li>
+            <li role="presentation"><a href="#tab-security" role="tab" data-toggle="tab">Bảo mật</a></li>
+          </ul>
+
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="tab-info"
+              th:with="u=${#authentication != null && #authentication.isAuthenticated() ? #authentication.principal.user : null}">
+              <form action="#" method="post" onsubmit="return false;">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group required">
+                      <label>Họ và tên</label>
+                      <input type="text" class="form-control" th:value="${u != null ? u.fullName : ''}"
+                        placeholder="Nhập họ tên" />
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group required">
+                      <label>Email</label>
+                      <input type="email" class="form-control" th:value="${u != null ? u.email : ''}"
+                        placeholder="email@example.com" />
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Số điện thoại</label>
+                      <input type="text" class="form-control" th:value="${u != null ? u.phone : ''}"
+                        placeholder="0123 456 789" />
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Ngày sinh</label>
+                      <input type="date" class="form-control"
+                        th:value="${u != null && u.dateOfBirth != null ? u.dateOfBirth : ''}" />
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Giới tính</label>
+                      <select class="form-control" th:value="${u != null ? u.gender : ''}">
+                        <option th:selected="${u != null && u.gender == true}">Nam</option>
+                        <option th:selected="${u != null && u.gender == false}">Nữ</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-sm-12">
+                    <div class="form-group">
+                      <label>Địa chỉ</label>
+                      <textarea class="form-control" rows="2" th:text="${u != null ? u.address : ''}"
+                        placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" style="resize: none;"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <button type="button" class="btn btn-primary" disabled title="Chưa kết nối API">Lưu thay đổi</button>
+                </div>
+              </form>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="tab-address">
+              <p>Quản lý địa chỉ giao hàng của bạn. Tính năng đang được kết nối với dữ liệu hành chính (tỉnh/huyện/xã).
+              </p>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group required">
+                    <label>Tỉnh/Thành</label>
+                    <select id="province" class="form-control">
+                      <option>— Chọn tỉnh/thành —</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
+                  <div class="form-group required">
+                    <label>Phường/Xã</label>
+                    <select id="ward" class="form-control">
+                      <option>— Chọn phường/xã —</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-sm-12">
+                  <div class="form-group">
+                    <label>Địa chỉ chi tiết</label>
+                    <input class="form-control" placeholder="Số nhà, tên đường"/>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <button type="button" class="btn btn-primary" disabled title="Chưa kết nối API">Lưu địa chỉ</button>
+              </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="tab-security">
+              <form action="#" method="post" onsubmit="return false;">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group required">
+                      <label>Mật khẩu hiện tại</label>
+                      <input type="password" class="form-control" placeholder="••••••••" />
+                    </div>
+                  </div>
+                  <div class="col-sm-6"></div>
+                  <div class="col-sm-6">
+                    <div class="form-group required">
+                      <label>Mật khẩu mới</label>
+                      <input type="password" class="form-control" placeholder="••••••••" />
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group required">
+                      <label>Nhập lại mật khẩu</label>
+                      <input type="password" class="form-control" placeholder="••••••••" />
+                    </div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <button type="button" class="btn btn-primary" disabled title="Chưa kết nối API">Đổi mật khẩu</button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll('.profile-tabs a[data-toggle="tab"]');
+      var panes = document.querySelectorAll('.tab-pane');
+      function showTab(targetId) {
+        panes.forEach(function (p) { p.classList.remove('active'); });
+        var el = document.querySelector(targetId);
+        if (el) el.classList.add('active');
+        tabs.forEach(function (a) { a.parentElement.classList.remove('active'); });
+        var activeTab = Array.prototype.find.call(tabs, function (a) { return a.getAttribute('href') === targetId; });
+        if (activeTab) activeTab.parentElement.classList.add('active');
+      }
+      tabs.forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          showTab(a.getAttribute('href'));
+        });
+      });
+
+      var input = document.getElementById('avatarInput');
+      if (input) {
+        input.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            var img = document.querySelector('.profile-avatar');
+            if (img) img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    })();
+  </script>
 </section>
-  <th:block th:replace="shop/fragments/footer :: footer"></th:block>
-  <th:block th:replace="shop/fragments/script :: script"></th:block>
-</body>
 
 </html>
-

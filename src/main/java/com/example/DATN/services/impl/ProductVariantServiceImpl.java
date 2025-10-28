@@ -379,21 +379,17 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		ProductVariant variant = productVariantRepository.findById(id)
 				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
 
-		// Cập nhật giá nếu có
 		if (request.getPrice() != null) {
 			variant.setPrice(BigDecimal.valueOf(request.getPrice()));
 		}
 
 		productVariantRepository.save(variant);
 
-		// Cập nhật ảnh nếu có upload mới
 		if (request.getImages() != null && !request.getImages().isEmpty()) {
-			// Lấy ảnh cũ
 			List<ProductVariantImage> oldImages = variantImageRepository.findByProductIdAndColorIdOrderBySortOrder(
 					variant.getProduct().getId(),
 					variant.getColor().getId());
 
-			// Xoá ảnh cũ trong DB + xoá file trên disk
 			for (ProductVariantImage old : oldImages) {
 				try {
 					imageService.deleteImage(old.getImageUrl()); // xoá file vật lý
@@ -440,6 +436,82 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		} while (productVariantRepository.existsByVariantCode(variantCode));
 
 		return variantCode;
+	}
+
+	@Override
+	public List<ProductVariantDTO> getBestSellingVariants(int limit) {
+		Pageable pageable = PageRequest.of(0, limit);
+		List<Object[]> results = productVariantRepository.findBestSellingVariants(pageable);
+
+		return results.stream()
+				.map(result -> {
+					Integer variantId = (Integer) result[0];
+					ProductVariant variant = productVariantRepository.findDetailById(variantId).orElse(null);
+
+					if (variant == null || !variant.getStatus()) {
+						return null;
+					}
+
+					return mapToProductVariantDTO(variant);
+				})
+				.filter(dto -> dto != null)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public List<ProductVariantDTO> getNewestVariants(int limit) {
+		Pageable pageable = PageRequest.of(0, limit);
+		List<ProductVariant> variants = productVariantRepository.findNewestVariants(pageable);
+
+		return variants.stream()
+				.map(this::mapToProductVariantDTO)
+				.collect(Collectors.toList());
+	}
+
+	private ProductVariantDTO mapToProductVariantDTO(ProductVariant variant) {
+		ProductVariantDTO dto = modelMapper.map(variant, ProductVariantDTO.class);
+
+		if (variant.getProduct() != null) {
+			dto.setProductId(variant.getProduct().getId());
+			dto.setProductName(variant.getProduct().getName());
+			dto.setProductDescription(variant.getProduct().getDescription());
+
+			if (variant.getProduct().getBrand() != null) {
+				dto.setBrandId(variant.getProduct().getBrand().getId());
+				dto.setBrandName(variant.getProduct().getBrand().getName());
+			}
+
+			if (variant.getProduct().getCategory() != null) {
+				dto.setCategoryId(variant.getProduct().getCategory().getId());
+				dto.setCategoryName(variant.getProduct().getCategory().getName());
+			}
+		}
+
+		if (variant.getSize() != null) {
+			dto.setSizeId(variant.getSize().getId());
+			dto.setSizeName(variant.getSize().getName());
+		}
+
+		if (variant.getColor() != null) {
+			dto.setColorId(variant.getColor().getId());
+			dto.setColorName(variant.getColor().getName());
+
+			// Lấy danh sách ảnh từ ProductVariantImage theo productId và colorId
+			if (variant.getProduct() != null) {
+				List<ProductVariantImage> images = variantImageRepository
+						.findByProductIdAndColorIdOrderBySortOrder(
+								variant.getProduct().getId(),
+								variant.getColor().getId());
+
+				if (images != null && !images.isEmpty()) {
+					dto.setImageUrls(images.stream()
+							.map(ProductVariantImage::getImageUrl)
+							.collect(Collectors.toList()));
+				}
+			}
+		}
+
+		return dto;
 	}
 
 }

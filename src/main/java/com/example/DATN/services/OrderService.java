@@ -26,4 +26,8 @@ public interface OrderService {
   Page<OrderDTO> getUserOrders(Integer userId, int page, int size);
 
   boolean confirmOtp(Integer orderId, String email, String inputOtp);
+
+  OrderDTO getOrderById(Integer orderId);
+
+  boolean updateOrderStatus(Integer orderId, String status);
 }

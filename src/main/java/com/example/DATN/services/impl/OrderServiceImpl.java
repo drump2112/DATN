@@ -255,8 +255,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDetailResponse getOrderDetailByCode(String orderCode) {
-        Order order = orderRepository.findByOrderCode(orderCode)
+        Order order = orderRepository.findByOrderCodeWithItems(orderCode)
                 .orElseThrow(() -> new EntityNotFoundException("Không tìm thấy đơn hàng có mã: " + orderCode));
+
+        System.out.println("=== Order found in service ===");
+        System.out.println("Order code: " + order.getOrderCode());
+        System.out.println("Items size: " + (order.getItems() != null ? order.getItems().size() : "null"));
 
         return OrderDetailResponse.builder()
                 .orderCode(order.getOrderCode())
@@ -327,6 +331,29 @@ public class OrderServiceImpl implements OrderService {
             dto.setVoucherCode(order.getVoucher().getCode());
         }
         return dto;
+    }
+
+    @Override
+    public OrderDTO getOrderById(Integer orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+        return mapToOrderDTO(order);
+    }
+
+    @Override
+    @Transactional
+    public boolean updateOrderStatus(Integer orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        // Kiểm tra trạng thái hợp lệ
+        if (!status.matches("PENDING|PROCESSING|COMPLETED|CANCELLED")) {
+            throw new RuntimeException("Trạng thái không hợp lệ");
+        }
+
+        order.setStatus(status);
+        orderRepository.save(order);
+        return true;
     }
 }
 

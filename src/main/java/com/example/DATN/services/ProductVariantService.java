@@ -51,4 +51,10 @@ public interface ProductVariantService {
 	public List<ProductVariantDTO> getVariantsByProductId(Integer productId);
 
 	public Page<ProductVariantDTO> getVariantsByProductId(int size, int pageable,int id);
+
+	// Lấy danh sách biến thể bán chạy nhất
+	List<ProductVariantDTO> getBestSellingVariants(int limit);
+
+	// Lấy danh sách biến thể mới nhất
+	List<ProductVariantDTO> getNewestVariants(int limit);
 }

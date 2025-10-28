@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.example.DATN.dtos.ProductDTO;
 import com.example.DATN.dtos.ProductVariantDTO;
-import com.example.DATN.models.Product;
 import com.example.DATN.services.ProductService;
 import com.example.DATN.services.ProductVariantService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,8 +31,12 @@ public class HomeController {
 	public String getProducts(Model model) {
 
 		List<ProductDTO> list = service.getProductActive();
+		List<ProductVariantDTO> bestSellingVariants = variantService.getBestSellingVariants(8);
+		List<ProductVariantDTO> newestVariants = variantService.getNewestVariants(8);
 
 		model.addAttribute("listProducts", list);
+		model.addAttribute("bestSellingVariants", bestSellingVariants);
+		model.addAttribute("newestVariants", newestVariants);
 
 		return "shop/index";
 	}

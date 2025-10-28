@@ -1,5 +1,6 @@
 package com.example.DATN.controllers.api;
 
+import com.example.DATN.dtos.OrderDetailResponse;
 import com.example.DATN.models.*;
 import com.example.DATN.repositories.*;
 import com.example.DATN.request.OrderRequest;
@@ -46,6 +47,28 @@ public class OnlineOrderRestController {
             return ResponseEntity.ok(Map.of("success", false, "message", "OTP không hợp lệ hoặc đã hết hạn"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/detail/{orderCode}")
+    public ResponseEntity<OrderDetailResponse> getOrderDetail(@PathVariable String orderCode) {
+        try {
+            System.out.println("=== Fetching order detail for code: " + orderCode);
+            OrderDetailResponse orderDetail = orderService.getOrderDetailByCode(orderCode);
+
+            if (orderDetail == null) {
+                System.out.println("Order not found: " + orderCode);
+                return ResponseEntity.notFound().build();
+            }
+
+            System.out.println("Order found: " + orderDetail.getOrderCode());
+            System.out.println("Items count: " + (orderDetail.getItems() != null ? orderDetail.getItems().size() : 0));
+
+            return ResponseEntity.ok(orderDetail);
+        } catch (Exception e) {
+            System.err.println("Error fetching order detail: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         }
     }
 }

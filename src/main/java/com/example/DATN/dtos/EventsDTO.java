@@ -24,7 +24,7 @@ public class EventsDTO {
 
    private String code;
 
-   @DateTimeFormat(pattern = "yyyy-MM-dd")  // Parse "2025-10-14" → 2025-10-14T00:00 (default time 00:00)
+   @DateTimeFormat(pattern = "yyyy-MM-dd")
    private LocalDateTime startDate;
 
    @DateTimeFormat(pattern = "yyyy-MM-dd")

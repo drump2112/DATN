@@ -74,4 +74,46 @@ public interface ProductVariantRepository
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("SELECT v FROM ProductVariant v WHERE v.id = :id")
 	ProductVariant findByIdForUpdate(@Param("id") Integer id);
+
+	// Lấy các sản phẩm bán chạy nhất dựa trên tổng số lượng đã bán trong OrderItem (chỉ tính đơn hoàn thành)
+	@Query("""
+			SELECT pv.product.id, SUM(oi.quantity) as totalSold
+			FROM OrderItem oi
+			JOIN oi.productVariant pv
+			JOIN oi.order o
+			WHERE o.status = 'COMPLETED'
+			  AND pv.product.isActive = true
+			GROUP BY pv.product.id
+			ORDER BY totalSold DESC
+			""")
+	List<Object[]> findBestSellingProducts(Pageable pageable);
+
+	// Lấy các biến thể sản phẩm bán chạy nhất (ProductVariant)
+	@Query("""
+			SELECT pv.id, SUM(oi.quantity) as totalSold
+			FROM OrderItem oi
+			JOIN oi.productVariant pv
+			JOIN oi.order o
+			WHERE o.status = 'COMPLETED'
+			  AND pv.status = true
+			  AND pv.product.isActive = true
+			GROUP BY pv.id
+			ORDER BY totalSold DESC
+			""")
+	List<Object[]> findBestSellingVariants(Pageable pageable);
+
+	// Lấy các biến thể sản phẩm mới nhất (ProductVariant)
+	@Query("""
+			SELECT pv
+			FROM ProductVariant pv
+			JOIN FETCH pv.product p
+			JOIN FETCH pv.color c
+			JOIN FETCH pv.size s
+			JOIN FETCH p.brand b
+			JOIN FETCH p.category cat
+			WHERE pv.status = true
+			  AND p.isActive = true
+			ORDER BY p.createAt DESC
+			""")
+	List<ProductVariant> findNewestVariants(Pageable pageable);
 }

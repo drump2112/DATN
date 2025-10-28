@@ -64,29 +64,35 @@
             </tr>
         </tbody>
     </table>
-    <div class="dataTables_paginate paging_simple_numbers" th:if="${voucherTotalPages > 0}" style="text-align: right">
-        <ul class="pagination" id="paginationContainer"
-            th:attr="data-total-pages=${voucherTotalPages}, data-current-page=${voucherCurrentPage}">
-            <!-- Nút Previous -->
-            <li class="paginate_button previous" th:classappend="${voucherCurrentPage == 0} ? ' disabled'">
-                <a href="#" tabindex="0" th:if="${voucherCurrentPage > 0}"
-                    th:onclick="'searchVoucher(' + (${voucherCurrentPage - 1}) + ')'">Trước</a>
-                <a href="#" tabindex="0" th:if="${voucherCurrentPage == 0}"
-                    style="pointer-events: none; opacity: 0.5;">Trước</a>
-            </li>
-            <li class="paginate_button" th:each="i : ${#numbers.sequence(1, voucherTotalPages)}"
-                th:classappend="${i - 1 == voucherCurrentPage} ? ' active'">
-                <a href="#" tabindex="0" th:text="${i}" th:onclick="'searchVoucher(' + (${i} - 1) + ')'">
+    <div class="text-center" th:if="${voucherTotalPages > 1}">
+        <ul class="pagination">
+            <li th:class="${voucherCurrentPage == 0} ? 'disabled' : ''">
+                <a th:if="${voucherCurrentPage > 0}" href="#" th:onclick="'searchVoucher(' + (${voucherCurrentPage - 1}) + ')'">
+                    <i class="fa fa-angle-left"></i> Trước
                 </a>
+                <span th:if="${voucherCurrentPage == 0}" class="disabled">
+                    <i class="fa fa-angle-left"></i> Trước
+                </span>
             </li>
 
-            <li class="paginate_button next"
-                th:classappend="${voucherCurrentPage + 1 == voucherTotalPages} ? ' disabled'">
-                <a href="#" tabindex="0" th:if="${voucherCurrentPage + 1 < voucherTotalPages}"
-                    th:onclick="'searchVoucher(' + (${voucherCurrentPage + 1}) + ')'">Sau</a>
-                <a href="#" tabindex="0" th:if="${voucherCurrentPage + 1 == voucherTotalPages}"
-                    style="pointer-events: none; opacity: 0.5;">Sau</a>
+            <li th:each="i : ${#numbers.sequence(0, voucherTotalPages - 1)}"
+                th:class="${i == voucherCurrentPage} ? 'active' : ''">
+                <a href="#" th:onclick="'searchVoucher(' + (${i}) + ')'" th:text="${i + 1}">1</a>
+            </li>
+
+            <li th:class="${voucherCurrentPage == voucherTotalPages - 1} ? 'disabled' : ''">
+                <a th:if="${voucherCurrentPage < voucherTotalPages - 1}" href="#" th:onclick="'searchVoucher(' + (${voucherCurrentPage + 1}) + ')'">
+                    Sau <i class="fa fa-angle-right"></i>
+                </a>
+                <span th:if="${voucherCurrentPage == voucherTotalPages - 1}" class="disabled">
+                    Sau <i class="fa fa-angle-right"></i>
+                </span>
             </li>
         </ul>
+        <p class="text-muted">
+            Hiển thị trang <strong th:text="${voucherCurrentPage + 1}">1</strong>
+            / <strong th:text="${voucherTotalPages}">1</strong>
+            (Tổng <strong th:text="${voucherTotalItems}">0</strong> voucher)
+        </p>
     </div>
 </th:block>

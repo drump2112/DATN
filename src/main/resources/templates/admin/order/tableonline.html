@@ -1,30 +1,201 @@
 <th:block th:fragment="table">
-  <table class="table table-striped">
+  <style>
+    .order-row {
+      transition: all 0.3s ease;
+    }
+
+    .order-row:hover {
+      background-color: #f8f9fa;
+    }
+
+    .order-detail-row {
+      background-color: #f9fafb;
+      border-left: 4px solid #1ab394;
+    }
+
+    .order-detail-container {
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .detail-header {
+      border-bottom: 2px solid #e7eaec;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-section {
+      margin-bottom: 20px;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #676a6c;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      color: #1c1e21;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .product-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid #e7eaec;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      background: white;
+      transition: all 0.2s ease;
+    }
+
+    .product-item:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .product-image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 15px;
+      border: 2px solid #e7eaec;
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-name {
+      font-weight: 600;
+      color: #1c1e21;
+      margin-bottom: 5px;
+    }
+
+    .product-meta {
+      font-size: 12px;
+      color: #676a6c;
+    }
+
+    .product-pricing {
+      text-align: right;
+    }
+
+    .product-quantity {
+      font-size: 14px;
+      color: #676a6c;
+      margin-bottom: 5px;
+    }
+
+    .product-price {
+      font-weight: 600;
+      color: #1ab394;
+      font-size: 16px;
+    }
+
+    .order-summary {
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e7eaec;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+      font-weight: 600;
+      font-size: 16px;
+      color: #1ab394;
+      padding-top: 12px;
+    }
+
+    .btn-toggle-detail {
+      transition: all 0.3s ease;
+    }
+
+    .btn-toggle-detail:hover {
+      transform: scale(1.1);
+    }
+
+    .btn-toggle-detail.active {
+      background-color: #1ab394;
+      color: white;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      text-align: center;
+    }
+
+    .select2-container--default .select2-results__option {
+      text-align: center;
+    }
+
+    .select2-container .select2-selection--single {
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      height: auto !important;
+      padding: 0 !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 1.5 !important;
+      color: #fff;
+    }
+
+    .info-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      min-width: 100px;
+      text-align: center;
+    }
+  </style>
+
+  <table class="table table-striped table-hover">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Mã ĐH</th>
-        <th>Mã KH</th>
-        <th>Tên Khách Hàng</th>
-        <th>SĐT</th>
-        <th>Ngày Tạo</th>
-        <th>Tổng Tiền</th>
-        <th>Kênh Bán Hàng</th>
-        <th>Hình Thức TT</th>
-        <th>Trạng Thái ĐH</th>
-        <th>Hành Động</th>
+        <th width="5%">ID</th>
+        <th width="10%">Mã ĐH</th>
+        <th width="10%">Mã KH</th>
+        <th width="12%">Tên Khách Hàng</th>
+        <th width="10%">SĐT</th>
+        <th width="10%">Ngày Tạo</th>
+        <th width="10%">Tổng Tiền</th>
+        <th width="8%">Kênh</th>
+        <th width="8%">Thanh Toán</th>
+        <th width="10%">Trạng Thái</th>
+        <th width="7%">Hành Động</th>
       </tr>
     </thead>
     <tbody>
       <th:block th:each="item : ${orders}">
-        <tr>
+        <tr class="order-row">
           <td th:text="${item.id}"></td>
-          <td th:text="${item.orderCode}"></td>
+          <td><strong th:text="${item.orderCode}"></strong></td>
           <td th:text="${item.userCode}"></td>
           <td th:text="${item.customerName}"></td>
           <td th:text="${item.shippingPhone}"></td>
-          <td th:text="${#temporals.format(item.orderDate,'dd/MM/YYYY')}"></td>
-          <td th:text="${#numbers.formatDecimal(item.finalAmount, 0, 0)} + ' VNĐ'">
+          <td th:text="${#temporals.format(item.orderDate,'dd/MM/yyyy HH:mm')}"></td>
+          <td><strong th:text="${#numbers.formatDecimal(item.finalAmount, 0, 0)} + ' VNĐ'"></strong></td>
           <td th:switch="${item.orderType}">
             <span th:case="ONLINE" class="badge badge-success">Online</span>
             <span th:case="COUNTER" class="badge badge-warning">Tại Quầy</span>
@@ -33,48 +204,26 @@
             <span th:case="CASH" class="badge badge-primary">Tiền Mặt</span>
             <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
           </td>
-          <!-- <td th:text="${item.status}"></td> -->
           <td>
-            <select th:data-id="${item.id}" class="form-control status-dropdown" th:onchange="updateOrderStatus(this)">
+            <select th:data-id="${item.id}" class="form-control status-dropdown status-badge"
+              th:onchange="updateOrderStatus(this)">
               <option value="PENDING" th:selected="${item.status=='PENDING'}">PENDING</option>
               <option value="PROCESSING" th:selected="${item.status=='PROCESSING'}">PROCESSING</option>
               <option value="COMPLETED" th:selected="${item.status=='COMPLETED'}">COMPLETED</option>
               <option value="CANCELLED" th:selected="${item.status=='CANCELLED'}">CANCELLED</option>
             </select>
           </td>
-          <style>
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-              text-align: center;
-            }
-
-            .select2-container--default .select2-results__option {
-              text-align: center;
-            }
-
-            .select2-container .select2-selection--single {
-              background-color: transparent !important;
-              border: none !important;
-              box-shadow: none !important;
-              height: auto !important;
-              padding: 0 !important;
-            }
-
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-              line-height: 1.5 !important;
-              color: #fff;
-              /* hoặc màu badge mong muốn */
-            }
-          </style>
-          <td>
-            <button class="btn btn-info dim" th:attr="data-id=${item.id}" onclick="toggleOrderItems(this)">
-              <i th:class="'fa fa-pencil-square'"></i>
+          <td class="text-center">
+            <button class="btn btn-info btn-sm btn-toggle-detail" th:attr="data-id=${item.id}"
+              onclick="toggleOrderItems(this)" title="Xem chi tiết">
+              <i class="fa fa-eye"></i>
             </button>
           </td>
         </tr>
-        <tr th:attr="id='order-items-' + ${item.id}" style="display:none;">
+        <tr th:attr="id='order-items-' + ${item.id}" class="order-detail-row" style="display:none;">
           <td colspan="11" class="p-0">
-            <div class="order-items-container text-center text-muted py-2">
-              <i>Đang tải...</i>
+            <div class="order-items-container text-center text-muted py-3">
+              <i class="fa fa-spinner fa-spin"></i> Đang tải...
             </div>
           </td>
         </tr>
@@ -82,30 +231,35 @@
     </tbody>
   </table>
 
-  <div class="dataTables_paginate paging_simple_numbers" id="orderPaginationContainer" th:if="${totalPages > 0}"
-    style="text-align: right">
-    <ul class="pagination" id="paginationContainer"
-      th:attr="data-total-pages=${totalPages}, data-current-page=${currentPage}">
-      <li class="paginate_button previous" th:classappend="${currentPage == 0} ? ' disabled'">
-        <a href="#" tabindex="0" th:onclick="'searchOrer(' + (${currentPage - 1}) + ')'">
-          Sau
+  <div class="text-center" th:if="${totalPages > 1}">
+    <ul class="pagination">
+      <li th:class="${currentPage == 0} ? 'disabled' : ''">
+        <a th:if="${currentPage > 0}" href="#" th:onclick="'searchOrder(' + (${currentPage - 1}) + ')'">
+          <i class="fa fa-angle-left"></i> Trước
         </a>
+        <span th:if="${currentPage == 0}" class="disabled">
+          <i class="fa fa-angle-left"></i> Trước
+        </span>
       </li>
-      <li class="paginate_button" th:each="i : ${#numbers.sequence(1, totalPages)}"
-        th:classappend="${i - 1 == currentPage} ? ' active'">
-        <a href="#" tabindex="0" th:text="${i}" th:onclick="'searchOrer(' + (${i} - 1) + ')'">
-        </a>
+
+      <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+          th:class="${i == currentPage} ? 'active' : ''">
+        <a href="#" th:onclick="'searchOrder(' + (${i}) + ')'" th:text="${i + 1}">1</a>
       </li>
-      <li class="paginate_button next" th:if="${currentPage + 1 < totalPages}">
-        <a href="#" tabindex="0" th:onclick="'searchOrer(' + (${currentPage + 1}) + ')'">
-          Tiếp
+
+      <li th:class="${currentPage == totalPages - 1} ? 'disabled' : ''">
+        <a th:if="${currentPage < totalPages - 1}" href="#" th:onclick="'searchOrder(' + (${currentPage + 1}) + ')'">
+          Sau <i class="fa fa-angle-right"></i>
         </a>
-      </li>
-      <li class="paginate_button next disabled" th:unless="${currentPage + 1 < totalPages}">
-        <a href="#" tabindex="0" th:onclick="'searchOrer(' + (${totalPages - 1}) + ')'">
-          Tiếp
-        </a>
+        <span th:if="${currentPage == totalPages - 1}" class="disabled">
+          Sau <i class="fa fa-angle-right"></i>
+        </span>
       </li>
     </ul>
+    <p class="text-muted">
+      Hiển thị trang <strong th:text="${currentPage + 1}">1</strong>
+      / <strong th:text="${totalPages}">1</strong>
+      (Tổng <strong th:text="${totalItems}">0</strong> đơn hàng)
+    </p>
   </div>
 </th:block>

@@ -1,10 +1,102 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
 <section class="container features" th:fragment="content">
+
+  <!-- Sản phẩm bán chạy nhất -->
+  <div class="row" th:if="${bestSellingVariants != null && !bestSellingVariants.isEmpty()}">
+    <div class="col-lg-12">
+      <div class="navy-line"></div>
+      <h1 class="text-center">
+        <i class="fa fa-fire text-danger"></i> Sản Phẩm Bán Chạy Nhất
+      </h1>
+      <div class="navy-line"></div>
+      <br />
+      <div class="row">
+        <div class="col-md-3" th:each="variant : ${bestSellingVariants}">
+          <div class="ibox">
+            <div class="ibox-content product-box">
+              <div class="product-imitation"
+                th:style="'background-image: url(' + @{${variant.imageUrls != null && !variant.imageUrls.isEmpty() ? variant.imageUrls[0] : '/assets/img/no-image.png'}} + '); height: 200px; background-size: cover; background-position: center;'">
+                <span class="badge badge-danger" style="position: absolute; top: 10px; left: 10px;">
+                  <i class="fa fa-fire"></i> Bán Chạy
+                </span>
+              </div>
+
+              <div class="product-desc">
+                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 0)} + ' VNĐ'">
+                </span>
+                <small class="text-muted">
+                  <span th:text="${variant.brandName}">Brand</span> |
+                  <span th:text="${variant.colorName}">Color</span> -
+                  <span th:text="${variant.sizeName}">Size</span>
+                </small>
+                <a href="#" class="product-name" th:text="${variant.productName}">Product</a>
+                <div class="small m-t-xs" th:text="${variant.productDescription}"></div>
+                <div class="m-t text-right">
+                  <a th:href="@{'/details/' + ${variant.productId}}"
+                    class="btn btn-xs btn-outline btn-primary no-landing-style">Chi Tiết
+                    <i class="fa fa-long-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sản phẩm mới nhất -->
+  <div class="row" th:if="${newestVariants != null && !newestVariants.isEmpty()}">
+    <div class="col-lg-12">
+      <div class="navy-line"></div>
+      <h1 class="text-center">
+        <i class="fa fa-star text-warning"></i> Sản Phẩm Mới Nhất
+      </h1>
+      <div class="navy-line"></div>
+      <br />
+      <div class="row">
+        <div class="col-md-3" th:each="variant : ${newestVariants}">
+          <div class="ibox">
+            <div class="ibox-content product-box">
+              <div class="product-imitation"
+                th:style="'background-image: url(' + @{${variant.imageUrls != null && !variant.imageUrls.isEmpty() ? variant.imageUrls[0] : '/assets/img/no-image.png'}} + '); height: 200px; background-size: cover; background-position: center;'">
+                <span class="badge badge-primary" style="position: absolute; top: 10px; left: 10px;">
+                  <i class="fa fa-star"></i> Mới
+                </span>
+              </div>
+
+              <div class="product-desc">
+                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 0)} + ' VNĐ'">
+                </span>
+                <small class="text-muted">
+                  <span th:text="${variant.brandName}">Brand</span> |
+                  <span th:text="${variant.colorName}">Color</span> -
+                  <span th:text="${variant.sizeName}">Size</span>
+                </small>
+                <a href="#" class="product-name" th:text="${variant.productName}">Product</a>
+                <div class="small m-t-xs" th:text="${variant.productDescription}"></div>
+                <div class="m-t text-right">
+                  <a th:href="@{'/details/' + ${variant.productId}}"
+                    class="btn btn-xs btn-outline btn-primary no-landing-style">Chi Tiết
+                    <i class="fa fa-long-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tất cả sản phẩm -->
   <div class="row">
     <div class="col-lg-12">
       <div class="navy-line"></div>
-      <h1 class="text-center">Danh Sách Sản Phẩm</h1>
+      <h1 class="text-center">
+        <i class="fa fa-shopping-bag" style="color: #1ab394;"></i> Tất Cả Sản Phẩm
+      </h1>
       <div class="navy-line"></div>
       <br />
       <div class="row">
@@ -16,22 +108,21 @@
               </div>
 
               <div class="product-desc">
-                <!-- <span class="product-price" th:if="${item.minPrice != item.maxPrice}"
-                  th:text="${#strings.concat(#numbers.formatInteger(item.minPrice), ' - ', #numbers.formatInteger(item.maxPrice), ' ₫')}">
-                </span> -->
-
                 <span class="product-price"
                   th:if="${item.minPrice != null and item.maxPrice != null and item.minPrice != item.maxPrice}"
                   th:text="${#numbers.formatDecimal(item.minPrice, 0, 0)} + ' - ' + ${#numbers.formatDecimal(item.maxPrice, 0, 0)} + ' VNĐ'">
                 </span>
+                <span class="product-price"
+                  th:if="${item.minPrice != null and item.minPrice == item.maxPrice}"
+                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 0)} + ' VNĐ'">
+                </span>
                 <small class="text-muted" th:text="${item.brandName}">Category</small>
-                <a href="#" class="product-name" th:text="${item.name}">
-                  Product</a>
+                <a href="#" class="product-name" th:text="${item.name}">Product</a>
                 <div class="small m-t-xs" th:text="${item.description}"></div>
                 <div class="m-t text-right">
                   <a th:href="@{'/details/' + ${item.id}}"
-                    class="btn btn-xs btn-outline btn-primary no-landing-style">Chi Tiết<i
-                      class="fa fa-long-arrow-right"></i>
+                    class="btn btn-xs btn-outline btn-primary no-landing-style">Chi Tiết
+                    <i class="fa fa-long-arrow-right"></i>
                   </a>
                 </div>
               </div>

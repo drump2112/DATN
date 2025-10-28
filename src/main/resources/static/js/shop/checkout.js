@@ -313,7 +313,7 @@ $(document).ready(function () {
                                     icon: "success",
                                     confirmButtonText: "OK"
                                 }).then(() => {
-                                    window.location.href = "/orders";
+                                    window.location.href = "/orders/thank-you?orderId=" + res.orderId;
                                 });
                             });
                         }
@@ -354,9 +354,7 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.success) {
                     $("#otpModal").modal("hide");
-                    // Xóa giỏ hàng trước khi chuyển hướng
                     $.post("/cart/clear").always(function() {
-                        // Cập nhật icon giỏ hàng
                         if (typeof window.updateCartCount === 'function') {
                             window.updateCartCount();
                         } else {
@@ -368,7 +366,7 @@ $(document).ready(function () {
                             icon: "success",
                             confirmButtonText: "OK"
                         }).then(() => {
-                            window.location.href = "/orders";
+                            window.location.href = "/orders/thank-you?orderId=" + orderId;
                         });
                     });
                 } else {
