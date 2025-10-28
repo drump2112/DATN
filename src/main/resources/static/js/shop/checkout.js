@@ -1,4 +1,9 @@
 $(document).ready(function () {
+    // Chỉ chạy khi đang ở trang checkout
+    if ($("#btnConfirmOrder").length === 0) {
+        return;
+    }
+
     // Load giỏ hàng
 
     let cartItems = [];
@@ -294,13 +299,22 @@ $(document).ready(function () {
                             });
                         } else if (res.status === "SUCCESS") {
                             // Đơn hàng thành công (thanh toán chuyển khoản)
-                            Swal.fire({
-                                title: "Thành công!",
-                                text: "Đơn hàng của bạn đã được đặt thành công.",
-                                icon: "success",
-                                confirmButtonText: "OK"
-                            }).then(() => {
-                                window.location.href = "/orders";
+                            // Xóa giỏ hàng trước khi chuyển hướng
+                            $.post("/cart/clear").always(function() {
+                                // Cập nhật icon giỏ hàng
+                                if (typeof window.updateCartCount === 'function') {
+                                    window.updateCartCount();
+                                } else {
+                                    $("#cart-count").text(0);
+                                }
+                                Swal.fire({
+                                    title: "Thành công!",
+                                    text: "Đơn hàng của bạn đã được đặt thành công.",
+                                    icon: "success",
+                                    confirmButtonText: "OK"
+                                }).then(() => {
+                                    window.location.href = "/orders";
+                                });
                             });
                         }
                     },
@@ -317,7 +331,7 @@ $(document).ready(function () {
                 });
             }
         });
-    });    $("#btnVerifyOtp").on("click", function () {
+    }); $("#btnVerifyOtp").on("click", function () {
         const orderId = $("#otpOrderId").val();
         const email = $("#otpEmail").val();
         const otp = $("#otpCode").val();
@@ -340,13 +354,22 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.success) {
                     $("#otpModal").modal("hide");
-                    Swal.fire({
-                        title: "Thành công!",
-                        text: "Đơn hàng của bạn đã được xác nhận thành công.",
-                        icon: "success",
-                        confirmButtonText: "OK"
-                    }).then(() => {
-                        window.location.href = "/orders";
+                    // Xóa giỏ hàng trước khi chuyển hướng
+                    $.post("/cart/clear").always(function() {
+                        // Cập nhật icon giỏ hàng
+                        if (typeof window.updateCartCount === 'function') {
+                            window.updateCartCount();
+                        } else {
+                            $("#cart-count").text(0);
+                        }
+                        Swal.fire({
+                            title: "Thành công!",
+                            text: "Đơn hàng của bạn đã được xác nhận thành công.",
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            window.location.href = "/orders";
+                        });
                     });
                 } else {
                     Swal.fire({

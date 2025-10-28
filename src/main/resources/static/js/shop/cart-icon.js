@@ -11,5 +11,8 @@ $(document).ready(function() {
       });
   }
 
+  // Export function để các file khác có thể gọi
+  window.updateCartCount = updateCartCount;
+
   updateCartCount();
 });

@@ -1,4 +1,9 @@
 $(document).ready(function () {
+  // Chỉ chạy khi đang ở trang giỏ hàng
+  if ($(".shoping-cart-table").length === 0) {
+    return;
+  }
+
   function renderCart(cart) {
     const $tbody = $(".shoping-cart-table tbody");
     $tbody.empty();

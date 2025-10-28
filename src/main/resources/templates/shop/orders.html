@@ -4,7 +4,7 @@
   <div class="wrapper wrapper-content animated fadeInRight">
     <div class="navy-line"></div>
     <h1 class="text-center">
-      <b>ĐƠN HÀNG CỦA TÔI</b><br />
+      <b>LỊCH SỬ ĐƠN HÀNG </b><br />
     </h1>
     <div class="navy-line"></div>
 
@@ -46,15 +46,15 @@
                           th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">
                         28/10/2025 15:30
                       </td>
-                      <td class="text-right"
+                      <td class="text-center"
                           th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
                         500,000 VNĐ
                       </td>
-                      <td class="text-right"
+                      <td class="text-center"
                           th:text="${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
                         50,000 VNĐ
                       </td>
-                      <td class="text-right">
+                      <td class="text-center">
                         <strong class="text-success"
                                 th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
                           480,000 VNĐ
@@ -88,13 +88,13 @@
                           <i class="fa fa-bank"></i> Chuyển khoản
                         </span>
                       </td>
-                      <!-- <td class="text-center">
+                      <td class="text-center">
                         <a th:href="@{/checkorder(orderCode=${order.orderCode})}"
                            class="btn btn-primary btn-sm"
                            title="Xem chi tiết">
                           <i class="fa fa-eye"></i> Chi tiết
                         </a>
-                      </td> -->
+                      </td>
                     </tr>
                   </tbody>
                 </table>
