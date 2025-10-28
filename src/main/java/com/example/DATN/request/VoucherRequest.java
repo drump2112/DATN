@@ -5,6 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Getter
@@ -12,7 +13,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class VoucherRequest {
    private Integer id;
 
@@ -28,13 +28,13 @@ public class VoucherRequest {
 
    private BigDecimal maxDiscountValue;
 
-   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // Tự parse "YYYY-MM-DD" → LocalDate
+   // @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 
-   private LocalDate startDate; // Đổi type
+   private LocalDateTime startDate;
 
-   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+   // @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 
-   private LocalDate endDate; // Đổi type
+   private LocalDateTime endDate;
 
    private Integer quantity;
 

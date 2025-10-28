@@ -30,4 +30,5 @@ public class VoucherRestController {
     if (orderTotal == null) orderTotal = BigDecimal.ZERO;
     return ResponseEntity.ok(voucherService.getAvailableVouchersWithComputed(orderTotal));
   }
+
 }

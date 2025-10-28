@@ -1,7 +1,3 @@
-// admin/event.js - Quản lý Đợt Giảm Giá (Event)
-
-
-// Xem chi tiết và mở modal edit event
 window.handleEventDetailClick = function (button) {
    const event = {
        id: $(button).data("id"),
@@ -15,49 +11,49 @@ window.handleEventDetailClick = function (button) {
        isActive: $(button).data("isActive"),
    };
 
-
    console.log("Event data lấy tu day:", event);
-
 
    const currentPage = parseInt($("#eventPaginationContainer .paginate_button.active a").text()) - 1 || 0;
    $("#eventForm").data("current-page", currentPage);
    openEventEditModal(event, true);
 };
 
-
-// Mở modal edit/view chi tiết event
+// Mở modal edit
 function openEventEditModal(data, isEditable) {
    clearEventForm();
 
-
-   // Fill cơ bản (với fallback empty string)
    $("#eventId").val(data.id || "");
    $("#eventCode").val(data.code || "").prop("readonly", true);  // Code luôn readonly
    $("#eventName").val(data.name || "").prop("readonly", !isEditable);
    $("#eventDiscountType").val(data.discountType || "PERCENT");
-   $("#eventDiscountValue").val(data.discountValue || "");
-   $("#eventMinOrderAmount").val(data.minOrderAmount || "");
+   $("#eventDiscountValue").val(Math.round(data.discountValue || ""));
+   $("#eventMinOrderAmount").val(Math.round(data.minOrderAmount || ""));
    $("#eventQuantity").val(data.quantity || "");
 
-
-   // Fill maxDiscountValue và set readonly dựa trên discountType (swap: PERCENT enable, FIXED readonly)
    const discountType = $("#eventDiscountType").val();
    const $maxDiscountInput = $("#eventMaxDiscountValue");
    if (discountType === "FIXED") {
-       $maxDiscountInput.val("").prop("readonly", true);  // Clear và readonly nếu FIXED
+       $maxDiscountInput.val("").prop("readonly", true);
    } else {
-       $maxDiscountInput.val(data.maxDiscountValue || "").prop("readonly", !isEditable);
+       $maxDiscountInput
+           .val(Math.round(data.maxDiscountValue || ""))
+           .prop("disabled", !isEditable);
    }
+
+
 
 
    console.log("Event data:", data);
 
 
-   // Fix date format: Cắt từ "YYYY-MM-DDTHH:mm:ss" → "YYYY-MM-DD" cho input date
+
+
+
+
    let formattedStartDate = "";
    let formattedEndDate = "";
    if (data.startDate) {
-       formattedStartDate = data.startDate.toString().split('T')[0];  // "2025-10-14T00:00" → "2025-10-14"
+       formattedStartDate = data.startDate.toString().split('T')[0];
    }
    if (data.endDate) {
        formattedEndDate = data.endDate.toString().split('T')[0];
@@ -66,7 +62,8 @@ function openEventEditModal(data, isEditable) {
    $("#eventEndDate").val(formattedEndDate);
 
 
-   // Fix isActive: Convert boolean/string → "1"/"0"
+
+
    let activeVal = "1";  // Default active
    if (data.isActive === false || data.isActive === "false" || data.isActive === "0") {
        activeVal = "0";
@@ -74,36 +71,40 @@ function openEventEditModal(data, isEditable) {
    $("#eventIsActive").val(activeVal);
 
 
-   // Debug: Log data để check console (remove sau khi test)
+
+
    console.log("Event data loaded:", data);
    console.log("Formatted dates:", {start: formattedStartDate, end: formattedEndDate});
    console.log("isActive val:", activeVal);
 
 
-   // Update title và buttons
+
+
    $("#eventModalTitle").text(isEditable ? "Cập Nhật Event" : "Chi Tiết Event");
    $("#btnSaveEvent").hide();
    $("#btnUpdateEvent").toggle(isEditable).show();
    $("#modalEvent").modal("show");
 
 
-   // Trigger change event để apply readonly logic ngay khi load
+
+
    $("#eventDiscountType").trigger("change");
 }
 
 
-// Clear form event
+
+
 function clearEventForm() {
    $("#eventForm input:not(#eventCode), #eventForm select").val("");
    $("#eventForm").removeData("current-page");
    $(".form-group").removeClass("has-error");
-   // Reset readonly cho maxDiscountValue (sẽ được handle bởi event change sau)
    $("#eventMaxDiscountValue").prop("readonly", false);
    clearValidationErrors();
 }
 
 
-// Mở modal thêm mới event
+
+
 $("#btnOpenAddEvent").on("click", function () {
    clearEventForm();
    $("#eventCode").val("").prop("readonly", false);  // Cho phép nhập code thủ công
@@ -114,15 +115,21 @@ $("#btnOpenAddEvent").on("click", function () {
    $("#modalEvent").modal("show");
 
 
-   // Trigger change để apply readonly cho PERCENT/FIXED default
+
+
+
+
    $("#eventDiscountType").trigger("change");
 });
 
 
-// Event listener cho select loại giảm giá: Swap logic readonly (ngược lại: FIXED -> readonly max, PERCENT -> enable max)
+
+
 $(document).on("change", "#eventDiscountType", function () {
    const discountType = $(this).val();
    const $maxDiscountInput = $("#eventMaxDiscountValue");
+
+
 
 
    if (discountType === "FIXED") {
@@ -134,123 +141,128 @@ $(document).on("change", "#eventDiscountType", function () {
 });
 
 
-// Validation event (swap logic giữa PERCENT và FIXED: đảo ngược check max vs check %)
 function validateEvent() {
-   // Clear tất cả lỗi trước khi validate mới
    clearValidationErrors();
 
 
-   // Trim tất cả input text để loại bỏ khoảng trắng đầu cuối
-   $("#eventCode").val($("#eventCode").val().trim());
-   $("#eventName").val($("#eventName").val().trim());
-   $("#eventDiscountValue").val($("#eventDiscountValue").val().trim());
-   $("#eventMaxDiscountValue").val($("#eventMaxDiscountValue").val().trim());
-
-
-   const code = $("#eventCode").val().trim();  // Optional: null OK, nhưng nếu có thì >=5 ký tự
+   const code = $("#eventCode").val().trim();
    const name = $("#eventName").val().trim();
-   const discountType = $("#eventDiscountType").val();  // Bắt buộc
+   const discountType = $("#eventDiscountType").val();
    const discountValueStr = $("#eventDiscountValue").val().trim();
    const discountValue = parseFloat(discountValueStr);
    const maxDiscountValueStr = $("#eventMaxDiscountValue").val().trim();
    const maxDiscountValue = parseFloat(maxDiscountValueStr) || null;
    const startDate = $("#eventStartDate").val();
    const endDate = $("#eventEndDate").val();
-   const isActive = $("#eventIsActive").val();  // Bắt buộc
+   const isActive = $("#eventIsActive").val();
 
 
-   // Check lần lượt theo thứ tự: mã -> tên -> loại -> giá trị giảm -> logic loại (đã swap) -> dates -> số lượng -> trạng thái
+   let isValid = true;
 
 
-   // 1. Mã event: optional, nhưng nếu nhập thì >=5 ký tự
-   if (code && code.length < 5) {
-       showFieldError("#eventCode", "Mã event phải có ít nhất 5 ký tự!");
-       return false;
-   }
+ if (code) {
+     if (code.length < 5) {
+         showFieldError("#eventCode", "Mã event phải có ít nhất 5 ký tự!");
+         isValid = false;
+     }
+ }
 
 
-   // 2. Tên không được trống
    if (!name) {
        showFieldError("#eventName", "Tên event không được để trống!");
-       return false;
+       isValid = false;
    }
 
 
-   // 3. Loại mã giảm giá bắt buộc
    if (!discountType) {
        showFieldError("#eventDiscountType", "Vui lòng chọn loại giảm giá!");
-       return false;
+       isValid = false;
    }
 
 
-   // 4. Giá trị giảm chung: phải >0
-   if (!discountValueStr || !discountValue || discountValue <= 0) {
+   if (!discountValueStr || isNaN(discountValue) || discountValue <= 0) {
        showFieldError("#eventDiscountValue", "Giá trị giảm phải lớn hơn 0!");
-       return false;
+       isValid = false;
    }
-
-
-   // 5. Logic theo loại (đã swap: PERCENT -> check max bắt buộc & discount <= max; FIXED -> check discount <=100, max optional)
    if (discountType === "PERCENT") {
-       if (discountValue < 0) {
-           showFieldError("#voucherDiscountValue", "Giá trị giảm không được nhỏ hơn 1%!");
-           return false;
+       if (discountValue < 1) {
+           showFieldError("#eventDiscountValue", "Giá trị giảm không được nhỏ hơn 1%!");
+           isValid = false;
        } else if (discountValue > 100) {
-           showFieldError("#eventDiscountValue", "Giá trị giảm cố định không được lớn hơn 100!");
-           return false;
-       } else if (!maxDiscountValueStr || !maxDiscountValue || maxDiscountValue <= 0) {
-           showFieldError("#eventMaxDiscountValue", "Giá trị giảm tối đa phải là số dương khi chọn loại giảm giá phần trăm!");
-           return false;
+           showFieldError("#eventDiscountValue", "Giá trị giảm không được lớn hơn 100%!");
+           isValid = false;
+       }
+
+
+       if (!maxDiscountValueStr || isNaN(maxDiscountValue) || maxDiscountValue <= 0) {
+           showFieldError("#eventMaxDiscountValue", "Giá trị giảm tối đa không để trống khi chọn loại giảm giá phần trăm và phải là số dương!");
+           isValid = false;
+       } else if (maxDiscountValue > 9999999) {
+           showFieldError("#eventMaxDiscountValue", "Giá trị giảm tối đa không được lớn hơn 10 triệu!");
+           isValid = false;
        }
    } else if (discountType === "FIXED") {
-
-
-       // maxDiscountValue: không validate (optional)
+       if (discountValue > 9999999) {
+           showFieldError("#eventDiscountValue", "Giá trị giảm không được lớn hơn 10 triệu!");
+           isValid = false;
+       }
    }
 
 
-   // 6. Thời gian bắt đầu/kết thúc: bắt buộc, start > current, start <= end (chung cho cả hai loại)
    if (!startDate || !endDate) {
-       showFieldError("#eventStartDate", "Vui lòng chọn ngày bắt đầu và kết thúc!");
-       return false;
+       if (!startDate) {
+           showFieldError("#eventStartDate", "Vui lòng chọn ngày bắt đầu!");
+           isValid = false;
+       }
+       if (!endDate) {
+           showFieldError("#eventEndDate", "Vui lòng chọn ngày kết thúc!");
+           isValid = false;
+       }
    } else {
        const start = new Date(startDate);
        const end = new Date(endDate);
-       const currentDate = new Date();  // Ngày hiện tại
-       currentDate.setHours(0, 0, 0, 0);  // Reset giờ để so sánh ngày
+       const currentDate = new Date();
+       currentDate.setHours(0, 0, 0, 0);
+       start.setHours(0, 0, 0, 0);
+       end.setHours(0, 0, 0, 0);
 
 
-       if (start <= currentDate) {  // Phải > current
+       if (start < currentDate) {
            showFieldError("#eventStartDate", "Thời gian bắt đầu phải lớn hơn thời gian hiện tại!");
-           return false;
-       } else if (start > end) {
-           showFieldError("#eventEndDate", "Thời gian bắt đầu không được lớn hơn thời gian kết thúc!");
-           return false;
-       } else if (end <= currentDate) {  // end > current để hợp lý
+           isValid = false;
+       }
+       if (start > end) {
+           showFieldError("#eventStartDate", "Thời gian bắt đầu không được lớn hơn thời gian kết thúc!");
+           isValid = false;
+       } else if (end <= currentDate) {
            showFieldError("#eventEndDate", "Thời gian kết thúc phải sau thời gian hiện tại!");
-           return false;
+           isValid = false;
        }
    }
 
 
-   // 8. Trạng thái không null (giống PERCENT, chung)
    if (!isActive) {
        showFieldError("#eventIsActive", "Vui lòng chọn trạng thái event!");
-       return false;
+       isValid = false;
    }
 
 
-   return true;
+   return isValid;
 }
 
 
-// Helper function: Hiển thị lỗi inline bên cạnh label/input (chữ đỏ)
+
+
 function showFieldError(fieldSelector, errorMsg) {
    const $field = $(fieldSelector);
    const $formGroup = $field.closest(".form-group");
 
 
+
+
    $formGroup.addClass("has-error");
+
+
 
 
    let $errorSpan = $formGroup.find(".help-block.error-message");
@@ -261,20 +273,26 @@ function showFieldError(fieldSelector, errorMsg) {
    $errorSpan.text(errorMsg).show();
 
 
+
+
    $field.focus();
 }
 
 
-// Helper function: Clear tất cả lỗi validation
+
+
 function clearValidationErrors() {
    $(".form-group").removeClass("has-error");
    $(".help-block.error-message").remove();  // Xóa span lỗi
 }
 
 
-// Event thêm/lưu event
+
+
 $(document).on("click", "#btnSaveEvent", function () {
    if (!validateEvent()) return;
+
+
 
 
    Swal.fire({
@@ -287,6 +305,8 @@ $(document).on("click", "#btnSaveEvent", function () {
        if (result.isConfirmed) {
            const formData = new FormData($("#eventForm")[0]);
            formData.append("isActive", $("#eventIsActive").val());
+
+
 
 
            $.ajax({
@@ -302,6 +322,7 @@ $(document).on("click", "#btnSaveEvent", function () {
                    Swal.fire("Thành công!", response.message, "success");
                    $("#modalEvent").modal("hide");
                    refreshEventTable();
+                   searchEvent($("#paginationContainer").data("current-page") || 0);
                },
                error: function (xhr) {
                    Swal.fire("Lỗi!", xhr.responseJSON?.message || "Thêm thất bại!", "error");
@@ -315,9 +336,12 @@ $(document).on("click", "#btnSaveEvent", function () {
 });
 
 
-// Event cập nhật event
+
+
 $(document).on("click", "#btnUpdateEvent", function () {
    if (!validateEvent()) return;
+
+
 
 
    Swal.fire({
@@ -333,6 +357,8 @@ $(document).on("click", "#btnUpdateEvent", function () {
            formData.append("isActive", $("#eventIsActive").val());
 
 
+
+
            $.ajax({
                url: `/admin/event/${eventId}`,
                type: "PUT",
@@ -344,8 +370,8 @@ $(document).on("click", "#btnUpdateEvent", function () {
                },
                success: function (response) {
                    Swal.fire("Thành công!", response.message, "success");
+                   searchEvent($("#paginationContainer").data("current-page") || 0);
                    $("#modalEvent").modal("hide");
-                   searchEvent($("#eventForm").data("current-page") || 0);
                },
                error: function (xhr) {
                    Swal.fire("Lỗi!", xhr.responseJSON?.message || "Cập nhật thất bại!", "error");
@@ -359,22 +385,14 @@ $(document).on("click", "#btnUpdateEvent", function () {
 });
 
 
-// Lấy page hiện tại event
-function getCurrentEventPage() {
-   return parseInt($("#eventPaginationContainer").attr("data-current-page")) ||
-       parseInt($("#eventPaginationContainer .paginate_button.active a").text()) - 1 || 0;
-}
 
 
-// Tìm kiếm event
+
+
 function searchEvent(page = 0) {
    const keyword = $("#eventSearchInput").val().trim();
    const isActive = $("#eventStatusFilter").val() || null;
-
-
    $("#eventPaginationContainer").attr("data-current-page", page);
-
-
    $.ajax({
        url: "/admin/event/search",
        type: "GET",
@@ -393,9 +411,12 @@ function searchEvent(page = 0) {
 };
 
 
-// Toggle status event
+
+
 window.toggleEventStatus = function (eventId, isActive) {
    const title = isActive ? "Vô hiệu hóa event này?" : "Kích hoạt event này?";
+
+
 
 
    Swal.fire({
@@ -414,7 +435,7 @@ window.toggleEventStatus = function (eventId, isActive) {
                },
                success: function (data) {
                    Swal.fire("Thành công!", data.message, "success");
-                   searchEvent(getCurrentEventPage());
+                   searchEvent($("#paginationContainer").data("current-page") || 0);
                },
                error: function (xhr) {
                    Swal.fire("Lỗi!", xhr.responseJSON?.message || "Có lỗi xảy ra!", "error");
@@ -428,7 +449,6 @@ window.toggleEventStatus = function (eventId, isActive) {
 };
 
 
-// Refresh table event sau add
 function refreshEventTable() {
    $.get("/admin/event/counts").done(function (totalItems) {
        const pageSize = 10;  // Giả sử page size, điều chỉnh nếu cần
@@ -437,7 +457,26 @@ function refreshEventTable() {
    });
 }
 
-// Init event
+$("#resetFilterBtn").on("click", function () {
+   $("#eventSearchInput").val("");
+   $("#eventStatusFilter").val(null).trigger("change");
+   $("#eventSearchInput").val(null).trigger("change");
+   console.log("reset filter");
+   $.ajax({
+       url: "/admin/event/search",
+       type: "GET",
+       data: {
+           page: 0,
+           size: 5,
+       },
+       success: function (response) {
+       },
+       error: function () {
+           toastr.error("Không thể tải lại bảng");
+       },
+   });
+});
+
 $(document).ready(function () {
    $("#eventSearchInput, #eventStatusFilter").on("change keyup", function (e) {
        if (e.key === "Enter" || $(this).is("select")) {
@@ -445,6 +484,10 @@ $(document).ready(function () {
        }
    });
 });
+
+
+
+
 
 
 

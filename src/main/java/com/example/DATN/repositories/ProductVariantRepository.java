@@ -6,11 +6,14 @@ import java.util.Optional;
 
 import com.example.DATN.models.ProductVariant;
 
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -27,7 +30,6 @@ public interface ProductVariantRepository
 	Page<ProductVariant> findAll(Pageable pageable);
 
 	List<ProductVariant> findByProductId(Integer productId);
-
 
 	boolean existsByVariantCode(String variantCode);
 
@@ -66,4 +68,10 @@ public interface ProductVariantRepository
 	List<ProductVariant> searchByKeyword(@Param("keyword") String keyword);
 
 	List<ProductVariant> findByStatusTrue();
+
+	Page<ProductVariant> findProductVariantsByProduct_Id(Integer productId, Pageable pageable);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT v FROM ProductVariant v WHERE v.id = :id")
+	ProductVariant findByIdForUpdate(@Param("id") Integer id);
 }

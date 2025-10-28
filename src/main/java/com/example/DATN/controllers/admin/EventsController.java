@@ -1,9 +1,9 @@
 package com.example.DATN.controllers.admin;
 
 import com.example.DATN.dtos.EventsDTO;
-import com.example.DATN.dtos.VoucherDTO;
+import com.example.DATN.exception.BusinessException;
+import com.example.DATN.models.SalesEvent;
 import com.example.DATN.request.EventsRequest;
-import com.example.DATN.request.VoucherRequest;
 import com.example.DATN.services.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +23,29 @@ public class EventsController {
 
   @Autowired
   private EventService eventsService;
+
+  @GetMapping("/")
+  public String getListVoucher(
+      @RequestParam(defaultValue = "0") int eventPage,
+      @RequestParam(defaultValue = "5") int eventSize,
+      Model model) {
+
+    Page<EventsDTO> eventsDTOPage = eventsService.findAll(eventPage, eventSize);
+    model.addAttribute("eventsPageTitle", "Danh sách Events");
+    model.addAttribute("events", eventsDTOPage.getContent());
+    model.addAttribute("eventCurrentPage", eventsDTOPage.getNumber());
+    model.addAttribute("eventTotalPages", eventsDTOPage.getTotalPages());
+    model.addAttribute("eventTotalItems", eventsDTOPage.getTotalElements());
+    model.addAttribute("eventPageSize", eventsDTOPage.getSize());
+    // tableEvent
+    return "/admin/voucher/listEvent";
+  }
+
+  @GetMapping("/detail")
+  public String getDetailVoucher() {
+    return "/admin/voucher/eventDetail";
+
+  }
 
   @GetMapping("/search")
   public String searchEvents(
@@ -51,15 +74,18 @@ public class EventsController {
     try {
       boolean success = eventsService.addEvents(eventsRequest);
       if (success) {
-        response.put("message", "Thêm Đợt giảm giá thành công!");
+        response.put("message", "Thêm thành công");
         return ResponseEntity.ok(response);
       } else {
-        response.put("message", "Thêm Đợt giảm giá thất bại!");
+        response.put("message", "Thêm Sự kiên thất bại!");
         return ResponseEntity.badRequest().body(response);
       }
-    } catch (Exception e) {
-      response.put("message", "Thêm Đợt giảm giá thất bại: " + e.getMessage());
+    } catch (BusinessException e) {
+      response.put("message", e.getMessage());
       return ResponseEntity.badRequest().body(response);
+    } catch (Exception e) {
+      response.put("message", "Lỗi không xác định: " + e.getMessage());
+      return ResponseEntity.internalServerError().body(response);
     }
   }
 
@@ -93,4 +119,11 @@ public class EventsController {
   public ResponseEntity<Long> getCounts() {
     return ResponseEntity.ok(eventsService.countAll());
   }
+
+  // @GetMapping("/detailEvent/{id}")
+  // public String getDetailEvent(@PathVariable Integer id) {
+  // SalesEvent salesEvent = eventsService.findById(id);
+  //
+  //
+  // }
 }

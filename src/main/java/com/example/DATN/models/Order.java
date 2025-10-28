@@ -34,7 +34,7 @@ public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "UserId")
@@ -44,7 +44,7 @@ public class Order {
     private LocalDateTime orderDate = LocalDateTime.now();
 
     @Column(name = "OrderType")
-    private String orderType = "COUNTER"; // Đơn tại quầy
+    private String orderType = "COUNTER";
 
     @Column(name = "Status")
     private String status = "PENDING";
@@ -54,6 +54,9 @@ public class Order {
 
     @Column(name = "PaymentMethod")
     private String paymentMethod;
+
+    @Column(name = "CustomerName")
+    private String customerName;
 
     private BigDecimal totalAmount;
     private BigDecimal discountAmount;

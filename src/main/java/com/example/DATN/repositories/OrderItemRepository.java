@@ -1,9 +1,13 @@
 package com.example.DATN.repositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.DATN.models.OrderItem;
 
-public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
+public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
+
+  List<OrderItem> findByOrderId(Integer orderId);
 
 }

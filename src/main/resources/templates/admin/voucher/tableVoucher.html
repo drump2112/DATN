@@ -24,13 +24,14 @@
                 <td th:switch="${item.discountType}">
                     <span th:case="'FIXED'" class="badge badge-success">Cố Định</span>
                     <span th:case="'PERCENT'" class="badge badge-info">Theo %</span>
-                    <span th:case="*">Unknown</span>
                 </td>
                 <td
                     th:text="${#numbers.formatDecimal(item.discountValue, 0, 0)} + ' ' + (${#strings.toUpperCase(item.discountType)} == 'FIXED' ? 'VNĐ' : '%')">
                 </td>
                 <td th:text="${#numbers.formatDecimal(item.minOrderAmount, 0, 0)} + ' VNĐ'"></td>
-                <td th:text="${#numbers.formatDecimal(item.maxDiscountValue, 0, 0)} + ' VNĐ'"></td>
+                <td
+                    th:text="${item.maxDiscountValue != null ? #numbers.formatDecimal(item.maxDiscountValue, 0, 0) + ' VNĐ' : '0 VNĐ'}">
+                </td>
                 <td th:text="${#numbers.formatDecimal(item.quantity, 0, 0)}"></td>
                 <td th:text="${#temporals.format(item.startDate, 'dd/MM/yyyy')}"></td>
                 <td th:text="${#temporals.format(item.endDate, 'dd/MM/yyyy')}"></td>
@@ -40,16 +41,16 @@
                 </td>
                 <td>
                     <button class="btn btn-info dim" type="button" th:attr="data-id=${item.id},
-                                data-code=${item.code},
-                                data-name=${item.name},
-                                data-discounttype=${item.discountType},
-                                data-discountvalue=${item.discountValue},
-                                data-minorderamount=${item.minOrderAmount},
-                                data-maxdiscountvalue=${item.maxDiscountValue},
-                                data-startdate=${item.startDate},
-                                data-enddate=${item.endDate},
-                                data-isactive=${item.isActive},
-                                data-quantity=${item.quantity}" th:title="'Thông tin và cập nhật'"
+                               data-code=${item.code},
+                               data-name=${item.name},
+                               data-discounttype=${item.discountType},
+                               data-discountvalue=${item.discountValue},
+                               data-minorderamount=${item.minOrderAmount},
+                               data-maxdiscountvalue=${item.maxDiscountValue},
+                               data-startdate=${item.startDate},
+                               data-enddate=${item.endDate},
+                               data-isactive=${item.isActive},
+                               data-quantity=${item.quantity}" th:title="'Thông tin và cập nhật'"
                         onclick="handleVoucherDetailClick(this)">
                         <i class="fa fa-eye"></i>
                     </button>
@@ -63,32 +64,28 @@
             </tr>
         </tbody>
     </table>
-    <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate"
-        th:if="${voucherTotalPages > 0}" style="text-align: right">
+    <div class="dataTables_paginate paging_simple_numbers" th:if="${voucherTotalPages > 0}" style="text-align: right">
         <ul class="pagination" id="paginationContainer"
-            th:attr="data-total-pages=${voucherTotalPages}, data-current-page=${currentPage}">
+            th:attr="data-total-pages=${voucherTotalPages}, data-current-page=${voucherCurrentPage}">
             <!-- Nút Previous -->
             <li class="paginate_button previous" th:classappend="${voucherCurrentPage == 0} ? ' disabled'">
-                <a href="#" tabindex="0" th:onclick="'searchVoucher(' + (${voucherCurrentPage - 1}) + ')'">
-                    Trước
-                </a>
+                <a href="#" tabindex="0" th:if="${voucherCurrentPage > 0}"
+                    th:onclick="'searchVoucher(' + (${voucherCurrentPage - 1}) + ')'">Trước</a>
+                <a href="#" tabindex="0" th:if="${voucherCurrentPage == 0}"
+                    style="pointer-events: none; opacity: 0.5;">Trước</a>
             </li>
-            <!-- Nút số trang 1..totalPages -->
             <li class="paginate_button" th:each="i : ${#numbers.sequence(1, voucherTotalPages)}"
                 th:classappend="${i - 1 == voucherCurrentPage} ? ' active'">
                 <a href="#" tabindex="0" th:text="${i}" th:onclick="'searchVoucher(' + (${i} - 1) + ')'">
                 </a>
             </li>
-            <!-- Nút Next -->
-            <li class="paginate_button next" th:if="${voucherCurrentPage + 1 < voucherTotalPages}">
-                <a href="#" tabindex="0" th:onclick="'searchVoucher(' + (${voucherCurrentPage + 1}) + ')'">
-                    Sau
-                </a>
-            </li>
-            <li class="paginate_button next disabled" th:unless="${voucherCurrentPage + 1 < voucherTotalPages}">
-                <a href="#" tabindex="0" th:onclick="'searchVoucher(' + (${voucherTotalPages - 1}) + ')'">
-                    Sau
-                </a>
+
+            <li class="paginate_button next"
+                th:classappend="${voucherCurrentPage + 1 == voucherTotalPages} ? ' disabled'">
+                <a href="#" tabindex="0" th:if="${voucherCurrentPage + 1 < voucherTotalPages}"
+                    th:onclick="'searchVoucher(' + (${voucherCurrentPage + 1}) + ')'">Sau</a>
+                <a href="#" tabindex="0" th:if="${voucherCurrentPage + 1 == voucherTotalPages}"
+                    style="pointer-events: none; opacity: 0.5;">Sau</a>
             </li>
         </ul>
     </div>

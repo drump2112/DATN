@@ -32,9 +32,7 @@ public interface VoucherService {
 
    Optional<VoucherSuggestionDTO> suggestBestVoucher(BigDecimal orderTotal);
 
-   // Trả về danh sách voucher hợp lệ cho tổng đơn hàng (dùng cho frontend)
-   java.util.List<com.example.DATN.dtos.VoucherDTO> getAvailableVouchers(BigDecimal orderTotal);
+   List<VoucherDTO> getAvailableVouchers(BigDecimal orderTotal);
 
-   // Trả về danh sách vouchers kèm số tiền giảm tương ứng cho orderTotal (dùng để hiển thị và gợi ý)
-   java.util.List<com.example.DATN.dtos.VoucherSuggestionDTO> getAvailableVouchersWithComputed(BigDecimal orderTotal);
+   List<VoucherSuggestionDTO> getAvailableVouchersWithComputed(BigDecimal orderTotal);
 }

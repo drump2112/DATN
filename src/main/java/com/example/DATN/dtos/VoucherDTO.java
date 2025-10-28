@@ -30,10 +30,8 @@ public class VoucherDTO {
 
    private BigDecimal maxDiscountValue;
 
-   @DateTimeFormat(pattern = "yyyy-MM-dd")
    private LocalDateTime startDate;
 
-   @DateTimeFormat(pattern = "yyyy-MM-dd")
    private LocalDateTime endDate;
 
    private Integer quantity;

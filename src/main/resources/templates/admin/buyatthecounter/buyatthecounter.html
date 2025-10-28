@@ -154,7 +154,8 @@
                     <span class="pull-right" id="finalTotal">0 VNĐ</span> <b> Tổng Thanh Toán :</b>
                   </li>
                   <li class="list-group-item">
-                    <span class="pull-right"><input type="text" class="form-control" value="0"></span>
+                    <span class="pull-right">
+                      <input type="text" class="form-control" id="customerMoney" value="0" min="0"></span>
                     <b> Khách thanh toán : </b>
                   </li>
                   <br>
@@ -174,19 +175,18 @@
                           Khoản
                         </label>
                       </div>
-                      <span class="text-danger" id="error-gioiTinh"></span>
                     </div>
                     <div class=" col-sm-6" style="text-align: center; margin-top: 50px">
-                      <span class="pull-right"> VNĐ</span> <b style="font-size: 14px;">Tiền trả
+                      <span class="pull-right" id="changeMoney"> VNĐ</span> <b style="font-size: 14px;">Tiền trả
                         lại :</b>
                     </div>
                   </li>
                 </ul>
               </div>
-               <button type="button" class="btn btn-primary btn-sm btn-block"
-                  style="margin-bottom: 20px; margin-top: 10px;" id="checkoutCounter">
-                  <i class="fa fa-cc-mastercard"></i> Thanh Toán
-                </button>
+              <button type="button" class="btn btn-primary btn-sm btn-block"
+                style="margin-bottom: 20px; margin-top: 10px;" id="checkoutCounter">
+                <i class="fa fa-cc-mastercard"></i> Thanh Toán
+              </button>
             </div>
           </div>
         </div>
@@ -225,24 +225,101 @@
       </div>
     </div>
   </div>
-
-  <div class="modal inmodal in" id="listVoucher" tabindex="-1" role="dialog" aria-hidden="true"
-    style="display: none; padding-right: 15px;">
-    <div class="modal-dialog">
-      <div class="modal-content animated flipInY" style="margin-top: 200px;">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
-              class="sr-only">Close</span></button>
-          <h4 class="modal-title">Danh Sách Voucher</h4>
+  <div class="modal fade" id="voucherModal" tabindex="-1" aria-labelledby="voucherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="voucherModalLabel">Chọn Mã Giảm Giá</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
         <div class="modal-body">
+          <div id="voucherGrid" class="voucher-grid"></div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-white" data-dismiss="modal">Đóng</button>
-          <button type="button" class="btn btn-primary" id="addCustomer">Thêm</button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Đóng
+          </button>
         </div>
       </div>
     </div>
+    <style>
+      .voucher-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+      }
+
+      .voucher-card {
+        position: relative;
+        background: #fff;
+        border: 1px solid #e6e9ef;
+        border-radius: 10px;
+        padding: 12px;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      }
+
+      .voucher-card:hover {
+        border-color: #1ab394;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .voucher-card.active {
+        border-color: #1ab394;
+        background: #e9f9f3;
+      }
+
+      .voucher-card.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .voucher-header b {
+        font-size: 15px;
+        color: #1a1a1a;
+      }
+
+      .voucher-footer .badge {
+        background-color: #1ab394 !important;
+        font-size: 12px;
+      }
+
+      .voucher-footer .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+
+      .best-badge {
+        position: absolute;
+        top: -8px;
+        left: 12px;
+        background: #17a185;
+        color: white;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+
+      #voucherModal .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+        background: #f8fafc;
+      }
+
+      .voucher-card.selected {
+        border-color: #1ab394 !important;
+        background: #e9f9f3 !important;
+        box-shadow: 0 0 0 2px rgba(26, 179, 148, 0.3);
+      }
+
+      #clearVoucherInline {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 6px;
+      }
+    </style>
   </div>
   <div id="invoiceModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-lg">

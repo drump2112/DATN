@@ -92,9 +92,7 @@ public class VoucherServiceImpl implements VoucherService {
     public boolean addVoucherDotgiamgia(VoucherRequest voucherRequest) {
         try {
             Voucher voucher = fromRequest(voucherRequest);
-            // Giả sử voucher là loại "Đợt Giảm Giá", có thể set thêm field type nếu model
-            // có
-            voucher.setDiscountType(voucherRequest.getDiscountType()); // Nếu model có field type
+            voucher.setDiscountType(voucherRequest.getDiscountType());
             voucherRepository.save(voucher);
             return true;
         } catch (Exception e) {
@@ -109,14 +107,13 @@ public class VoucherServiceImpl implements VoucherService {
             Optional<Voucher> optionalVoucher = voucherRepository.findById(id);
             if (optionalVoucher.isPresent()) {
                 Voucher voucher = optionalVoucher.get();
-                // Update fields từ request, giữ nguyên id và type
-                modelMapper.map(voucherRequest, voucher); // Map các field chung
                 voucher.setId(id);
-                // Giữ nguyên code nếu không muốn thay đổi, hoặc update nếu request có
+
+                modelMapper.map(voucherRequest, voucher);
                 if (voucherRequest.getCode() != null && !voucherRequest.getCode().trim().isEmpty()) {
                     voucher.setCode(voucherRequest.getCode());
                 }
-                voucher.setDiscountType(voucherRequest.getDiscountType()); // Giữ type
+                voucher.setDiscountType(voucherRequest.getDiscountType());
                 voucherRepository.save(voucher);
                 return true;
             }
@@ -133,10 +130,8 @@ public class VoucherServiceImpl implements VoucherService {
             Optional<Voucher> optionalVoucher = voucherRepository.findById(id);
             if (optionalVoucher.isPresent()) {
                 Voucher voucher = optionalVoucher.get();
-                // Update fields từ request, giữ nguyên id và type
                 modelMapper.map(voucherRequest, voucher); // Map các field chung
                 voucher.setId(id);
-                // Giữ nguyên code nếu không muốn thay đổi, hoặc update nếu request có
                 if (voucherRequest.getCode() != null && !voucherRequest.getCode().trim().isEmpty()) {
                     voucher.setCode(voucherRequest.getCode());
                 }
@@ -153,7 +148,6 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     public Page<VoucherDTO> searchVoucher(String keyword, Boolean isActive, Pageable pageable) {
-        // Gọi repo method với query riêng
         Page<Voucher> vouchers = voucherRepository.findBySearch(keyword, isActive, pageable);
         return vouchers.map(entity -> modelMapper.map(entity, VoucherDTO.class));
     }
@@ -177,8 +171,8 @@ public class VoucherServiceImpl implements VoucherService {
                 .quantity(voucherRequest.getQuantity())
                 .minOrderAmount(voucherRequest.getMinOrderAmount())
                 .maxDiscountValue(voucherRequest.getMaxDiscountValue())
-                .startDate(voucherRequest.getStartDate() != null ? voucherRequest.getStartDate().atStartOfDay() : null)
-                .endDate(voucherRequest.getEndDate() != null ? voucherRequest.getEndDate().atTime(23, 59, 59) : null) // Kết
+                .startDate(voucherRequest.getStartDate() != null ? voucherRequest.getStartDate() : null)
+                .endDate(voucherRequest.getEndDate() != null ? voucherRequest.getEndDate() : null) // Kết
                                                                                                                       // thúc
                                                                                                                       // ngày:
                                                                                                                       // 23:59:59
@@ -219,10 +213,10 @@ public class VoucherServiceImpl implements VoucherService {
 
             // So sánh và log để debug
             System.out.println("Voucher: " + v.getCode()
-                + ", Type: " + v.getDiscountType()
-                + ", Value: " + v.getDiscountValue()
-                + ", MaxDiscount: " + v.getMaxDiscountValue()
-                + ", Calculated discount: " + discount);
+                    + ", Type: " + v.getDiscountType()
+                    + ", Value: " + v.getDiscountValue()
+                    + ", MaxDiscount: " + v.getMaxDiscountValue()
+                    + ", Calculated discount: " + discount);
 
             // Cập nhật nếu giảm nhiều hơn voucher tốt nhất hiện tại
             if (discount.compareTo(bestDiscount) > 0) {
@@ -278,7 +272,8 @@ public class VoucherServiceImpl implements VoucherService {
         return vouchers.stream()
                 .map(v -> {
                     BigDecimal discount = calculateDiscount(v, orderTotal == null ? BigDecimal.ZERO : orderTotal);
-                    BigDecimal totalAfter = orderTotal == null ? BigDecimal.ZERO : orderTotal.subtract(discount).max(BigDecimal.ZERO);
+                    BigDecimal totalAfter = orderTotal == null ? BigDecimal.ZERO
+                            : orderTotal.subtract(discount).max(BigDecimal.ZERO);
                     return VoucherSuggestionDTO.builder()
                             .id(v.getId())
                             .code(v.getCode())
@@ -305,7 +300,7 @@ public class VoucherServiceImpl implements VoucherService {
             case "PERCENT":
                 // Tính giảm theo phần trăm
                 discount = orderTotal.multiply(v.getDiscountValue())
-                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
 
                 // Áp dụng giới hạn tối đa nếu có
                 if (v.getMaxDiscountValue() != null) {

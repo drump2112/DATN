@@ -1,25 +1,42 @@
 package com.example.DATN.services.impl;
 
+import com.example.DATN.Util.OTPUtil;
+import com.example.DATN.configs.email.EmailService;
+import com.example.DATN.dtos.CartItemDTO;
+import com.example.DATN.dtos.OrderDTO;
 import com.example.DATN.dtos.OrderDetailResponse;
 import com.example.DATN.dtos.OrderItemDTO;
 import com.example.DATN.dtos.OrderItemResponse;
 import com.example.DATN.models.Order;
 import com.example.DATN.models.OrderItem;
+import com.example.DATN.models.Product;
 import com.example.DATN.models.ProductVariant;
 import com.example.DATN.models.User;
+import com.example.DATN.models.Voucher;
+import com.example.DATN.repositories.OrderItemRepository;
 import com.example.DATN.repositories.OrderRepository;
 import com.example.DATN.repositories.ProductVariantRepository;
 import com.example.DATN.repositories.UserRepository;
 import com.example.DATN.repositories.VoucherRepository;
 import com.example.DATN.request.CounterOrderRequest;
+import com.example.DATN.request.OrderRequest;
 import com.example.DATN.services.OrderService;
+import com.example.DATN.services.RedisOtpService;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Email;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +56,18 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private VoucherRepository voucherRepository;
 
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @Autowired
+    private RedisOtpService redisOtpService;
+
+    @Autowired
+    private EmailService emailService;
+
     @Override
     @Transactional
     public Order createCounterOrder(CounterOrderRequest request) {
@@ -54,7 +83,6 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        // Tạo Order
         Order order = new Order();
         order.setOrderType("COUNTER");
         order.setStatus("COMPLETED");
@@ -65,6 +93,10 @@ public class OrderServiceImpl implements OrderService {
             User user = userRepository.findById(request.getUserId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
             order.setUser(user);
+
+            order.setCustomerName(user.getFullName());
+        } else {
+            order.setCustomerName("Khách Lẻ");
         }
 
         order.setPaymentMethod(request.getPaymentMethod());
@@ -82,7 +114,6 @@ public class OrderServiceImpl implements OrderService {
 
             totalAmount = totalAmount.add(dto.getUnitPrice().multiply(new BigDecimal(dto.getQuantity())));
 
-            // Trừ tồn kho
             pv.setQuantity(pv.getQuantity() - dto.getQuantity());
             productVariantRepository.save(pv);
 
@@ -106,14 +137,115 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.save(order);
     }
 
+    @Override
+    @Transactional
+    public Order createOrder(OrderRequest dto) {
+        User user = userRepository.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+        Order order = new Order();
+
+        Voucher voucher = null;
+        BigDecimal discountAmount = BigDecimal.ZERO;
+
+        if (dto.getVoucherCode() != null && !dto.getVoucherCode().isEmpty()) {
+            discountAmount = dto.getDiscountAmount();
+            voucher = voucherRepository.findByCode(dto.getVoucherCode());
+            order.setVoucher(voucher);
+        } else {
+            order.setDiscountAmount(BigDecimal.ZERO);
+            order.setVoucher(null);
+        }
+
+        order.setUser(user);
+        order.setCustomerName(dto.getCustomerName());
+        order.setShippingAddress(dto.getShippingAddress());
+        order.setShippingPhone(dto.getShippingPhone());
+        order.setShippingFee(dto.getShippingFee());
+        order.setOrderDate(LocalDateTime.now());
+        order.setPaymentMethod(dto.getPaymentMethod());
+        order.setTotalAmount(dto.getTotalAmount());
+        order.setDiscountAmount(dto.getDiscountAmount());
+        order.setFinalAmount(dto.getFinalAmount());
+
+        order.setOrderType("ONLINE");
+        order.setOrderCode(generateOrderCode("ONLINE"));
+
+        if ("CASH".equalsIgnoreCase(dto.getPaymentMethod())) {
+            order.setStatus("WAITING_OTP");
+        } else {
+            order.setStatus("PENDING");
+        }
+        order = orderRepository.save(order);
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItemDTO item : dto.getItems()) {
+            ProductVariant variant = productVariantRepository.findById(item.getVariantId())
+                    .orElseThrow(() -> new RuntimeException("Variant not found: " + item.getVariantId()));
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProductVariant(variant);
+            orderItem.setQuantity(item.getQuantity());
+            orderItem.setUnitPrice(BigDecimal.valueOf(item.getPrice()));
+            orderItemRepository.save(orderItem);
+            orderItems.add(orderItem);
+        }
+
+        order.setItems(orderItems);
+
+        if ("CASH".equalsIgnoreCase(dto.getPaymentMethod())) {
+            String otp = OTPUtil.generateOTP(6);
+            redisOtpService.saveOtp(user.getEmail(), otp, order.getId());
+            emailService.sendOtpEmail(user.getEmail(), otp);
+        }
+        return order;
+    }
+
+    @Transactional
+    public boolean confirmOtp(Integer orderId, String email, String inputOtp) {
+        String storedOtp = redisOtpService.getOtp(email, orderId);
+        if (storedOtp == null || !storedOtp.equals(inputOtp)) {
+            return false;
+        }
+
+        redisOtpService.deleteOtp(email, orderId);
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        if (!"WAITING_OTP".equalsIgnoreCase(order.getStatus())) {
+            throw new RuntimeException("Đơn hàng không ở trạng thái chờ OTP");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            ProductVariant variant = productVariantRepository.findByIdForUpdate(item.getProductVariant().getId());
+
+            if (variant == null) {
+                throw new RuntimeException("Không tìm thấy biến thể sản phẩm");
+            }
+
+            int remain = variant.getQuantity() - item.getQuantity();
+            if (remain < 0) {
+                throw new RuntimeException("Biến thể " + variant.getVariantCode() + " không đủ hàng");
+            }
+
+            variant.setQuantity(remain);
+            productVariantRepository.save(variant);
+        }
+
+        order.setStatus("PENDING");
+        orderRepository.save(order);
+
+        emailService.sendOrderConfirmation(order);
+
+        return true;
+    }
+
     private String generateOrderCode(String orderType) {
         String prefix = orderType.equals("COUNTER") ? "POS-" : "ONL-";
 
-        // Lấy ngày hiện tại
         LocalDate today = LocalDate.now();
         String datePart = today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-        // Lấy số thứ tự trong ngày (tùy cơ chế)
         int count = (int) (orderRepository.countByOrderDateBetween(
                 today.atStartOfDay(), today.plusDays(1).atStartOfDay()) + 1);
 
@@ -154,4 +286,49 @@ public class OrderServiceImpl implements OrderService {
                         java.math.BigDecimal.valueOf(i.getQuantity())))
                 .build()).toList();
     }
+
+    @Override
+    public Page<OrderDTO> getOnlineOrders(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orders = orderRepository.findByOrderType("ONLINE", pageable);
+        return orders.map(order -> modelMapper.map(order, OrderDTO.class));
+    }
+
+    @Override
+    public Page<OrderDTO> getOfflineOrders(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orders = orderRepository.findByOrderType("COUNTER", pageable);
+        return orders.map(order -> modelMapper.map(order, OrderDTO.class));
+    }
+
+    @Override
+    public Page<OrderDTO> getUserOrders(Integer userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(userId, pageable);
+        return orders.map(this::mapToOrderDTO);
+    }
+
+    private OrderDTO mapToOrderDTO(Order order) {
+        OrderDTO dto = new OrderDTO();
+        dto.setId(order.getId());
+        dto.setOrderCode(order.getOrderCode());
+        dto.setCustomerName(order.getCustomerName());
+        dto.setShippingPhone(order.getShippingPhone());
+        dto.setShippingAddress(order.getShippingAddress());
+        dto.setOrderDate(order.getOrderDate());
+        dto.setTotalAmount(order.getTotalAmount());
+        dto.setDiscountAmount(order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
+        dto.setFinalAmount(order.getFinalAmount());
+        dto.setShippingFee(order.getShippingFee());
+        dto.setOrderType(order.getOrderType());
+        dto.setPaymentMethod(order.getPaymentMethod());
+        dto.setStatus(order.getStatus());
+        if (order.getVoucher() != null) {
+            dto.setVoucherCode(order.getVoucher().getCode());
+        }
+        return dto;
+    }
 }
+
+
+

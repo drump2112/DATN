@@ -212,7 +212,7 @@ $(document).ready(function () {
   $(document).on("click", "#searchResults a", function (e) {
     e.preventDefault();
 
-    const quantityAvailable = parseInt($(this).data("quantity")); // tồn kho thực tế
+    const quantityAvailable = parseInt($(this).data("quantity"));
     if (quantityAvailable === 0) {
       toastr.warning("<b>Sản phẩm này đã hết hàng!</b>");
       return;
@@ -811,8 +811,6 @@ $(document).ready(function () {
             <abbr title="Phone">SĐT:</abbr> 0975-478-916
           </address>
         </div>
-
-
         <div class="col-sm-6 text-right">
           <h4>Mã Đơn Hàng.</h4>
           <h4 class="text-navy">${invoice.orderCode}</h4>
@@ -827,8 +825,6 @@ $(document).ready(function () {
           </p>
         </div>
       </div>
-
-
       <div class="table-responsive m-t">
         <table class="invoice-table" style="width:100%; border-collapse: collapse; margin-top:20px;">
           <thead>
@@ -846,7 +842,7 @@ $(document).ready(function () {
         .map(
           (i) => `
               <tr style="border-bottom:1px solid #eee;">
-                <td style="padding:6px;">${i.productName}</td>
+                <td style="padding:6px;">${i.productName}- ${i.variantCode} </td>
                 <td style="text-align:center;">${i.color || "-"}</td>
                 <td style="text-align:center;">${i.size || "-"}</td>
                 <td style="text-align:center;">${i.quantity}</td>
@@ -859,26 +855,26 @@ $(document).ready(function () {
           </tbody>
         </table>
       </div>
-
-
       <table class="invoice-total" style="width:100%; margin-top:20px; border-collapse: collapse;">
         <tbody>
           <tr>
             <td style="text-align:right; padding:6px;"><strong>Tổng tiền hàng:</strong></td>
-            <td style="text-align:right; padding:6px; width:150px;">${invoice.totalAmount.toLocaleString()}đ</td>
+            <td style="text-align:right; padding:6px; width:150px;">${invoice.totalAmount.toLocaleString()} VNĐ</td>
           </tr>
           <tr>
             <td style="text-align:right; padding:6px;"><strong>Giảm giá:</strong></td>
-            <td style="text-align:right; padding:6px;">${(invoice.discountAmount || 0).toLocaleString()}đ</td>
+            <td style="text-align:right; padding:6px;">${(invoice.discountAmount || 0).toLocaleString()} VNĐ</td>
           </tr>
           <tr>
             <td style="text-align:right; padding:6px;"><strong>Tổng thanh toán:</strong></td>
-            <td style="text-align:right; padding:6px;"><span class="text-navy" style="color:#1ab394; font-weight:bold;">${invoice.finalAmount.toLocaleString()}đ</span></td>
+            <td style="text-align:right; padding:6px;"><span class="text-navy" style="color:#1ab394; font-weight:bold;">${invoice.finalAmount.toLocaleString()} VNĐ</span></td>
+          </tr>
+           <tr>
+            <td style="text-align:right; padding:6px;"><strong>Hình Thức Thanh Toán:</strong></td>
+            <td style="text-align:right; padding:6px;"><span class="text-navy" style="color:#1ab394; font-weight:bold;">${invoice.paymentMethod === 'CASH' ? 'Tiền Mặt' : 'Chuyển Khoản'}</span></td>
           </tr>
         </tbody>
       </table>
-
-
       <div class="well m-t" style="margin-top:20px; background:#f9f9f9; padding:10px; border-radius:5px;">
         <strong>Ghi chú:</strong> Cảm ơn quý khách đã mua hàng tại DTD-Sneaker!
       </div>
@@ -906,21 +902,24 @@ $(document).ready(function () {
 
 
   $(document).on("click", "#showListVoucher", function () {
+    const total = parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
+
     $.ajax({
-      type: 'GET',
-      url: `/seller/buyatthecounter/discounts`,
-      dataType: 'json',
+      type: "GET",
+      url: `/api/vouchers/available`,
+      data: { orderTotal: total },
+      dataType: "json",
       success: function (data) {
         const voucherList = data;
-        loadHtmlVoucherSelectList(voucherList);
-
-
-        $("#listVoucher").modal("show");
+        // loadHtmlVoucherSelectList(voucherList);
+        renderVouchers(voucherList, total)
+        $("#voucherModal").modal("show");
       },
-      error: function (res) {
+      error: function (xhr) {
+        console.error("Lỗi khi tải danh sách voucher:", xhr);
         Swal.fire({
           title: "Lỗi",
-          text: "Có lỗi xảy ra khi tải danh sách voucher",
+          text: "Không thể tải danh sách voucher khả dụng. Vui lòng thử lại.",
           icon: "error"
         });
       }
@@ -928,92 +927,59 @@ $(document).ready(function () {
   });
 
 
+  function renderVouchers(vouchers, subtotal) {
+    const $grid = $("#voucherGrid");
+    if ($grid.length === 0) return;
+    $grid.empty();
 
-  function loadHtmlVoucherSelectList(voucherList) {
-    let html = '';
+    let best = null;
+    vouchers.forEach((v) => {
+      if (!best || v.discountAmount > best.discountAmount) best = v;
+    });
 
+    vouchers.forEach((v) => {
+      const disabled = v.discountAmount <= 0;
+      const isBest = best && v.code === best.code;
 
-    if (voucherList.length > 0) {
-      voucherList.forEach(item => {
-        const amount = parseInt(item.discountValue);
-        const endDate = new Date(item.endDate);
-        const formattedDate = endDate.toLocaleDateString('vi-VN');
-        const discountType = item.discountType;
-        if (discountType === 'FIXED') {
-          html += `
-          <div class="col-12 col-sm-6 col-md-4 mb-3">
-            <div data-voucher="${item.id}"
-                class="voucher-item card shadow-sm h-100 cursor-pointer"
-                style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 10px">
-              <div class="card-body d-flex flex-column justify-content-between"
-                  style="padding: 16px;">
-                <div>
-                  <h5 class="text-primary mb-2" style="font-weight: 600;">
-                    Giảm <strong>${amount.toLocaleString()} VNĐ</strong>
-                  </h5>
-                  <p class="text-muted mb-5" style="font-size: 14px;">HSD: ${formattedDate}</p>
-                </div>
-                <button class="btn btn-outline-primary btn-sm w-100 select-voucher">
-                  Chọn
-                </button>
-              </div>
-            </div>
-          </div>`;
-        } else {
-          html += `
-          <div class="col-12 col-sm-6 col-md-4 mb-3">
-            <div data-voucher="${item.id}"
-                class="voucher-item card shadow-sm h-100 cursor-pointer"
-                style="border: 1px solid #9caec2; border-radius: 10px; padding: 6px; margin-bottom: 5px">
-              <div class="card-body d-flex flex-column justify-content-between"
-                  style="padding: 16px;">
-                <div>
-                  <h5 class="text-primary mb-2" style="font-weight: 600;">
-                    Giảm <strong>${amount.toLocaleString()} %</strong>
-                  </h5>
-                  <p class="text-muted mb-5" style="font-size: 14px;">HSD: ${formattedDate}</p>
-                </div>
-                <button class="btn btn-outline-primary btn-sm w-100 select-voucher">
-                  Chọn
-                </button>
-              </div>
-            </div>
-          </div>`;
+      const $card = $(`
+      <div class="voucher-card ${disabled ? "disabled" : ""}" data-code="${v.code}">
+        ${isBest ? '<span class="best-badge">Gợi ý tốt nhất</span>' : ""}
+        <div class="voucher-header mb-2">
+          <b>${v.code}</b>
+          <div class="small text-muted">${v.name || ""}</div>
+          ${v.minOrderAmount
+          ? `<div class='small text-muted'>Yêu cầu tối thiểu: ${v.minOrderAmount.toLocaleString()} VNĐ</div>`
+          : ""
         }
+        </div>
+        <div class="voucher-footer d-flex justify-content-between align-items-center">
+          <span class="badge">${v.discountAmount.toLocaleString()} VNĐ</span>
+          <button class="btn btn-sm btn-success apply-voucher" ${disabled ? "disabled" : ""}>Áp dụng</button>
+        </div>
+      </div>
+    `);
 
+      $card.data('voucher', v);
 
-      });
-    } else {
-      html = '<div class="text-center text-muted py-4">Không có mã giảm giá nào</div>';
-    }
-
-
-    $("#listVoucher .modal-body").html(`
-    <div class="row vourcher-list" style="max-height: 400px; overflow-y: auto;">
-      ${html}
-    </div>
-  `);
-    handleClickVoucher(voucherList);
+      $grid.append($card);
+    });
   }
 
+  // Sự kiện áp dụng
+  $(document)
+    .off("click", ".apply-voucher")
+    .on("click", ".apply-voucher", function () {
+      const $card = $(this).closest(".voucher-card");
 
-  // voucher and discount are stored per-tab in orders[tabId].voucher and orders[tabId].discountAmount
-
-  function handleClickVoucher(voucherList) {
-    $(".voucher-item").on("click", function () {
-      const selectedVoucherId = $(this).data("voucher");
-
-      const voucher = voucherList.find(v => v.id == selectedVoucherId);
+      const voucher = $card.data('voucher');
       if (!voucher) return;
 
-      // Giả sử bạn có biến lưu tổng tiền đơn hàng:
-      const totalOrderAmount = parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
+      const totalOrderAmount =
+        parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
 
-      // Kiểm tra điều kiện áp dụng
       const now = new Date();
       const start = new Date(voucher.startDate);
       const end = new Date(voucher.endDate);
-
 
       if (totalOrderAmount < voucher.minOrderAmount) {
         Swal.fire("Không đủ điều kiện!", "Đơn hàng chưa đạt giá trị tối thiểu để áp dụng voucher này.", "warning");
@@ -1024,8 +990,6 @@ $(document).ready(function () {
         return;
       }
 
-
-      // Tính giá trị giảm (local)
       let computedDiscount = 0;
       if (voucher.discountType === "PERCENT") {
         computedDiscount = (totalOrderAmount * voucher.discountValue) / 100;
@@ -1036,24 +1000,22 @@ $(document).ready(function () {
         computedDiscount = voucher.discountValue;
       }
 
-      // Cập nhật giao diện
-      $("#listVoucher").modal("hide");
+      $("#voucherModal").modal("hide");
       $("#showListVoucher").hide();
 
       $("#voucherDescription").html(
-        `Đang áp dụng: <strong>${voucher.code}</strong>\n     (${voucher.discountType === "PERCENT" ? voucher.discountValue + "%" : voucher.discountValue.toLocaleString() + " VNĐ"})`
+        `Đang áp dụng: <strong>${voucher.code}</strong> (${voucher.discountType === "PERCENT"
+          ? voucher.discountValue + "%"
+          : voucher.discountValue.toLocaleString() + " VNĐ"
+        })`
       );
 
       $("#discountValue").text(computedDiscount.toLocaleString() + " VNĐ");
-
       $("#selectedVoucherInfo").show();
 
-      // Cập nhật tiền giảm & tổng thanh toán
-      $("#discountAmount").text(computedDiscount.toLocaleString() + " đ");
       const newTotal = totalOrderAmount - computedDiscount;
-      $("#finalTotal").text(newTotal.toLocaleString() + " đ");
+      $("#finalTotal").text(newTotal.toLocaleString() + " VNĐ");
 
-      // Lưu voucher đã chọn vào tab hiện tại
       const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
       if (orders[activeTabId]) {
         orders[activeTabId].voucher = voucher;
@@ -1062,14 +1024,11 @@ $(document).ready(function () {
 
       Swal.fire("Áp dụng thành công!", "Voucher đã được áp dụng vào đơn hàng.", "success");
     });
-  }
-
 
   $(document).on("click", "#cancelVoucher", function () {
     $("#selectedVoucherInfo").hide();
     $("#showListVoucher").show();
 
-    // Reset tiền giảm cho tab hiện tại
     const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
     if (orders[activeTabId]) {
       orders[activeTabId].voucher = null;
@@ -1083,11 +1042,9 @@ $(document).ready(function () {
 
     Swal.fire("Đã hủy voucher", "Bạn có thể chọn lại voucher khác.", "info");
 
-    // Sau khi hủy voucher, cập nhật lại gợi ý
     updateClientDetail(activeTabId);
   });
 
-  // Xử lý khi bấm áp dụng voucher gợi ý
   $(document).on("click", "#applySuggestedVoucher", function () {
     const suggestion = $(this).data('suggestion');
     if (!suggestion) return;
@@ -1095,7 +1052,6 @@ $(document).ready(function () {
     const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
     if (!orders[activeTabId]) return;
 
-    // Cập nhật UI và state giống như khi chọn voucher từ danh sách
     $("#voucherSuggest").hide();
     $("#showListVoucher").hide();
     $("#voucherDescription").html(
@@ -1103,17 +1059,25 @@ $(document).ready(function () {
     );
     $("#selectedVoucherInfo").show();
 
-    // Cập nhật giá trị giảm giá
     $("#discountValue").text(suggestion.discountAmount.toLocaleString() + " VNĐ");
     $("#finalTotal").text(suggestion.totalAfter.toLocaleString() + " VNĐ");
 
-    // Lưu voucher vào state
     orders[activeTabId].voucher = suggestion;
     orders[activeTabId].discountAmount = suggestion.discountAmount;
 
     toastr.success("Đã áp dụng voucher gợi ý thành công!");
   });
 
+  $(document).on("input", "#customerMoney", function () {
+    const customerMoney = parseFloat($(this).val()) || 0;
+
+    let finalTotalText = $("#finalTotal").text().replace(/[^\d]/g, '');
+    const finalTotal = parseFloat(finalTotalText) || 0;
+
+    const change = customerMoney - finalTotal;
+
+    $("#changeMoney").text(`${change > 0 ? change.toLocaleString() : 0} VNĐ`);
+  });
 
 });
 

@@ -1,9 +1,13 @@
-
 $(document).ready(function () {
     // Load giỏ hàng
+
+    let cartItems = [];
+
     function loadCheckoutItems() {
+
         $.get("/cart/items")
             .done(function (cart) {
+                cartItems = cart;
                 renderCheckoutItems(cart);
                 calculateTotals(cart);
             })
@@ -35,7 +39,6 @@ $(document).ready(function () {
         });
     }
 
-    // ===== VOUCHER LOGIC =====
     let appliedVoucher = null;
 
     function calculateTotals(cart) {
@@ -47,9 +50,7 @@ $(document).ready(function () {
         // Cập nhật giá trị hiển thị
         $("#finalTotal").text(subtotal.toLocaleString() + " VNĐ");
         $("#shippingValue").text(shipping.toLocaleString() + " VNĐ");
-        $("#discountValue").text(
-            (discount > 0 ? "-" : "") + discount.toLocaleString() + " VNĐ"
-        );
+        $("#discountValue").text(discount.toLocaleString() + " VNĐ");
         $("#totalPayment").text(total.toLocaleString() + " VNĐ");
         $("#appliedVoucherCode").val(appliedVoucher ? appliedVoucher.code : "");
 
@@ -142,7 +143,11 @@ $(document).ready(function () {
                 const voucher = vouchers.find((x) => x.code === code);
 
                 if (voucher) {
-                    appliedVoucher = { code: voucher.code, discount: voucher.discountAmount };
+                    appliedVoucher = {
+                        id: voucher.id,
+                        code: voucher.code,
+                        discount: voucher.discountAmount
+                    };
                     $('.voucher-card').removeClass('active');
                     $card.addClass('active');
 
@@ -156,6 +161,7 @@ $(document).ready(function () {
                         calculateTotals(cart);
                     });
                 }
+
             });
 
     }
@@ -183,22 +189,6 @@ $(document).ready(function () {
     });
 
     // ===== ĐẶT HÀNG =====
-    $(".btn-primary.dim").click(function () {
-        const address = $("#deliveryAddress").val();
-        if (!address) {
-            alert("Vui lòng nhập địa chỉ giao hàng!");
-            return;
-        }
-
-        const paymentMethod = $('input[name="paymentMethod"]:checked').val();
-        if (!paymentMethod) {
-            alert("Vui lòng chọn phương thức thanh toán!");
-            return;
-        }
-
-        // createOrder(address, paymentMethod);
-    });
-
     // Khởi chạy
     loadCheckoutItems();
     $.get("/cart/items")
@@ -251,6 +241,192 @@ $(document).ready(function () {
             textarea.removeEventListener("blur", handleBlur);
         });
     }
+
+    function parseMoney(str) {
+        return parseFloat(str.replace(/[^\d]/g, "")) || 0;
+    }
+
+    // $("#btnConfirmOrder").on("click", function () {
+    //     Swal.fire({
+    //         title: "Xác nhận đặt hàng?",
+    //         text: "Bạn có chắc chắn muốn đặt đơn hàng này không?",
+    //         icon: "question",
+    //         showCancelButton: true,
+    //         confirmButtonText: "Đặt hàng",
+    //         cancelButtonText: "Hủy",
+    //         reverseButtons: true
+    //     }).then((result) => {
+    //         if (result.isConfirmed) {
+    //             const orderData = {
+    //                 userId: $("#userId").val(),
+    //                 customerName: $("#userFullName").text().trim(),
+    //                 paymentMethod: $("input[name='paymentMethod']:checked").val(),
+    //                 voucherCode: $("#voucherCode").val() || null,
+    //                 shippingFee: parseMoney($("#shippingValue").text()),
+    //                 totalAmount: parseMoney($("#totalAmount").text()),
+    //                 discountAmount: parseMoney($("#discountValue").text()),
+    //                 finalAmount: parseMoney($("#totalPayment").text()),
+    //                 shippingAddress: $("#shippingAddress").val(),
+    //                 shippingPhone: $("#shippingPhone").text(),
+    //                 voucherId: appliedVoucher ? appliedVoucher.id : null,
+    //                 items: typeof cartItems !== "undefined" ? cartItems : []
+    //             };
+
+    //             console.table(orderData);
+    //             $.ajax({
+    //                 url: "/api/orders/create",
+    //                 type: "POST",
+    //                 contentType: "application/json",
+    //                 data: JSON.stringify(orderData),
+    //                 success: function (res) {
+    //                     Swal.fire({
+    //                         title: "Thành công!",
+    //                         text: "Đơn hàng của bạn đã được đặt thành công.",
+    //                         icon: "success",
+    //                         confirmButtonText: "OK"
+    //                     }).then(() => {
+    //                         window.location.href = "/orders";
+    //                     });
+    //                 },
+    //                 error: function (err) {
+    //                     console.table(orderData);
+
+    //                     console.error(err);
+    //                     Swal.fire({
+    //                         title: "Lỗi!",
+    //                         text: "Đặt hàng thất bại. Vui lòng thử lại.",
+    //                         icon: "error",
+    //                         confirmButtonText: "Đóng"
+    //                     });
+    //                 }
+    //             });
+    //         }
+    //     });
+    // });
+    $("#btnConfirmOrder").on("click", function () {
+        Swal.fire({
+            title: "Xác nhận đặt hàng?",
+            text: "Bạn có chắc chắn muốn đặt đơn hàng này không?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Đặt hàng",
+            cancelButtonText: "Hủy",
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const orderData = {
+                    userId: $("#userId").val(),
+                    customerName: $("#userFullName").text().trim(),
+                    paymentMethod: $("input[name='paymentMethod']:checked").val(),
+                    voucherCode: $("#appliedVoucherCode").val() || null,
+                    shippingFee: parseMoney($("#shippingValue").text()),
+                    totalAmount: parseMoney($("#totalAmount").text()),
+                    discountAmount: parseMoney($("#discountValue").text()),
+                    finalAmount: parseMoney($("#totalPayment").text()),
+                    shippingAddress: $("#shippingAddress").val(),
+                    shippingPhone: $("#shippingPhone").text().trim(),
+                    voucherId: appliedVoucher ? appliedVoucher.id : null,
+                    items: typeof cartItems !== "undefined" ? cartItems : []
+                };
+
+                $.ajax({
+                    url: "/api/orders/create",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(orderData),
+                    success: function (res) {
+                        if (res.status === "WAITING_OTP") {
+                            // Hiển thị thông báo đã gửi OTP
+                            Swal.fire({
+                                title: "OTP đã được gửi!",
+                                text: "Vui lòng kiểm tra email của bạn để lấy mã OTP.",
+                                icon: "info",
+                                confirmButtonText: "OK"
+                            }).then(() => {
+                                // Lưu thông tin và mở modal OTP
+                                $("#otpOrderId").val(res.orderId);
+                                $("#otpEmail").val(res.email);
+                                $("#otpCode").val("");
+                                $("#otpModal").modal("show");
+                            });
+                        } else if (res.status === "SUCCESS") {
+                            // Đơn hàng thành công (thanh toán chuyển khoản)
+                            Swal.fire({
+                                title: "Thành công!",
+                                text: "Đơn hàng của bạn đã được đặt thành công.",
+                                icon: "success",
+                                confirmButtonText: "OK"
+                            }).then(() => {
+                                window.location.href = "/orders";
+                            });
+                        }
+                    },
+                    error: function (err) {
+                        console.error(err);
+                        const errorMsg = err.responseJSON?.message || "Đặt hàng thất bại. Vui lòng thử lại.";
+                        Swal.fire({
+                            title: "Lỗi!",
+                            text: errorMsg,
+                            icon: "error",
+                            confirmButtonText: "Đóng"
+                        });
+                    }
+                });
+            }
+        });
+    });    $("#btnVerifyOtp").on("click", function () {
+        const orderId = $("#otpOrderId").val();
+        const email = $("#otpEmail").val();
+        const otp = $("#otpCode").val();
+
+        if (!otp || otp.length !== 6) {
+            Swal.fire({
+                title: "Thông báo",
+                text: "Vui lòng nhập mã OTP gồm 6 ký tự.",
+                icon: "warning",
+                confirmButtonText: "Đóng"
+            });
+            return;
+        }
+
+        $.ajax({
+            url: "/api/orders/confirm-otp",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ orderId, email, otp }),
+            success: function (res) {
+                if (res.success) {
+                    $("#otpModal").modal("hide");
+                    Swal.fire({
+                        title: "Thành công!",
+                        text: "Đơn hàng của bạn đã được xác nhận thành công.",
+                        icon: "success",
+                        confirmButtonText: "OK"
+                    }).then(() => {
+                        window.location.href = "/orders";
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Sai OTP",
+                        text: res.message || "Mã OTP không hợp lệ hoặc đã hết hạn.",
+                        icon: "error",
+                        confirmButtonText: "Đóng"
+                    });
+                }
+            },
+            error: function (err) {
+                console.error(err);
+                const errorMsg = err.responseJSON?.message || "Không thể xác nhận OTP. Vui lòng thử lại.";
+                Swal.fire({
+                    title: "Lỗi!",
+                    text: errorMsg,
+                    icon: "error",
+                    confirmButtonText: "Đóng"
+                });
+            }
+        });
+    });
+
 
     window.enableTextareaEdit = enableTextareaEdit;
     window.enableEdit = enableEdit;

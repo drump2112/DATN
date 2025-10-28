@@ -12,7 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class OrderItemDTO {
+
   private String productVariantId;
+
   private Integer quantity;
+
   private BigDecimal unitPrice;
 }

@@ -17,16 +17,12 @@
       <tr th:each=" item : ${listProducts}">
         <td th:text="${item.id}"></td>
         <td>
-          <img
-            th:src="@{${item.thumbnail}}"
-            alt="Thumbnail"
-            style="
-              width: 50px;
-              height: 50px;
-              object-fit: cover;
-              border-radius: 50%;
-            "
-          />
+          <img th:src="@{${item.thumbnail}}" alt="Thumbnail" style="
+             width: 50px;
+             height: 50px;
+             object-fit: cover;
+             border-radius: 50%;
+           " />
         </td>
         <td th:text="${item.productCode}"></td>
         <td th:text="${item.name}"></td>
@@ -34,97 +30,62 @@
         <td th:text="${item.categoryName}"></td>
         <td th:text="${item.description}"></td>
         <td th:switch="${item.isActive}">
-          <span th:case="true" class="badge badge-primary"
-            >Đang Kinh Doanh</span
-          >
-          <span th:case="false" class="badge badge-danger"
-            >Ngừng Kinh Doanh</span
-          >
+          <span th:case="true" class="badge badge-primary">Đang Kinh Doanh</span>
+          <span th:case="false" class="badge badge-danger">Ngừng Kinh Doanh</span>
         </td>
         <td>
-          <button
-            class="btn btn-info dim"
-            type="button"
-            th:attr="data-id=${item.id}"
-            th:title="'Thông tin và cập nhật'"
-            onclick="handleDetailClick(this)"
-          >
+          <button class="btn btn-info dim" type="button" th:attr="data-id=${item.id}" th:title="'Thông tin và cập nhật'"
+            onclick="handleDetailClick(this)">
             <i class="fa fa-eye"></i>
           </button>
 
-          <button
-            th:id="'btn-status-' + ${item.id}"
+
+          <button class="btn btn-warning dim" type="button" th:attr="data-id=${item.id}"
+            th:title="'Thêm mới Sản Phẩm chi tiết'" onclick="handleVariantDetailClick (this)">
+            <i class="fa fa-plus-square"></i>
+          </button>
+
+
+          <button th:id="'btn-status-' + ${item.id}"
             th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
             th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
-            th:title="${item.isActive} ? 'Khóa sản phẩm' : 'Mở khóa sản phẩm'"
-          >
+            th:title="${item.isActive} ? 'Khóa sản phẩm' : 'Mở khóa sản phẩm'">
             <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
           </button>
         </td>
       </tr>
     </tbody>
   </table>
-  <div
-    class="dataTables_paginate paging_simple_numbers"
-    id="DataTables_Table_0_paginate"
-    th:if="${totalPages > 0}"
-    style="text-align: right"
-  >
-    <ul
-      class="pagination"
-      id="paginationContainer"
-      th:attr="data-total-pages=${totalPages}, data-current-page=${currentPage}"
-    >
-      <!-- Nút Previous -->
-      <li
-        class="paginate_button previous"
-        th:classappend="${currentPage == 0} ? ' disabled'"
-      >
-        <a
-          href="#"
-          tabindex="0"
-          th:onclick="'searchProduct(' + (${currentPage - 1}) + ')'"
-        >
-          Quay lại
+  <div class="dataTables_paginate paging_simple_numbers" id="DataTables_Table_0_paginate" th:if="${totalPages > 0}"
+    style="text-align: right">
+    <ul class="pagination" id="paginationContainer"
+      th:attr="data-total-pages=${totalPages}, data-current-page=${currentPage}">
+      <li class="paginate_button previous" th:classappend="${currentPage == 0} ? ' disabled'">
+        <a href="#" tabindex="0" th:onclick="'searchProduct(' + (${currentPage - 1}) + ')'">
+          Sau
         </a>
       </li>
 
-      <!-- Nút số trang 1..totalPages -->
-      <li
-        class="paginate_button"
-        th:each="i : ${#numbers.sequence(1, totalPages)}"
-        th:classappend="${i - 1 == currentPage} ? ' active'"
-      >
-        <a
-          href="#"
-          tabindex="0"
-          th:text="${i}"
-          th:onclick="'searchProduct(' + (${i} - 1) + ')'"
-        >
+
+      <!-- Nút số trang 1 -->
+      <li class="paginate_button" th:each="i : ${#numbers.sequence(1, totalPages)}"
+        th:classappend="${i - 1 == currentPage} ? ' active'">
+        <a href="#" tabindex="0" th:text="${i}" th:onclick="'searchProduct(' + (${i} - 1) + ')'">
         </a>
       </li>
+
 
       <!-- Nút Next -->
       <li class="paginate_button next" th:if="${currentPage + 1 < totalPages}">
-        <a
-          href="#"
-          tabindex="0"
-          th:onclick="'searchProduct(' + (${currentPage + 1}) + ')'"
-        >
-          Tiếp Theo
+        <a href="#" tabindex="0" th:onclick="'searchProduct(' + (${currentPage + 1}) + ')'">
+          Tiếp
         </a>
       </li>
 
-      <li
-        class="paginate_button next disabled"
-        th:unless="${currentPage + 1 < totalPages}"
-      >
-        <a
-          href="#"
-          tabindex="0"
-          th:onclick="'searchProduct(' + (${totalPages - 1}) + ')'"
-        >
-          Next
+
+      <li class="paginate_button next disabled" th:unless="${currentPage + 1 < totalPages}">
+        <a href="#" tabindex="0" th:onclick="'searchProduct(' + (${totalPages - 1}) + ')'">
+          Tiếp
         </a>
       </li>
     </ul>

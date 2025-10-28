@@ -238,8 +238,6 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 				.build()).collect(Collectors.toList());
 	}
 
-
-
 	@Override
 	public Page<ProductVariantDTO> searchProductVariants(
 			String keyword,
@@ -280,6 +278,13 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		Page<ProductVariant> pageResult = productVariantRepository.findAll(spec, pageable);
 
 		return pageResult.map(this::mapToDTO);
+	}
+
+	@Override
+	public Page<ProductVariantDTO> getVariantsByProductId(int size, int page, int id) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<ProductVariant> productVariant = productVariantRepository.findProductVariantsByProduct_Id(id, pageable);
+		return productVariant.map(entity -> modelMapper.map(entity, ProductVariantDTO.class));
 	}
 
 	private void saveProductVariantImages(ProductVariant variant, List<MultipartFile> images) {

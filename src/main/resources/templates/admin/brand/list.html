@@ -1,24 +1,21 @@
 <!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  th:replace="admin/layout/base :: base"
->
-  <th:block th:fragment="content">
-    <div class="row col-lg-6" style="margin-left: 300px">
-      <div class="ibox float-e-margins">
-        <div class="ibox-title">
-          <h5>Danh Sách Thương Hiệu</h5>
-          <div class="ibox-tools">
-            <a class="collapse-link">
-              <i class="fa fa-chevron-up"></i>
-            </a>
-          </div>
-        </div>
-        <div class="ibox-content"  id="brandTableContainer">
-          <th:block th:replace="admin/brand/table :: table"></th:block>
-        </div>
-      </div>
-    </div>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
+<th:block th:fragment="content">
+	<div class="row col-lg-6" style="margin-left: 300px">
+		<div class="ibox float-e-margins">
+			<div class="ibox-title">
+				<h5>Danh Sách Thương Hiệu</h5>
+				<div class="ibox-tools">
+					<a class="collapse-link">
+						<i class="fa fa-chevron-up"></i>
+					</a>
+				</div>
+			</div>
+			<div class="ibox-content" id="brandTableContainer">
+				<th:block th:replace="admin/brand/table :: table"></th:block>
+			</div>
+		</div>
+	</div>
 	<div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" style="padding-right: 15px;">
 		<div class="modal-dialog">
 			<div class="modal-content animated bounceInRight">
@@ -31,9 +28,11 @@
 					<div class="row">
 						<form id="brandForm" role="form">
 							<div class="col-sm-6 b-r">
-                                <input type="hidden" id="brandId" name="brandId">
-                                <div class="form-group"><label>Mã Thương Hiệu</label> <input type="text" id="brandCode" placeholder="Brand Code" class="form-control" disabled></div>
-								<div class="form-group"><label>Tên Thương Hiệu</label> <input type="text" id="nameBrand" name="nameBrand" placeholder="Tên Thương Hiệu" class="form-control"></div>
+								<input type="hidden" id="brandId" name="brandId">
+								<div class="form-group"><label>Mã Thương Hiệu</label> <input type="text" id="brandCode"
+										placeholder="Brand Code" class="form-control" disabled></div>
+								<div class="form-group"><label>Tên Thương Hiệu</label> <input type="text" id="nameBrand"
+										name="nameBrand" placeholder="Tên Thương Hiệu" class="form-control"></div>
 							</div>
 							<div class="col-sm-6">
 								<div class="form-group">
@@ -44,19 +43,22 @@
 								</div>
 							</div>
 							<div>
-								<button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddBrand" type="button"><strong>Thêm</strong></button>
+								<button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddBrand"
+									type="button"><strong>Thêm</strong></button>
 							</div>
-                            <div>
-                                <button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnUpdateBrand" type="button"><strong>Cập nhật</strong></button>
-                            </div>
+							<div>
+								<button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnUpdateBrand" type="button"><strong>Cập
+										nhật</strong></button>
+							</div>
 						</form>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-    <th:block th:fragment="script">
+	<th:block th:fragment="script">
 		<script th:src="@{/js/admin/brand.js}"></script>
-    </th:block>
-  </th:block>
+	</th:block>
+</th:block>
+
 </html>

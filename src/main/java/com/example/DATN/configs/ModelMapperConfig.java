@@ -2,8 +2,10 @@ package com.example.DATN.configs;
 
 import java.util.stream.Collectors;
 
+import com.example.DATN.dtos.OrderDTO;
 import com.example.DATN.dtos.ProductDTO;
 import com.example.DATN.dtos.ProductVariantDTO;
+import com.example.DATN.models.Order;
 import com.example.DATN.models.Product;
 import com.example.DATN.models.ProductVariant;
 import com.example.DATN.models.ProductVariantImage;
@@ -84,6 +86,21 @@ public class ModelMapperConfig {
 			return dest;
 		});
 
+		TypeMap<Order, OrderDTO> orderTypeMap = mapper.createTypeMap(Order.class, OrderDTO.class);
+		orderTypeMap.setPostConverter(context -> {
+			Order source = context.getSource();
+			OrderDTO dest = context.getDestination();
+
+			if (source.getUser() != null) {
+				dest.setUserCode(source.getUser().getUserCode());
+			}
+
+			if (source.getVoucher() != null) {
+				dest.setVoucherCode(source.getVoucher().getCode());
+			}
+
+			return dest;
+		});
 		return mapper;
 	}
 }

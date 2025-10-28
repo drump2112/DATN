@@ -1,0 +1,111 @@
+<th:block th:fragment="table">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Mã ĐH</th>
+        <th>Mã KH</th>
+        <th>Tên Khách Hàng</th>
+        <th>SĐT</th>
+        <th>Ngày Tạo</th>
+        <th>Tổng Tiền</th>
+        <th>Kênh Bán Hàng</th>
+        <th>Hình Thức TT</th>
+        <th>Trạng Thái ĐH</th>
+        <th>Hành Động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <th:block th:each="item : ${orders}">
+        <tr>
+          <td th:text="${item.id}"></td>
+          <td th:text="${item.orderCode}"></td>
+          <td th:text="${item.userCode}"></td>
+          <td th:text="${item.customerName}"></td>
+          <td th:text="${item.shippingPhone}"></td>
+          <td th:text="${#temporals.format(item.orderDate,'dd/MM/YYYY')}"></td>
+          <td th:text="${#numbers.formatDecimal(item.finalAmount, 0, 0)} + ' VNĐ'">
+          <td th:switch="${item.orderType}">
+            <span th:case="ONLINE" class="badge badge-success">Online</span>
+            <span th:case="COUNTER" class="badge badge-warning">Tại Quầy</span>
+          </td>
+          <td th:switch="${item.paymentMethod}">
+            <span th:case="CASH" class="badge badge-primary">Tiền Mặt</span>
+            <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
+          </td>
+          <!-- <td th:text="${item.status}"></td> -->
+          <td>
+            <select th:data-id="${item.id}" class="form-control status-dropdown" th:onchange="updateOrderStatus(this)">
+              <option value="PENDING" th:selected="${item.status=='PENDING'}">PENDING</option>
+              <option value="PROCESSING" th:selected="${item.status=='PROCESSING'}">PROCESSING</option>
+              <option value="COMPLETED" th:selected="${item.status=='COMPLETED'}">COMPLETED</option>
+              <option value="CANCELLED" th:selected="${item.status=='CANCELLED'}">CANCELLED</option>
+            </select>
+          </td>
+          <style>
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+              text-align: center;
+            }
+
+            .select2-container--default .select2-results__option {
+              text-align: center;
+            }
+
+            .select2-container .select2-selection--single {
+              background-color: transparent !important;
+              border: none !important;
+              box-shadow: none !important;
+              height: auto !important;
+              padding: 0 !important;
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+              line-height: 1.5 !important;
+              color: #fff;
+              /* hoặc màu badge mong muốn */
+            }
+          </style>
+          <td>
+            <button class="btn btn-info dim" th:attr="data-id=${item.id}" onclick="toggleOrderItems(this)">
+              <i th:class="'fa fa-pencil-square'"></i>
+            </button>
+          </td>
+        </tr>
+        <tr th:attr="id='order-items-' + ${item.id}" style="display:none;">
+          <td colspan="11" class="p-0">
+            <div class="order-items-container text-center text-muted py-2">
+              <i>Đang tải...</i>
+            </div>
+          </td>
+        </tr>
+      </th:block>
+    </tbody>
+  </table>
+
+  <div class="dataTables_paginate paging_simple_numbers" id="orderPaginationContainer" th:if="${totalPages > 0}"
+    style="text-align: right">
+    <ul class="pagination" id="paginationContainer"
+      th:attr="data-total-pages=${totalPages}, data-current-page=${currentPage}">
+      <li class="paginate_button previous" th:classappend="${currentPage == 0} ? ' disabled'">
+        <a href="#" tabindex="0" th:onclick="'searchOrer(' + (${currentPage - 1}) + ')'">
+          Sau
+        </a>
+      </li>
+      <li class="paginate_button" th:each="i : ${#numbers.sequence(1, totalPages)}"
+        th:classappend="${i - 1 == currentPage} ? ' active'">
+        <a href="#" tabindex="0" th:text="${i}" th:onclick="'searchOrer(' + (${i} - 1) + ')'">
+        </a>
+      </li>
+      <li class="paginate_button next" th:if="${currentPage + 1 < totalPages}">
+        <a href="#" tabindex="0" th:onclick="'searchOrer(' + (${currentPage + 1}) + ')'">
+          Tiếp
+        </a>
+      </li>
+      <li class="paginate_button next disabled" th:unless="${currentPage + 1 < totalPages}">
+        <a href="#" tabindex="0" th:onclick="'searchOrer(' + (${totalPages - 1}) + ')'">
+          Tiếp
+        </a>
+      </li>
+    </ul>
+  </div>
+</th:block>

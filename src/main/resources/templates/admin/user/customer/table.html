@@ -5,7 +5,7 @@
         <th></th>
         <th>ID</th>
         <th>Mã Khách Hàng</th>
-		<th>Ảnh Đại Diện</th>
+        <th>Ảnh Đại Diện</th>
         <th>Tên Đăng Nhập</th>
         <th>Email</th>
         <th>Họ Tên</th>
@@ -27,18 +27,14 @@
           </div>
         </td>
         <td th:text="${item.id}"></td>
-            <td>
-                <img
-                        th:src="@{${item.avatar}}"
-                        alt="Avatar"
-                        style="
+        <td>
+          <img th:src="@{${item.avatar}}" alt="Avatar" style="
               width: 50px;
               height: 50px;
               object-fit: cover;
               border-radius: 50%;
-            "
-                />
-            </td>
+            " />
+        </td>
         <td th:text="${item.userCode}"></td>
         <td th:text="${item.userName}"></td>
         <td th:text="${item.email}"></td>
@@ -56,8 +52,19 @@
           <span th:case="false" class="badge badge-danger">Ngừng</span>
         </td>
         <td>
-          <button class="btn btn-info dim" type="button">
-            <i class="fa fa-eye"></i>
+          <button class="btn btn-info dim" type="button" th:attr="data-id=${item.id},
+           data-usercode=${item.userCode},
+           data-fullname=${item.fullName},
+           data-email=${item.email},
+           data-username=${item.userName},
+           data-phone=${item.phone},
+           data-address=${item.address},
+           data-role=${item.roleId},
+data-avatar=${item.avatar},
+data-gender=${item.gender},
+  data-dob=${item.dateOfBirth}
+" th:title="'Thông tin và cập nhật'" onclick="handleDetailClick(this)">
+            <i class="fa fa-pencil-square"></i>
           </button>
           <button th:id="'btn-status-' + ${item.id}"
             th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
@@ -65,7 +72,15 @@
             th:title="${item.isActive} ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'">
             <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
           </button>
-          <button class="btn btn-warning  dim" type="button"><i class="fa fa-user-circle-o"></i></button>
+          <button class="btn btn-warning dim" type="button" th:attr="data-id=${item.id},
+           data-usercode=${item.userCode},
+           data-fullname=${item.fullName},
+           data-email=${item.email},
+           data-username=${item.userName},
+           data-phone=${item.phone},
+           data-password=${item.password}" th:title="'Reset mật khẩu'" onclick="handleResetpMatKhau(this)">
+            <i class="fa fa-user-circle-o"></i>
+          </button>
         </td>
       </tr>
     </tbody>

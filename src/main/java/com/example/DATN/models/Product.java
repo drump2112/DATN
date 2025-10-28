@@ -59,7 +59,7 @@ public class Product {
 	@Column(name = "IsActive")
 	private Boolean isActive;
 
-		@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
 
 	private List<ProductVariant> variants;
 
@@ -69,6 +69,5 @@ public class Product {
 	@JsonIgnore
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<ProductVariantImage> productVariantImages;
-
 
 }

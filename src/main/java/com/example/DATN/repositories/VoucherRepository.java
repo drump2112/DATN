@@ -17,6 +17,7 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
 
         List<Voucher> findByCodeContainingIgnoreCase(String name);
 
+
         @Query("SELECT COALESCE(MAX(s.id), 0) FROM Voucher s")
         Long findMaxId();
 

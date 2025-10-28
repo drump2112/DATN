@@ -1,0 +1,78 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
+<th:block th:fragment="content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Danh Sách Sản Đơn Hàng</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-sm-4 m-b-xs">
+                            <div class="input-group">
+                                <input type="text" id="orderInput" name="orderInput" value=""
+                                    placeholder="Tìm kiếm(Mã đơn hàng,Tên KH,SĐT) " class="form-control">
+                                <span class="input-group-btn">
+                                    <button class="btn btn btn-primary" onclick="searchOrder(0)">
+                                        <i class="fa fa-search"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <Select id="orderTypeTilter" name="" class="form-control">
+                                    <option value="" selected>Kênh bán</option>
+                                    <option value="Online">Online</option>
+                                    <option value="Tại Quầy">Tại Quầy</option>
+                                </Select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <Select id="orderPaymentFilter" name="orderPaymentFilter" class="form-control">
+                                    <option value="" selected>Thanh toán</option>
+                                    <option value="Chuyển Khoản">Chuyển Khoản</option>
+                                    <option value="Tiền Mặt">Tiền Mặt</option>
+                                </Select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <div class="input-group date">
+                                    <input id="dateStartFilter" type="date" class="form-control" value="">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <div class="input-group date">
+                                    <input id="dateEndFilter" type="date" class="form-control" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="ibox">
+                                <div class="ibox-content">
+                                    <div class="table-responsive" id="productTableContainer">
+                                        <th:block th:replace="admin/order/tableonline :: table"></th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:fragment="script">
+        <script th:src="@{/js/admin/order.js}">
+
+
+        </script>
+    </th:block>
+</th:block>
+
+</html>

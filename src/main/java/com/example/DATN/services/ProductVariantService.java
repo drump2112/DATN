@@ -49,4 +49,6 @@ public interface ProductVariantService {
 	List<ProductVariantDTO> findAllActive();
 
 	public List<ProductVariantDTO> getVariantsByProductId(Integer productId);
+
+	public Page<ProductVariantDTO> getVariantsByProductId(int size, int pageable,int id);
 }

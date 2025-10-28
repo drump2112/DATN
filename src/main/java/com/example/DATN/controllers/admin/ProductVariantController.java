@@ -150,6 +150,23 @@ public class ProductVariantController {
     return "admin/productVariant/table :: table";
   }
 
+  @GetMapping("/productvariant-list/{id}")
+  public ResponseEntity<?> productVariant_List(@PathVariable Integer id,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "5") int size,
+      Model model) {
+    // getlist by id của produc
+    Page<ProductVariantDTO> productviVariantPage = productVariantService.getVariantsByProductId(size, page, id);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("listProducts", productviVariantPage.getContent());
+    response.put("currentPage", productviVariantPage.getNumber());
+    response.put("totalPages", productviVariantPage.getTotalPages());
+    response.put("totalItems", productviVariantPage.getTotalElements());
+    response.put("pageSize", productviVariantPage.getSize());
+    return ResponseEntity.ok(response);
+  }
+
   @GetMapping("/count")
   @ResponseBody
   public long countProductVariants() {

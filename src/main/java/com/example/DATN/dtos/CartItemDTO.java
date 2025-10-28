@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class CartItemDTO {
-    private Long variantId;
-    private Long colorId;
+    private Integer variantId;
+    private Integer colorId;
     private String colorName;
-    private Long sizeId;
+    private Integer sizeId;
     private String sizeName;
     private String name;
     private Double price;
