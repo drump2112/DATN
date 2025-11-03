@@ -1,0 +1,242 @@
+/* Modern Profile Styles */
+.modern-page-header {
+  text-align: center;
+  margin: 40px 0;
+  position: relative;
+}
+
+.header-decoration {
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #1ab394, transparent);
+  margin: 20px auto;
+  width: 200px;
+  border-radius: 2px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  font-size: 32px;
+}
+
+.page-title i {
+  font-size: 36px;
+  color: #1ab394;
+}
+
+.page-subtitle {
+  color: #6c757d;
+  font-size: 16px;
+  margin: 10px 0 0 0;
+  font-style: italic;
+}
+
+.profile-wrapper {
+  margin: 20px 0 60px 0;
+}
+
+.modern-profile-card .ibox-content {
+  padding: 30px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  border: 1px solid #e3f2fd;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.modern-card-title {
+  background: linear-gradient(135deg, #1ab394, #0eb493);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  padding: 18px 25px;
+  border: none;
+  margin: 0 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modern-card-title h5 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+}
+
+.modern-card-title i {
+  font-size: 20px;
+}
+
+.profile-card {
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #1ab394;
+  box-shadow: 0 4px 15px rgba(26, 179, 148, 0.3);
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(26, 179, 148, 0.4);
+}
+
+.profile-name {
+  margin-top: 20px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.profile-meta {
+  margin: 15px 0;
+}
+
+.kv {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 8px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.kv i {
+  width: 20px;
+  text-align: center;
+  color: #1ab394;
+  font-size: 16px;
+}
+
+.btn-modern {
+  background: linear-gradient(135deg, #1ab394, #0eb493);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 12px rgba(26, 179, 148, 0.3);
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px;
+}
+
+.btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(26, 179, 148, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.btn-outline-modern {
+  background: white;
+  border: 2px solid #1ab394;
+  color: #1ab394;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px;
+}
+
+.btn-outline-modern:hover {
+  background: #1ab394;
+  color: white;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.nav-tabs.profile-tabs {
+  border-bottom: 3px solid #e9ecef;
+  margin-bottom: 25px;
+}
+
+.nav-tabs.profile-tabs > li > a {
+  padding: 15px 25px;
+  font-weight: 600;
+  color: #6c757d;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+  margin-right: 5px;
+}
+
+.nav-tabs.profile-tabs > li.active > a,
+.nav-tabs.profile-tabs > li > a:hover {
+  background: linear-gradient(135deg, #1ab394, #0eb493);
+  color: white;
+  border: none;
+}
+
+.tab-pane {
+  padding: 25px 5px;
+  background: white;
+  border-radius: 0 8px 8px 8px;
+}
+
+.form-field {
+  margin-bottom: 18px;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 14px;
+  gap: 8px;
+}
+
+.required::after {
+  content: "*";
+  color: #dc3545;
+  margin-left: 4px;
+}
+
+.form-input-modern, .form-select-modern {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-input-modern:focus, .form-select-modern:focus {
+  border-color: #1ab394;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 179, 148, 0.1);
+}
+
+@media (max-width: 768px) {
+  .profile-avatar {
+    width: 110px;
+    height: 110px;
+  }
+  .page-title {
+    font-size: 28px;
+  }
+  .profile-name {
+    font-size: 20px;
+  }
+}

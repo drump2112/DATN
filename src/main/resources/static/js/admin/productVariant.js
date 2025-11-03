@@ -140,15 +140,12 @@ $(document).ready(function () {
       onFinished: async function (event, currentIndex) {
         var form = $(this);
         // Hiển thị SweetAlert xác nhận
-        const result = await Swal.fire({
-          title: "Xác nhận thêm sản phẩm",
-          text: "Bạn có chắc chắn muốn thêm sản phẩm này không?",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "Xác nhận",
-          cancelButtonText: "Hủy",
-          reverseButtons: true,
-        });
+        const result = await SwalUtils.confirm(
+          "Xác nhận thêm sản phẩm",
+          "Bạn có chắc chắn muốn thêm sản phẩm này không?",
+          "Xác nhận",
+          "Hủy"
+        );
 
         // Chỉ tiến hành submit nếu người dùng nhấn "Xác nhận"
         if (result.isConfirmed) {
@@ -478,7 +475,7 @@ $(document).ready(function () {
         $("#updateModal").modal("show");
       },
       error: function (err) {
-        Swal.fire("Lỗi", "Không thể tải dữ liệu sản phẩm", "error");
+        SwalUtils.error("Lỗi", "Không thể tải dữ liệu sản phẩm");
       },
     });
   };
@@ -505,14 +502,12 @@ $(document).ready(function () {
       console.log(key, value);
     }
 
-    Swal.fire({
-      title: "Xác nhận cập nhật",
-      text: "Bạn có chắc chắn muốn cập nhật giá và ảnh sản phẩm?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Xác nhận",
-      cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+      "Xác nhận cập nhật",
+      "Bạn có chắc chắn muốn cập nhật giá và ảnh sản phẩm?",
+      "Xác nhận",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
           url: `/admin/productVariant/${id}/update`,
@@ -521,7 +516,7 @@ $(document).ready(function () {
           processData: false,
           contentType: false,
           success: function (res) {
-            Swal.fire("Thành công", res.message, "success");
+            SwalUtils.toast("success", res.message);
             $("#updateModal").modal("hide");
             $("#updateProductForm")[0].reset();
             if (typeof avatarDropzoneUpdate !== "undefined") {
@@ -530,10 +525,9 @@ $(document).ready(function () {
             searchProductVariants(0);
           },
           error: function (xhr) {
-            Swal.fire(
-              "Lỗi",
-              xhr.responseJSON?.message || "Cập nhật thất bại",
-              "error",
+            SwalUtils.error(
+              "Lỗi!",
+              xhr.responseJSON?.message || "Cập nhật thất bại"
             );
           },
         });
@@ -724,14 +718,13 @@ $(document).ready(function () {
         contentType: false,
         data: formData,
         success: function (res) {
-          Swal.fire("Thành công", res.message, "success");
+          SwalUtils.toast("success", res.message);
           resolve(res); // Hoàn tất thành công
         },
         error: function (xhr) {
-          Swal.fire(
-            "Lỗi",
-            xhr.responseJSON?.message || "Thêm thất bại",
-            "error",
+          SwalUtils.error(
+            "Lỗi!",
+            xhr.responseJSON?.message || "Thêm thất bại"
           );
           reject(xhr); // Lỗi
         },
@@ -744,23 +737,18 @@ $(document).ready(function () {
       ? "Ngừng kinh doanh sản phẩm này?"
       : "Kích hoạt sản phẩm này?";
 
-    Swal.fire({
-      title: title,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xác nhận",
-      cancelButtonText: "Hủy",
-      customClass: {
-        popup: "swal-pop-zindex",
-      },
-      backdrop: `rgba(0, 0, 0, 0.4)`,
-    }).then((result) => {
+    SwalUtils.confirm(
+      title,
+      "",
+      "Xác nhận",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
           url: `/admin/productVariant/${productVariantId}/toggle-status`,
           type: "PUT",
           success: function (data) {
-            Swal.fire("Thành công", data.message, "success");
+            SwalUtils.toast("success", data.message);
             const currentPage =
               parseInt(
                 $("#paginationContainer .paginate_button.active a").text(),
@@ -768,10 +756,9 @@ $(document).ready(function () {
             searchProductVariants(currentPage);
           },
           error: function (xhr) {
-            Swal.fire(
-              "Lỗi",
-              xhr.responseJSON?.message || "Có lỗi xảy ra",
-              "error",
+            SwalUtils.error(
+              "Lỗi!",
+              xhr.responseJSON?.message || "Có lỗi xảy ra"
             );
           },
         });
@@ -815,13 +802,12 @@ $(document).ready(function () {
   $("#btnAddColor").click(function () {
     // if (!validateColorName()) return; //   check trước khi gửi
 
-    Swal.fire({
-      title: "Xác nhận thêm màu sắc?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Thêm",
-      cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+      "Xác nhận thêm màu sắc?",
+      "",
+      "Thêm",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
         const formData = new FormData();
         formData.append("id", $("#id").val().trim());
@@ -867,13 +853,12 @@ $(document).ready(function () {
   $("#btnAddSize").click(function () {
     // if (!validateSizeName()) return; //   check trước khi gửi
 
-    Swal.fire({
-      title: "Xác nhận thêm kích thước?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Thêm",
-      cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+      "Xác nhận thêm kích thước?",
+      "",
+      "Thêm",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
         const formData = new FormData();
 

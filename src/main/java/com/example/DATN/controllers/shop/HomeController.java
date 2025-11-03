@@ -66,11 +66,6 @@ public class HomeController {
 		return "shop/product-detail";
 	}
 
-	@GetMapping("/profile")
-	public String getProfile(Model model) {
-		model.addAttribute("showSlide", false);
 
-		return "shop/profile";
-	}
 
 }

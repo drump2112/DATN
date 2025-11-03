@@ -67,7 +67,7 @@ function validateColorName() {
     }
 
     if (errorMessage) {
-        Swal.fire("Lỗi!", errorMessage, "error");
+        SwalUtils.error("Lỗi!", errorMessage);
         return false;
     }
     return true;
@@ -78,13 +78,12 @@ function validateColorName() {
 $("#btnAddColor").click(function () {
     if (!validateColorName()) return; s//   check trước khi gửi
 
-    Swal.fire({
-        title: "Xác nhận thêm màu sắc?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Thêm",
-        cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+        "Xác nhận thêm màu sắc?",
+        "",
+        "Thêm",
+        "Hủy"
+    ).then((result) => {
         if (result.isConfirmed) {
             const formData = new FormData();
             formData.append("id", $("#id").val().trim());
@@ -100,7 +99,7 @@ $("#btnAddColor").click(function () {
                 contentType: false,
                 data: formData,
                 success: function (response) {
-                    Swal.fire("Thành công!", response.message, "success");
+                    SwalUtils.success("Thành công!", response.message);
                     $("#myModal").modal("hide");
                     $.get("/admin/color/counts").done(function (totalItems) {
                         const pageSize = 5;
@@ -112,10 +111,9 @@ $("#btnAddColor").click(function () {
                     });
                 },
                 error: function (xhr) {
-                    Swal.fire(
+                    SwalUtils.error(
                         "Lỗi!",
-                        xhr.responseJSON?.message || "Thêm thất bại",
-                        "error",
+                        xhr.responseJSON?.message || "Thêm thất bại"
                     );
                 },
             });
@@ -158,31 +156,32 @@ window.toggleStatus = function (userId, isActive) {
         : "Bạn có chắc muốn kích hoạt màu sắc này?";
 
 
-    Swal.fire({
-        title: title,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Xác nhận",
-        cancelButtonText: "Hủy",
-        customClass: {
-            popup: "swal-pop-zindex",
-        },
-        backdrop: `rgba(0, 0, 0, 0.4)`,
-    }).then((result) => {
+    SwalUtils.confirm(
+        title,
+        "",
+        "Xác nhận",
+        "Hủy",
+        {
+            icon: "warning",
+            customClass: {
+                popup: "swal-pop-zindex",
+            },
+            backdrop: `rgba(0, 0, 0, 0.4)`,
+        }
+    ).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
                 url: `/admin/color/${userId}/toggle-status`,
                 type: "PUT",
                 success: function (data) {
-                    Swal.fire("Thành công", data.message, "success");
+                    SwalUtils.success("Thành công", data.message);
                     const currentPage = getCurrentPage();
                     searchColor(currentPage);
                 },
                 error: function (xhr) {
-                    Swal.fire(
+                    SwalUtils.error(
                         "Lỗi",
-                        xhr.responseJSON?.message || "Có lỗi xảy ra",
-                        "error",
+                        xhr.responseJSON?.message || "Có lỗi xảy ra"
                     );
                 },
             });
@@ -193,13 +192,12 @@ window.toggleStatus = function (userId, isActive) {
 $("#btnUpdate").on("click", function () {
     if (!validateColorName(false)) return;
 
-    Swal.fire({
-        title: "Xác nhận cập nhật màu sắc?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Cập nhật",
-        cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+        "Xác nhận cập nhật màu sắc?",
+        "",
+        "Cập nhật",
+        "Hủy"
+    ).then((result) => {
         if (result.isConfirmed) {
             const formData = new FormData();
             formData.append("colorCode", $("#code").val().trim());
@@ -216,7 +214,7 @@ $("#btnUpdate").on("click", function () {
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    Swal.fire("Cập nhật thành công!", response.message, "success");
+                    SwalUtils.success("Cập nhật thành công!", response.message);
                     $("#myModal").modal("hide");
                     const currentPage = $("#colorForm").data("current-page") || 0;
                     searchColor(currentPage);

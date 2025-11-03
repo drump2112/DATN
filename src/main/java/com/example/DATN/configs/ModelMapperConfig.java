@@ -5,10 +5,12 @@ import java.util.stream.Collectors;
 import com.example.DATN.dtos.OrderDTO;
 import com.example.DATN.dtos.ProductDTO;
 import com.example.DATN.dtos.ProductVariantDTO;
+import com.example.DATN.dtos.UserDTO;
 import com.example.DATN.models.Order;
 import com.example.DATN.models.Product;
 import com.example.DATN.models.ProductVariant;
 import com.example.DATN.models.ProductVariantImage;
+import com.example.DATN.models.User;
 import com.example.DATN.repositories.ProductVariantImageRepository;
 
 import org.modelmapper.ModelMapper;
@@ -29,7 +31,8 @@ public class ModelMapperConfig {
 	public ModelMapper modelMapper() {
 		ModelMapper mapper = new ModelMapper();
 
-		// Mapping Product -> ProductDTO
+		mapper.getConfiguration().setAmbiguityIgnored(true);
+
 		TypeMap<Product, ProductDTO> typeMap = mapper.createTypeMap(Product.class, ProductDTO.class);
 		typeMap.setPostConverter(context -> {
 			Product source = context.getSource();
@@ -41,7 +44,6 @@ public class ModelMapperConfig {
 			return dest;
 		});
 
-		// Mapping ProductVariant -> ProductVariantDTO
 		TypeMap<ProductVariant, ProductVariantDTO> variantTypeMap = mapper.createTypeMap(ProductVariant.class,
 				ProductVariantDTO.class);
 		variantTypeMap.setPostConverter(context -> {
@@ -101,6 +103,25 @@ public class ModelMapperConfig {
 
 			return dest;
 		});
+
+		mapper.createTypeMap(User.class, UserDTO.class)
+				.setPostConverter(context -> {
+					User source = context.getSource();
+					UserDTO dest = context.getDestination();
+
+					if (source.getAddress() != null) {
+						dest.setAddress(source.getAddress().getSpecificAddress());
+						dest.setFullAddress(source.getAddress().getFullAddress());
+					}
+
+					if (source.getRole() != null) {
+						dest.setRoleId(source.getRole().getId());
+						dest.setRoleName(source.getRole().getNameRole());
+					}
+
+					return dest;
+				});
+
 		return mapper;
 	}
 }

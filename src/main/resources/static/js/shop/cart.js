@@ -1,5 +1,3 @@
-// cart.js
-// Bắt sự kiện change cho voucherType (dù modal có render sau)
 
 $(document).ready(function () {
   function loadCart() {
@@ -26,5 +24,5 @@ $(document).ready(function () {
   }
 
   window.Cart = { loadCart, saveCart, clearCart, getTotal };
-  window.cartData = loadCart(); // biến global
+  window.cartData = loadCart();
 });

@@ -193,6 +193,45 @@ $(document).ready(function () {
         }, 100);
     });
 
+    // ===== PAYMENT METHOD HANDLING =====
+    // Xử lý radio button trong payment methods
+    $('.payment-radio-label input[type="radio"]').change(function() {
+        // Remove active state from all payment options
+        $('.payment-option').removeClass('active');
+
+        // Add active state to selected payment option
+        if (this.checked) {
+            $(this).closest('.payment-option').addClass('active');
+
+            // Update button text based on payment method
+            const buttonText = $('#btnOrderText');
+            const buttonIcon = $('#btnConfirmOrder i');
+
+            switch($(this).val()) {
+                case 'CASH':
+                    buttonText.text('Đặt Hàng (COD)');
+                    buttonIcon.attr('class', 'fa fa-money');
+                    break;
+                case 'TRANSFER':
+                    buttonText.text('Đặt Hàng (Chuyển khoản)');
+                    buttonIcon.attr('class', 'fa fa-university');
+                    break;
+                case 'VNPAY':
+                    buttonText.text('Thanh toán VNPay');
+                    buttonIcon.attr('class', 'fa fa-credit-card');
+                    break;
+                default:
+                    buttonText.text('Đặt Hàng');
+                    buttonIcon.attr('class', 'fa fa-shopping-cart');
+            }
+        }
+
+        console.log('Payment method selected:', $(this).val());
+    });
+
+    // Trigger change event for initially checked radio
+    $('.payment-radio-label input[type="radio"]:checked').trigger('change');
+
     // ===== ĐẶT HÀNG =====
     // Khởi chạy
     loadCheckoutItems();
@@ -252,16 +291,47 @@ $(document).ready(function () {
     }
 
     $("#btnConfirmOrder").on("click", function () {
-        Swal.fire({
-            title: "Xác nhận đặt hàng?",
-            text: "Bạn có chắc chắn muốn đặt đơn hàng này không?",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonText: "Đặt hàng",
-            cancelButtonText: "Hủy",
-            reverseButtons: true
-        }).then((result) => {
+        const $btn = $(this);
+
+        // Kiểm tra phương thức thanh toán được chọn
+        const paymentMethod = $("input[name='paymentMethod']:checked").val();
+
+        if (!paymentMethod) {
+            SwalUtils.warning("Chưa chọn phương thức thanh toán", "Vui lòng chọn phương thức thanh toán");
+            return;
+        }
+
+        // Kiểm tra giỏ hàng có sản phẩm không
+        if (!cartItems || cartItems.length === 0) {
+            SwalUtils.warning("Giỏ hàng trống", "Vui lòng thêm sản phẩm vào giỏ hàng");
+            return;
+        }
+
+        // Customize confirm message based on payment method
+        let confirmTitle = "Xác nhận đặt hàng?";
+        let confirmText = "Bạn có chắc chắn muốn đặt đơn hàng này không?";
+
+        if (paymentMethod === 'VNPAY') {
+            confirmTitle = "Xác nhận thanh toán VNPay?";
+            confirmText = "Bạn sẽ được chuyển đến trang thanh toán VNPay để hoàn tất giao dịch.";
+        }
+
+        SwalUtils.confirm(
+            confirmTitle,
+            confirmText,
+            "Xác nhận",
+            "Hủy"
+        ).then((result) => {
             if (result.isConfirmed) {
+                // Show loading state
+                $btn.prop('disabled', true);
+                const originalText = $('#btnOrderText').text();
+                $('#btnOrderText').text('Đang xử lý...');
+                $btn.find('i').attr('class', 'fa fa-spinner fa-spin');
+
+                // Lấy thông tin địa chỉ giao hàng
+                let shippingAddressData = getShippingAddressData();
+
                 const orderData = {
                     userId: $("#userId").val(),
                     customerName: $("#userFullName").text().trim(),
@@ -271,7 +341,10 @@ $(document).ready(function () {
                     totalAmount: parseMoney($("#totalAmount").text()),
                     discountAmount: parseMoney($("#discountValue").text()),
                     finalAmount: parseMoney($("#totalPayment").text()),
-                    shippingAddress: $("#shippingAddress").val(),
+                    shippingAddress: shippingAddressData.fullAddress,
+                    shippingProvinceCode: shippingAddressData.provinceCode,
+                    shippingCommuneCode: shippingAddressData.communeCode,
+                    shippingSpecificAddress: shippingAddressData.specificAddress,
                     shippingPhone: $("#shippingPhone").text().trim(),
                     voucherId: appliedVoucher ? appliedVoucher.id : null,
                     items: typeof cartItems !== "undefined" ? cartItems : []
@@ -284,65 +357,82 @@ $(document).ready(function () {
                     data: JSON.stringify(orderData),
                     success: function (res) {
                         if (res.status === "WAITING_OTP") {
-                            // Hiển thị thông báo đã gửi OTP
-                            Swal.fire({
-                                title: "OTP đã được gửi!",
-                                text: "Vui lòng kiểm tra email của bạn để lấy mã OTP.",
-                                icon: "info",
-                                confirmButtonText: "OK"
-                            }).then(() => {
-                                // Lưu thông tin và mở modal OTP
+                            SwalUtils.info(
+                                "OTP đã được gửi!",
+                                "Vui lòng kiểm tra email của bạn để lấy mã OTP."
+                            ).then(() => {
                                 $("#otpOrderId").val(res.orderId);
                                 $("#otpEmail").val(res.email);
                                 $("#otpCode").val("");
                                 $("#otpModal").modal("show");
                             });
                         } else if (res.status === "SUCCESS") {
-                            // Đơn hàng thành công (thanh toán chuyển khoản)
-                            // Xóa giỏ hàng trước khi chuyển hướng
-                            $.post("/cart/clear").always(function() {
-                                // Cập nhật icon giỏ hàng
-                                if (typeof window.updateCartCount === 'function') {
-                                    window.updateCartCount();
-                                } else {
-                                    $("#cart-count").text(0);
-                                }
-                                Swal.fire({
-                                    title: "Thành công!",
-                                    text: "Đơn hàng của bạn đã được đặt thành công.",
-                                    icon: "success",
-                                    confirmButtonText: "OK"
-                                }).then(() => {
-                                    window.location.href = "/orders/thank-you?orderId=" + res.orderId;
-                                });
-                            });
+                            clearCartAndRedirect(res.orderId, "Đơn hàng của bạn đã được đặt thành công.");
+                        } else if (res.status === "VNPAY_REDIRECT") {
+                            const paymentUrl = res.paymentUrl || res.vnpayUrl;
+                            if (paymentUrl) {
+                                SwalUtils.info(
+                                    "Chuyển hướng thanh toán",
+                                    "Đang chuyển hướng đến VNPay..."
+                                );
+                                setTimeout(() => {
+                                    window.location.href = paymentUrl;
+                                }, 1500);
+                            } else {
+                                console.error("VNPay response:", res);
+                                SwalUtils.error("Lỗi!", "Không thể tạo liên kết thanh toán VNPay. Vui lòng thử lại.");
+                            }
                         }
                     },
                     error: function (err) {
-                        console.error(err);
-                        const errorMsg = err.responseJSON?.message || "Đặt hàng thất bại. Vui lòng thử lại.";
-                        Swal.fire({
-                            title: "Lỗi!",
-                            text: errorMsg,
-                            icon: "error",
-                            confirmButtonText: "Đóng"
-                        });
+                        console.error("Order creation error:", err);
+                        let errorMsg = "Đặt hàng thất bại. Vui lòng thử lại.";
+
+                        if (err.responseJSON && err.responseJSON.message) {
+                            errorMsg = err.responseJSON.message;
+
+                            // Nếu lỗi VNPay, suggest fallback
+                            if (errorMsg.includes("VNPay") || errorMsg.includes("thanh toán")) {
+                                errorMsg += "\n\nBạn có thể chọn phương thức 'Thanh toán khi nhận hàng' để hoàn tất đơn hàng.";
+                            }
+                        }
+
+                        SwalUtils.error("Lỗi!", errorMsg);
+                    },
+                    complete: function() {
+                        // Restore button state
+                        $btn.prop('disabled', false);
+                        $('#btnOrderText').text(originalText);
+                        // Restore icon based on payment method
+                        $('.payment-radio-label input[type="radio"]:checked').trigger('change');
                     }
                 });
             }
         });
-    }); $("#btnVerifyOtp").on("click", function () {
+    });
+
+    // Helper function to clear cart and redirect
+    function clearCartAndRedirect(orderId, message) {
+        $.post("/cart/clear").always(function() {
+            // Cập nhật icon giỏ hàng
+            if (typeof window.updateCartCount === 'function') {
+                window.updateCartCount();
+            } else {
+                $("#cart-count").text(0);
+            }
+            SwalUtils.success("Thành công!", message).then(() => {
+                window.location.href = "/orders/thank-you?orderId=" + orderId;
+            });
+        });
+    }
+
+    $("#btnVerifyOtp").on("click", function () {
         const orderId = $("#otpOrderId").val();
         const email = $("#otpEmail").val();
         const otp = $("#otpCode").val();
 
         if (!otp || otp.length !== 6) {
-            Swal.fire({
-                title: "Thông báo",
-                text: "Vui lòng nhập mã OTP gồm 6 ký tự.",
-                icon: "warning",
-                confirmButtonText: "Đóng"
-            });
+            SwalUtils.warning("Thông báo", "Vui lòng nhập mã OTP gồm 6 ký tự.");
             return;
         }
 
@@ -354,39 +444,18 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.success) {
                     $("#otpModal").modal("hide");
-                    $.post("/cart/clear").always(function() {
-                        if (typeof window.updateCartCount === 'function') {
-                            window.updateCartCount();
-                        } else {
-                            $("#cart-count").text(0);
-                        }
-                        Swal.fire({
-                            title: "Thành công!",
-                            text: "Đơn hàng của bạn đã được xác nhận thành công.",
-                            icon: "success",
-                            confirmButtonText: "OK"
-                        }).then(() => {
-                            window.location.href = "/orders/thank-you?orderId=" + orderId;
-                        });
-                    });
+                    clearCartAndRedirect(orderId, "Đơn hàng của bạn đã được xác nhận thành công.");
                 } else {
-                    Swal.fire({
-                        title: "Sai OTP",
-                        text: res.message || "Mã OTP không hợp lệ hoặc đã hết hạn.",
-                        icon: "error",
-                        confirmButtonText: "Đóng"
-                    });
+                    SwalUtils.error(
+                        "Sai OTP",
+                        res.message || "Mã OTP không hợp lệ hoặc đã hết hạn."
+                    );
                 }
             },
             error: function (err) {
                 console.error(err);
                 const errorMsg = err.responseJSON?.message || "Không thể xác nhận OTP. Vui lòng thử lại.";
-                Swal.fire({
-                    title: "Lỗi!",
-                    text: errorMsg,
-                    icon: "error",
-                    confirmButtonText: "Đóng"
-                });
+                SwalUtils.error("Lỗi!", errorMsg);
             }
         });
     });
@@ -394,4 +463,245 @@ $(document).ready(function () {
 
     window.enableTextareaEdit = enableTextareaEdit;
     window.enableEdit = enableEdit;
+
+    // === Xử lý địa chỉ giao hàng ===
+    loadShippingProvinces();
+
+    // Sự kiện thay đổi loại địa chỉ với animation
+    $('input[name="addressType"]').change(function() {
+        if ($(this).val() === 'new') {
+            $('#newAddressFields').slideDown(400);
+            $('#shippingProvince').prop('required', true);
+            $('#shippingCommune').prop('required', true);
+            $('#shippingSpecificAddress').prop('required', true);
+        } else {
+            $('#newAddressFields').slideUp(400);
+            $('#shippingFeePreview').fadeOut(300);
+            $('#shippingProvince').prop('required', false);
+            $('#shippingCommune').prop('required', false);
+            $('#shippingSpecificAddress').prop('required', false);
+            // Reset giá phí ship về mặc định khi dùng địa chỉ hiện tại
+            calculateShippingFee(null, null);
+        }
+    });    // Sự kiện thay đổi tỉnh để load phường/xã và tính phí ship
+    $('#shippingProvince').change(function() {
+        const provinceCode = $(this).val();
+        const communeSelect = $('#shippingCommune');
+
+        communeSelect.empty().append('<option value="">-- Chọn Phường/Xã --</option>');
+
+        if (provinceCode) {
+            loadShippingCommunes(provinceCode);
+            communeSelect.prop('disabled', false);
+        } else {
+            communeSelect.prop('disabled', true);
+        }
+    });
+
+    // Sự kiện thay đổi phường/xã để tính phí ship
+    $('#shippingCommune').change(function() {
+        const provinceCode = $('#shippingProvince').val();
+        const communeCode = $(this).val();
+
+        if (provinceCode && communeCode) {
+            calculateShippingFee(provinceCode, communeCode);
+        }
+    });
 });
+
+// === Các function xử lý địa chỉ ===
+function toggleAddressEdit() {
+    const editForm = $('#addressEditForm');
+    const currentView = $('#currentAddressView');
+
+    if (editForm.is(':visible')) {
+        editForm.slideUp(400, function() {
+            currentView.fadeIn(300);
+        });
+    } else {
+        currentView.fadeOut(300, function() {
+            editForm.slideDown(400);
+        });
+        // Reset form
+        $('input[name="addressType"][value="current"]').prop('checked', true);
+        $('#newAddressFields').hide();
+        $('#shippingFeePreview').hide();
+        $('#shippingAddressForm')[0].reset();
+    }
+}function cancelAddressEdit() {
+    $('#addressEditForm').slideUp(400, function() {
+        $('#currentAddressView').fadeIn(300);
+    });
+}
+
+function loadShippingProvinces() {
+    $.get('/api/provinces')
+        .done(function(provinces) {
+            const select = $('#shippingProvince');
+            select.empty().append('<option value="">-- Chọn Tỉnh/Thành phố --</option>');
+
+            provinces.forEach(province => {
+                select.append(`<option value="${province.code}">${province.name}</option>`);
+            });
+        })
+        .fail(function(xhr) {
+            console.error('Error loading provinces:', xhr);
+            SwalUtils.error('Lỗi!', 'Không thể tải danh sách tỉnh/thành phố.');
+        });
+}
+
+function loadShippingCommunes(provinceCode) {
+    $.get(`/api/communes?provinceCode=${provinceCode}`)
+        .done(function(communes) {
+            const select = $('#shippingCommune');
+            select.empty().append('<option value="">-- Chọn Phường/Xã --</option>');
+
+            if (communes && communes.length > 0) {
+                communes.forEach(commune => {
+                    select.append(`<option value="${commune.code}">${commune.name}</option>`);
+                });
+            }
+        })
+        .fail(function(xhr) {
+            console.error('Error loading communes:', xhr);
+            const select = $('#shippingCommune');
+            select.empty().append('<option value="">Lỗi tải dữ liệu</option>');
+        });
+}
+
+function calculateShippingFee(provinceCode, communeCode) {
+    let shippingFee = 30000; // Phí mặc định
+
+    if (provinceCode && communeCode) {
+        // Lấy thông tin đơn hàng để tính phí chính xác
+        const totalValue = parseFloat($('#totalAmount').text().replace(/[^\d]/g, '')) || 0;
+        const estimatedWeight = calculateEstimatedWeight(); // Ước tính trọng lượng từ giỏ hàng
+
+        // Gọi API GHN tính phí ship
+        const params = new URLSearchParams({
+            provinceCode: provinceCode,
+            communeCode: communeCode,
+            weight: estimatedWeight,
+            totalValue: totalValue
+        });
+
+        $.get(`/api/shipping-fee?${params.toString()}`)
+            .done(function(response) {
+                shippingFee = response.fee || 30000;
+                console.log(`GHN shipping fee: ${shippingFee} VNĐ for ${provinceCode}-${communeCode}`);
+                updateShippingFee(shippingFee);
+                updateShippingFeePreview(shippingFee);
+            })
+            .fail(function(xhr) {
+                console.warn('Error calculating shipping fee with GHN, using fallback:', xhr);
+                updateShippingFee(30000);
+                updateShippingFeePreview(30000);
+            });
+    } else {
+        // Sử dụng phí mặc định
+        updateShippingFee(30000);
+    }
+}
+
+// Ước tính trọng lượng dựa trên giỏ hàng
+function calculateEstimatedWeight() {
+    if (typeof cartItems !== 'undefined' && cartItems.length > 0) {
+        // Giả sử mỗi sản phẩm khoảng 200-500g tùy loại
+        const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+        return Math.max(500, totalQuantity * 300); // Tối thiểu 500g, mỗi món 300g
+    }
+    return 500; // Mặc định 500g
+}function updateShippingFee(fee) {
+    $('#shippingValue').text(fee.toLocaleString() + ' VNĐ');
+
+    // Tính lại tổng thanh toán
+    const subtotal = parseFloat($('#totalAmount').text().replace(/[^\d]/g, '')) || 0;
+    const discount = parseFloat($('#discountValue').text().replace(/[^\d]/g, '')) || 0;
+    const total = subtotal + fee - discount;
+
+    $('#totalPayment').text(total.toLocaleString() + ' VNĐ');
+}
+
+function getShippingAddressData() {
+    const addressType = $('input[name="addressType"]:checked').val();
+
+    if (addressType === 'new') {
+        // Sử dụng địa chỉ mới
+        const provinceCode = $('#shippingProvince').val();
+        const communeCode = $('#shippingCommune').val();
+        const specificAddress = $('#shippingSpecificAddress').val().trim();
+        const provinceName = $('#shippingProvince option:selected').text();
+        const communeName = $('#shippingCommune option:selected').text();
+        const fullAddress = `${specificAddress}, ${communeName}, ${provinceName}`;
+
+        return {
+            fullAddress: fullAddress,
+            provinceCode: provinceCode,
+            communeCode: communeCode,
+            specificAddress: specificAddress
+        };
+    } else {
+        // Sử dụng địa chỉ hiện tại
+        return {
+            fullAddress: $('#currentFullAddress').text(),
+            provinceCode: null,
+            communeCode: null,
+            specificAddress: null
+        };
+    }
+}
+
+function saveShippingAddress() {
+    const addressType = $('input[name="addressType"]:checked').val();
+
+    if (addressType === 'new') {
+        // Validate form cho địa chỉ mới
+        const provinceCode = $('#shippingProvince').val();
+        const communeCode = $('#shippingCommune').val();
+        const specificAddress = $('#shippingSpecificAddress').val().trim();
+
+        if (!provinceCode) {
+            SwalUtils.error('Lỗi!', 'Vui lòng chọn Tỉnh/Thành phố');
+            return;
+        }
+
+        if (!communeCode) {
+            SwalUtils.error('Lỗi!', 'Vui lòng chọn Phường/Xã');
+            return;
+        }
+
+        if (!specificAddress) {
+            SwalUtils.error('Lỗi!', 'Vui lòng nhập địa chỉ cụ thể');
+            return;
+        }
+
+        // Tạo địa chỉ đầy đủ để hiển thị
+        const provinceName = $('#shippingProvince option:selected').text();
+        const communeName = $('#shippingCommune option:selected').text();
+        const fullAddress = `${specificAddress}, ${communeName}, ${provinceName}`;
+
+        // Cập nhật hiển thị địa chỉ giao hàng
+        $('#currentFullAddress').text(fullAddress);
+
+        // Tính phí ship cho địa chỉ mới
+        calculateShippingFee(provinceCode, communeCode);
+
+        SwalUtils.success('Thành công!', 'Đã cập nhật địa chỉ giao hàng');
+    }
+
+    // Ẩn form chỉnh sửa
+    cancelAddressEdit();
+}
+
+// Cập nhật preview phí ship trong form
+function updateShippingFeePreview(fee) {
+    const preview = $('#shippingFeePreview');
+    const feeAmount = $('#previewFeeAmount');
+
+    if (fee && fee > 0) {
+        feeAmount.text(fee.toLocaleString() + ' VNĐ');
+        preview.fadeIn(300);
+    } else {
+        preview.fadeOut(300);
+    }
+}

@@ -55,6 +55,13 @@ public class Order {
     @Column(name = "PaymentMethod")
     private String paymentMethod;
 
+    @Column(name = "PaymentStatus")
+    @Builder.Default
+    private String paymentStatus = "PENDING";
+
+    @Column(name = "TransactionNo")
+    private String transactionNo;
+
     @Column(name = "CustomerName")
     private String customerName;
 
@@ -71,5 +78,6 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
+    @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
 }

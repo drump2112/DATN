@@ -13,10 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.DATN.configs.email.EmailService;
-import com.example.DATN.dtos.CategoryDTO;
 import com.example.DATN.dtos.CustomerDTO;
 import com.example.DATN.exception.BusinessException;
-import com.example.DATN.models.Category;
+import com.example.DATN.models.Address;
 import com.example.DATN.models.Role;
 import com.example.DATN.models.User;
 import com.example.DATN.models.VerificationToken;
@@ -24,7 +23,7 @@ import com.example.DATN.repositories.RoleRepository;
 import com.example.DATN.repositories.UserRepository;
 import com.example.DATN.repositories.VerificationTokenRepository;
 import com.example.DATN.request.CustomerRequest;
-import com.example.DATN.request.EmployeeRequest;
+import com.example.DATN.services.AddressService;
 import com.example.DATN.services.CustomerService;
 import com.example.DATN.services.ImageService;
 
@@ -48,6 +47,9 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Autowired
 	private RoleRepository roleRepository;
+
+	@Autowired
+	private AddressService addressService;
 
 	@Override
 	public boolean addCustomer(CustomerRequest customerRequest) {
@@ -89,7 +91,7 @@ public class CustomerServiceImpl implements CustomerService {
 				.fullName(req.getFullName())
 				.email(req.getEmail())
 				.phone(req.getPhone())
-				.address(req.getAddress())
+				.address(createAddressFromRequest(req))
 				.gender(req.getGender())
 				.dateOfBirth(req.getDateOfBirth())
 				.createAt(new Date())
@@ -112,6 +114,19 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		return userBuilder.build();
+	}
+
+	private Address createAddressFromRequest(CustomerRequest req) {
+		if (req.getProvinceCode() == null || req.getCommuneCode() == null) {
+			return null;
+		}
+
+		String specificAddress = req.getSpecificAddress() != null ? req.getSpecificAddress() : "";
+
+		return addressService.createAddress(
+				specificAddress,
+				req.getCommuneCode(),
+				req.getProvinceCode());
 	}
 
 	private String generateUserCode(Integer roleId) {
@@ -161,18 +176,16 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		return customers.stream()
-				.map((User customer) -> CustomerDTO.builder()
+				.map(customer -> CustomerDTO.builder()
 						.id(customer.getId())
 						.fullName(customer.getFullName())
 						.email(customer.getEmail())
 						.phone(customer.getPhone())
-						.address(customer.getAddress())
+						.address(customer.getAddress() != null ? customer.getAddress().getFullAddress() : "")
 						.gender(customer.isGender())
 						.dateOfBirth(customer.getDateOfBirth())
 						.build())
 				.collect(Collectors.toList());
 	}
-
-
 
 }

@@ -6,10 +6,15 @@
   <section class="container features" th:fragment="content">
     <div class="row">
       <div class="col-lg-12">
-        <div class="navy-line"></div>
-        <h1 class="text-center">
-          Chi Tiết Sản Phẩm<br />
-        </h1>
+        <!-- Modern Page Header -->
+        <div class="modern-page-header">
+          <h1 class="page-title">
+            <i class="fa fa-info-circle text-info"></i>
+            CHI TIẾT SẢN PHẨM
+          </h1>
+          <p class="page-subtitle">Thông tin chi tiết và lựa chọn sản phẩm</p>
+          <div class="header-decoration"></div>
+        </div>
         <div class="ibox product-detail">
           <div class="ibox-content">
             <div class="row">
@@ -46,16 +51,18 @@
                   <dd id="variant-quantity"></dd>
                 </dl>
                 <hr />
-                <div>
-                  <div class="btn-group">
+                <div class="product-actions">
+                  <div class="action-buttons">
                     <button
                       id="add-to-cart"
-                      class="btn btn-primary btn-sm details"
+                      class="btn-add-to-cart"
                     >
-                      <i class="fa fa-cart-plus"></i> Thêm Giỏ Hàng
+                      <i class="fa fa-cart-plus"></i>
+                      Thêm Vào Giỏ Hàng
                     </button>
-                    <button class="btn btn-white btn-sm">
-                      <i class="fa fa-star"></i> Add to wishlist
+                    <button class="btn-wishlist">
+                      <i class="fa fa-heart"></i>
+                      Yêu Thích
                     </button>
                   </div>
                 </div>
@@ -82,6 +89,346 @@
         </div>
       </div>
     </div>
+
+    <!-- Modern Product Detail Styling -->
+    <style>
+      /* ===== MODERN PAGE HEADER ===== */
+      .modern-page-header {
+        text-align: center;
+        margin: 40px 0;
+        position: relative;
+      }
+
+      .header-decoration {
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #1ab394, transparent);
+        margin: 20px auto;
+        width: 200px;
+        border-radius: 2px;
+      }
+
+      .page-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        font-size: 32px;
+      }
+
+      .page-title i {
+        font-size: 36px;
+      }
+
+      .page-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+        margin: 10px 0 0 0;
+        font-style: italic;
+      }
+
+      /* ===== MODERN PRODUCT CARD ===== */
+      .product-detail .ibox {
+        border-radius: 8px;
+        box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+        border: 1px solid #e8f4f8;
+        overflow: hidden;
+        margin-bottom: 25px;
+        background: white;
+      }
+
+      .product-detail .ibox-content {
+        padding: 35px;
+        background: white;
+      }
+
+      /* ===== PRODUCT INFO STYLING ===== */
+      .product-main-price {
+        color: #1ab394 !important;
+        font-weight: 700;
+        font-size: 32px;
+        margin: 25px 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .product-main-price small {
+        color: #6c757d !important;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      /* ===== COLOR & SIZE SELECTION ===== */
+      #color h4, #size h4 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 12px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #color h4:before {
+        content: "🎨";
+        font-size: 18px;
+      }
+
+      #size h4:before {
+        content: "📏";
+        font-size: 18px;
+      }
+
+      .color input[type="radio"],
+      .size input[type="radio"] {
+        display: none;
+      }
+
+      .color label,
+      .size label {
+        display: inline-block;
+        padding: 8px 14px;
+        margin: 4px 6px 4px 0;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        color: #2c3e50;
+        min-width: 45px;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .color label:hover,
+      .size label:hover {
+        border-color: #1ab394;
+        background: #f0fff4;
+        transform: translateY(-1px);
+      }
+
+      .color input[type="radio"]:checked + label,
+      .size input[type="radio"]:checked + label {
+        background: #1ab394;
+        color: white;
+        border-color: #1ab394;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(26, 179, 148, 0.25);
+      }
+
+      /* ===== PRODUCT ACTIONS ===== */
+      .product-actions {
+        margin-top: 30px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .btn-add-to-cart {
+        background: linear-gradient(135deg, #1ab394, #17a085);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 12px rgba(26, 179, 148, 0.25);
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: center;
+      }
+
+      .btn-add-to-cart:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 18px rgba(26, 179, 148, 0.35);
+        background: linear-gradient(135deg, #17a085, #138496);
+      }
+
+      .btn-wishlist {
+        background: white;
+        color: #e74c3c;
+        border: 2px solid #e74c3c;
+        padding: 12px 18px;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 110px;
+        justify-content: center;
+        font-size: 15px;
+      }
+
+      .btn-wishlist:hover {
+        background: #e74c3c;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 12px rgba(231, 76, 60, 0.25);
+      }
+
+      /* ===== QUANTITY INFO ===== */
+      dl.small {
+        background: linear-gradient(135deg, rgba(26, 179, 148, 0.05), rgba(26, 179, 148, 0.02));
+        padding: 18px 25px;
+        border-radius: 12px;
+        border-left: 4px solid #1ab394;
+        margin: 25px 0;
+        box-shadow: 0 2px 8px rgba(26, 179, 148, 0.08);
+      }
+
+      dl.small dt {
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      dl.small dt:before {
+        content: "📦";
+        font-size: 16px;
+      }
+
+      dl.small dd {
+        color: #1ab394;
+        font-weight: 700;
+        font-size: 18px;
+        margin: 0;
+      }
+
+      /* ===== DESCRIPTION SECTION ===== */
+      .ibox.float-e-margins {
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e3f2fd;
+        overflow: hidden;
+      }
+
+      .ibox-title {
+        background: linear-gradient(135deg, #e6e7e8, #e5eaef);
+        color: white;
+        padding: 18px 25px;
+        border: none;
+        margin: 0;
+      }
+
+      .ibox-title h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 18px;
+        color: rgb(44, 37, 37);
+      }
+
+      .ibox-content {
+        padding: 25px;
+        background: white;
+      }
+
+      .product-images {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      }
+
+      .product-images .slick-dots {
+        bottom: 15px;
+      }
+
+      .product-images .slick-dots li button:before {
+        color: #1ab394;
+        font-size: 12px;
+      }
+
+      .product-images .slick-dots li.slick-active button:before {
+        color: #1ab394;
+      }
+
+      /* ===== RESPONSIVE DESIGN ===== */
+      @media (max-width: 768px) {
+        .page-title {
+          font-size: 24px;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .page-title i {
+          font-size: 28px;
+        }
+
+        .page-subtitle {
+          font-size: 14px;
+        }
+
+        .header-decoration {
+          width: 150px;
+        }
+
+        .product-detail .ibox-content {
+          padding: 20px;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .btn-add-to-cart,
+        .btn-wishlist {
+          width: 100%;
+          flex: none;
+        }
+
+        .color label,
+        .size label {
+          padding: 8px 12px;
+          margin: 3px 5px 3px 0;
+          min-width: 40px;
+        }
+
+        .product-main-price {
+          font-size: 24px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .page-title {
+          font-size: 20px;
+        }
+
+        .page-subtitle {
+          font-size: 13px;
+        }
+
+        .modern-page-header {
+          margin: 20px 0;
+        }
+
+        .product-main-price {
+          font-size: 20px;
+        }
+
+        .btn-add-to-cart,
+        .btn-wishlist {
+          padding: 12px 20px;
+          font-size: 14px;
+        }
+      }
+    </style>
   </section>
   <th:block th:fragment="script">
     <script th:src="@{/js/shop/cart.js}"></script>

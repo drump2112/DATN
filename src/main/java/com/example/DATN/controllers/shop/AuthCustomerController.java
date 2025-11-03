@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 
-import com.example.DATN.request.EmployeeRequest;
-import com.example.DATN.services.UserService;
+import com.example.DATN.request.CustomerRequest;
+import com.example.DATN.services.CustomerService;
 
 @Controller
 @RequestMapping("/customer/auth")
 public class AuthCustomerController {
 
 	@Autowired
-	private UserService userService;
+	private CustomerService customerService;
 
 	@GetMapping("/")
 	public String getPageLogin(
@@ -77,9 +77,13 @@ public class AuthCustomerController {
 		return "shop/auth/register";
 	}
 
-	@PostMapping("/add")
-	public ResponseEntity<?> addCustomer(@ModelAttribute EmployeeRequest employee) {
-		userService.addEmployee(employee);
-		return ResponseEntity.ok(Map.of("message", "Thêm thành công"));
+	@PostMapping("/register")
+	public ResponseEntity<?> registerCustomer(@ModelAttribute CustomerRequest customerRequest) {
+		try {
+			customerService.addCustomer(customerRequest);
+			return ResponseEntity.ok(Map.of("message", "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản."));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+		}
 	}
 }

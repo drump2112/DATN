@@ -65,7 +65,7 @@ function validateCategoryName() {
   }
 
   if (errorMessage) {
-    Swal.fire("Lỗi!", errorMessage, "error");
+    SwalUtils.error("Lỗi!", errorMessage);
     return false;
   }
   return true;
@@ -75,13 +75,12 @@ function validateCategoryName() {
 $("#btnAddCategory").click(function () {
   if (!validateCategoryName()) return; //   check trước khi gửi
 
-  Swal.fire({
-    title: "Xác nhận thêm Danh mục?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Thêm",
-    cancelButtonText: "Hủy",
-  }).then((result) => {
+  SwalUtils.confirm(
+    "Xác nhận thêm Danh mục?",
+    "",
+    "Thêm",
+    "Hủy"
+  ).then((result) => {
     if (result.isConfirmed) {
       const formData = new FormData();
       formData.append("id", $("#id").val().trim());
@@ -96,16 +95,15 @@ $("#btnAddCategory").click(function () {
         contentType: false,
         data: formData,
         success: function (response) {
-          Swal.fire("Thành công!", response.message, "success");
+          SwalUtils.success("Thành công!", response.message);
           $("#myModal").modal("hide");
           const currentPage = getCurrentPage();
           searchCategory(currentPage);
         },
         error: function (xhr) {
-          Swal.fire(
+          SwalUtils.error(
             "Lỗi!",
-            xhr.responseJSON?.message || "Thêm thất bại",
-            "error",
+            xhr.responseJSON?.message || "Thêm thất bại"
           );
         },
       });
@@ -146,31 +144,32 @@ window.toggleStatus = function (userId, isActive) {
     ? "Bạn có chắc muốn vô hiệu hóa Danh mục này?"
     : "Bạn có chắc muốn kích hoạt Danh mục này?";
 
-  Swal.fire({
-    title: title,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Xác nhận",
-    cancelButtonText: "Hủy",
-    customClass: {
-      popup: "swal-pop-zindex",
-    },
-    backdrop: `rgba(0, 0, 0, 0.4)`,
-  }).then((result) => {
+  SwalUtils.confirm(
+    title,
+    "",
+    "Xác nhận",
+    "Hủy",
+    {
+      icon: "warning",
+      customClass: {
+        popup: "swal-pop-zindex",
+      },
+      backdrop: `rgba(0, 0, 0, 0.4)`,
+    }
+  ).then((result) => {
     if (result.isConfirmed) {
       $.ajax({
         url: `/admin/categories/${userId}/toggle-status`,
         type: "PUT",
         success: function (data) {
-          Swal.fire("Thành công", data.message, "success");
+          SwalUtils.success("Thành công", data.message);
           const currentPage = getCurrentPage();
           searchCategory(currentPage);
         },
         error: function (xhr) {
-          Swal.fire(
+          SwalUtils.error(
             "Lỗi",
-            xhr.responseJSON?.message || "Có lỗi xảy ra",
-            "error",
+            xhr.responseJSON?.message || "Có lỗi xảy ra"
           );
         },
       });
@@ -183,13 +182,12 @@ window.toggleStatus = function (userId, isActive) {
 $("#btnUpdate").on("click", function () {
   if (!validateCategoryName(false)) return;
 
-  Swal.fire({
-    title: "Xác nhận cập nhật danh mục?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Cập nhật",
-    cancelButtonText: "Hủy",
-  }).then((result) => {
+  SwalUtils.confirm(
+    "Xác nhận cập nhật danh mục?",
+    "",
+    "Cập nhật",
+    "Hủy"
+  ).then((result) => {
     if (result.isConfirmed) {
       const formData = new FormData();
       formData.append("categoryCode", $("#code").val().trim());
@@ -203,7 +201,7 @@ $("#btnUpdate").on("click", function () {
         processData: false,
         contentType: false,
         success: function (response) {
-          Swal.fire("Cập nhật thành công!", response.message, "success");
+          SwalUtils.success("Cập nhật thành công!", response.message);
           $("#myModal").modal("hide");
           const currentPage = $("#categoryForm").data("current-page") || 0;
           searchSize(currentPage);

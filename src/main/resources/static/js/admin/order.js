@@ -118,18 +118,12 @@ $(document).ready(function () {
 
     if (!orderId || !newStatus) return;
 
-    Swal.fire({
-      title: 'Xác nhận thay đổi trạng thái?',
-      text: 'Bạn có chắc muốn thay đổi trạng thái đơn hàng này?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Xác nhận',
-      cancelButtonText: 'Hủy',
-      customClass: {
-        popup: 'swal-pop-zindex',
-      },
-      backdrop: `rgba(0,0,0,0.4)`,
-    }).then((result) => {
+    SwalUtils.showWarningConfirmDialog(
+      'Xác nhận thay đổi trạng thái?',
+      'Xác nhận',
+      'Hủy',
+      'Bạn có chắc muốn thay đổi trạng thái đơn hàng này?'
+    ).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
           url: '/admin/order/' + orderId + '/status',
@@ -138,20 +132,13 @@ $(document).ready(function () {
             status: newStatus
           },
           success: function(response) {
-            Swal.fire({
-              icon: 'success',
-              title: 'Thành công',
-              text: response.message,
-              timer: 1500,
-              showConfirmButton: false
-            });
+            SwalUtils.showSuccessToast(response.message);
           },
           error: function(xhr) {
-            Swal.fire({
-              icon: 'error',
-              title: 'Lỗi',
-              text: xhr.responseJSON?.message || 'Có lỗi xảy ra khi cập nhật trạng thái'
-            });
+            SwalUtils.showErrorAlert(
+              'Lỗi!',
+              xhr.responseJSON?.message || 'Có lỗi xảy ra khi cập nhật trạng thái'
+            );
             // Reset lại giá trị cũ nếu lỗi
             location.reload();
           }

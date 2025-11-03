@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 import com.example.DATN.configs.email.EmailService;
+import com.example.DATN.dtos.ShippingInfoDTO;
 import com.example.DATN.dtos.UserDTO;
 import com.example.DATN.exception.BusinessException;
+import com.example.DATN.models.Address;
 import com.example.DATN.models.Role;
 import com.example.DATN.models.User;
 import com.example.DATN.models.VerificationToken;
@@ -16,6 +18,7 @@ import com.example.DATN.repositories.RoleRepository;
 import com.example.DATN.repositories.UserRepository;
 import com.example.DATN.repositories.VerificationTokenRepository;
 import com.example.DATN.request.EmployeeRequest;
+import com.example.DATN.services.AddressService;
 import com.example.DATN.services.ImageService;
 import com.example.DATN.services.UserService;
 import com.example.DATN.specifications.UserSpecification;
@@ -56,6 +59,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private ImageService imageService;
+
+	@Autowired
+	private AddressService addressService;
 
 	@Override
 	public Page<UserDTO> getAllCustomer(int page, int size) {
@@ -160,7 +166,7 @@ public class UserServiceImpl implements UserService {
 				.gender(employeeRequest.getGender())
 				.dateOfBirth(employeeRequest.getDateOfBirth())
 				.role(newRole)
-				.address(employeeRequest.getAddress())
+				.address(createAddressFromRequest(employeeRequest))
 				.avatar(avatarPath)
 				.build();
 
@@ -170,8 +176,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Page<UserDTO> searchUsers(String keyword, Boolean isActive, Pageable pageable) {
-		Specification<User> spec = Specification
-				.where(UserSpecification.containsKeyword(keyword))
+		Specification<User> spec = UserSpecification.containsKeyword(keyword)
 				.and(UserSpecification.isActive(isActive))
 				.and(UserSpecification.hasRoleIn(1, 2));
 
@@ -191,13 +196,11 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public long countUsersByRoles(String keyword, Integer... roleIds) {
-		Specification<User> spec = Specification.where(null);
+		Specification<User> spec = UserSpecification.hasRoleIn(roleIds);
 
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			spec = spec.and(UserSpecification.containsKeyword(keyword));
 		}
-
-		spec = spec.and(UserSpecification.hasRoleIn(roleIds));
 
 		return userRepository.count(spec);
 	}
@@ -209,7 +212,7 @@ public class UserServiceImpl implements UserService {
 				.fullName(req.getFullName())
 				.email(req.getEmail())
 				.phone(req.getPhone())
-				.address(req.getAddress())
+				.address(createAddressFromRequest(req))
 				.gender(req.getGender())
 				.dateOfBirth(req.getDateOfBirth())
 				.createAt(new Date())
@@ -232,6 +235,19 @@ public class UserServiceImpl implements UserService {
 		}
 
 		return userBuilder.build();
+	}
+
+	private Address createAddressFromRequest(EmployeeRequest req) {
+		if (req.getProvinceCode() == null || req.getCommuneCode() == null) {
+			return null;
+		}
+
+		String specificAddress = req.getSpecificAddress() != null ? req.getSpecificAddress() : "";
+
+		return addressService.createAddress(
+				specificAddress,
+				req.getCommuneCode(),
+				req.getProvinceCode());
 	}
 
 	private String uploadAvatar(MultipartFile avatar) {
@@ -283,5 +299,81 @@ public class UserServiceImpl implements UserService {
 			}
 		}
 		return currentAvatarPath;
+	}
+
+	@Override
+	public ShippingInfoDTO getUserShippingInfo(Integer userId) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+
+		Address address = user.getAddress();
+		if (address == null) {
+			return ShippingInfoDTO.builder()
+					.userId(user.getId())
+					.userFullName(user.getFullName())
+					.userPhone(user.getPhone())
+					.build();
+		}
+
+		return ShippingInfoDTO.builder()
+				.userId(user.getId())
+				.userFullName(user.getFullName())
+				.userPhone(user.getPhone())
+				.addressId(address.getId())
+				.specificAddress(address.getSpecificAddress())
+				.fullAddress(address.getFullAddress())
+				.provinceCode(address.getProvince() != null ? address.getProvince().getProvinceCode() : null)
+				.provinceName(address.getProvince() != null ? address.getProvince().getProvinceName() : null)
+				.communeCode(address.getCommune() != null ? address.getCommune().getCommuneCode() : null)
+				.communeName(address.getCommune() != null ? address.getCommune().getCommuneName() : null)
+				.provinceFullName(address.getProvince() != null ? address.getProvince().getProvinceFullName() : null)
+				.communeFullName(address.getCommune() != null ? address.getCommune().getCommuneFullName() : null)
+				.build();
+	}
+
+	@Override
+	public boolean updateUserAddress(Integer userId, Integer addressId) {
+		try {
+			User user = userRepository.findById(userId)
+					.orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+
+			if (addressId == null) {
+				user.setAddress(null);
+			} else {
+				// Tìm địa chỉ theo ID (có thể thêm validation)
+				Address address = new Address();
+				address.setId(addressId);
+				user.setAddress(address);
+			}
+
+			userRepository.save(user);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	@Override
+	public User updateUser(User user) {
+		return userRepository.save(user);
+	}
+
+	@Override
+	public boolean changePassword(User user, String currentPassword, String newPassword) {
+		try {
+			// Verify current password
+			if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+				return false;
+			}
+
+			// Encode new password and update
+			String encodedNewPassword = passwordEncoder.encode(newPassword);
+			user.setPassword(encodedNewPassword);
+
+			userRepository.save(user);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

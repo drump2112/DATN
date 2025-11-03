@@ -118,7 +118,7 @@ $(document).ready(function () {
         openEditModal(true);
       },
       error: function (err) {
-        Swal.fire("Lỗi", "Không thể tải dữ liệu sản phẩm", "error");
+        SwalUtils.error("Lỗi", "Không thể tải dữ liệu sản phẩm");
       },
     });
   };
@@ -136,13 +136,12 @@ $(document).ready(function () {
       return;
     }
 
-    Swal.fire({
-      title: "Xác nhận thêm thương hiệu ?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Thêm",
-      cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+      "Xác nhận thêm thương hiệu ?",
+      "",
+      "Thêm",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
         const dz = Dropzone.forElement("#avatarDropzone");
         const files = dz.getAcceptedFiles();
@@ -168,7 +167,7 @@ $(document).ready(function () {
           contentType: false,
           data: formData,
           success: function (response) {
-            Swal.fire("Thành công!", response.message, "success");
+            SwalUtils.success("Thành công!", response.message);
 
             $("#myModal").modal("hide");
 
@@ -186,10 +185,9 @@ $(document).ready(function () {
             });
           },
           error: function (xhr) {
-            Swal.fire(
+            SwalUtils.error(
               "Lỗi!",
-              xhr.responseJSON?.message || "Thêm thất bại",
-              "error",
+              xhr.responseJSON?.message || "Thêm thất bại"
             );
           },
         });
@@ -202,13 +200,12 @@ $(document).ready(function () {
       return;
     }
 
-    Swal.fire({
-      title: "Xác Nhận Cập Nhật Thương Hiệu",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Cập Nhật",
-      cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+      "Xác Nhận Cập Nhật Thương Hiệu",
+      "",
+      "Cập Nhật",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
         const formData = new FormData();
 
@@ -231,7 +228,7 @@ $(document).ready(function () {
           processData: false,
           contentType: false,
           success: function (response) {
-            Swal.fire("Cập nhật thành công!", response.message, "success");
+            SwalUtils.success("Cập nhật thành công!", response.message);
 
             $("#myModal").modal("hide");
 
@@ -252,21 +249,23 @@ $(document).ready(function () {
       ? "Bạn có chắc muốn khóa thuong hiệu này?"
       : "Bạn có chắc muốn mở khóa thương hiệu này?";
 
-    Swal.fire({
-      title: title,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xác nhận",
-      cancelButtonText: "Hủy",
-      customClass: { popup: "swal-pop-zindex" },
-      backdrop: `rgba(0, 0, 0, 0.4)`,
-    }).then((result) => {
+    SwalUtils.confirm(
+      title,
+      "",
+      "Xác nhận",
+      "Hủy",
+      {
+        icon: "warning",
+        customClass: { popup: "swal-pop-zindex" },
+        backdrop: `rgba(0, 0, 0, 0.4)`,
+      }
+    ).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
           url: `/admin/brand/${id}/toggle-status`,
           type: "PUT",
           success: function (data) {
-            Swal.fire("Thành công", data.message, "success");
+            SwalUtils.success("Thành công", data.message);
             const currentPage =
               parseInt(
                 $("#paginationContainer .paginate_button.active a").text(),
@@ -274,10 +273,9 @@ $(document).ready(function () {
             searchBrand(currentPage);
           },
           error: function (xhr) {
-            Swal.fire(
+            SwalUtils.error(
               "Lỗi",
-              xhr.responseJSON?.message || "Có lỗi xảy ra",
-              "error",
+              xhr.responseJSON?.message || "Có lỗi xảy ra"
             );
           },
         });

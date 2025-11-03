@@ -32,7 +32,11 @@ public class CustomerRequest {
 
   private String fullName;
 
-  private String address;
+  private String specificAddress;
+
+  private String provinceCode;
+
+  private String communeCode;
 
   private String phone;
 

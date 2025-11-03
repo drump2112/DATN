@@ -31,6 +31,18 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
+	// 🧩 0️⃣ SECURITY CHO API - ƯU TIÊN CAO NHẤT
+	@Bean
+	@Order(0)
+	public SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
+		http
+				.securityMatcher("/api/**")
+				.authorizeHttpRequests(auth -> auth
+						.anyRequest().permitAll())
+				.csrf().disable();
+		return http.build();
+	}
+
 	// 🧩 1️⃣ SECURITY CHO ADMIN + SELLER
 	@Bean
 	@Order(1)
@@ -65,7 +77,7 @@ public class SecurityConfig {
 	@Order(2)
 	public SecurityFilterChain customerSecurity(HttpSecurity http) throws Exception {
 		http
-				.securityMatcher("/customer/**", "/", "/details/**", "/cart/**", "/checkout/**", "/orders/**",
+				.securityMatcher("/customer/**", "/", "/details/**", "/cart/**", "/checkout/**", "/orders/**", "/profile/**",
 						"/customer/auth/**", "/.well-known/**")
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(
@@ -73,7 +85,7 @@ public class SecurityConfig {
 								"/assets/**", "/js/**", "/uploads/**", "/details/**", "/cart/**",
 								"/customer/auth/**", "/.well-known/**", "/customer/do-login")
 						.permitAll()
-						.requestMatchers("/checkout/**", "/orders/**").hasRole("CUSTOMER")
+						.requestMatchers("/checkout/**", "/orders/**", "/profile/**").hasRole("CUSTOMER")
 						.anyRequest().hasRole("CUSTOMER"))
 				.formLogin(form -> form
 						.loginPage("/customer/auth/") // login page cho khách hàng

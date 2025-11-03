@@ -3,6 +3,27 @@ Dropzone.autoDiscover = false;
 var avatarDropzone = null;
 
 $(document).ready(function () {
+  // === Load dữ liệu tỉnh/thành phố ===
+  loadProvinces();
+
+  // === Khởi tạo Select2 cho các select địa chỉ ===
+  initSelect2();
+
+  // === Xử lý thay đổi tỉnh/thành phố ===
+  $(document).on('change', '#tinhThanh', function() {
+    const provinceCode = $(this).val();
+    console.log("Province code selected:", provinceCode);
+    $("#phuongXa").empty().append('<option value="">-- Chọn Phường/Xã --</option>');
+
+    if (provinceCode) {
+      console.log("Loading communes for province:", provinceCode);
+      loadCommunes(provinceCode);
+      $("#phuongXa").prop("disabled", false);
+    } else {
+      $("#phuongXa").prop("disabled", true);
+    }
+  });
+
   // === Khởi tạo Dropzone ===
   avatarDropzone = new Dropzone("#avatarDropzone", {
     url: "/dummy-upload",
@@ -37,6 +58,10 @@ $(document).ready(function () {
     validator.resetForm();
     $("#employeeForm .form-control").removeClass("error");
     $("#employeeForm label.error").remove(); // <-- Xóa label error
+
+    // Reset Select2
+    $("#tinhThanh").val('').trigger('change.select2');
+    $("#phuongXa").val('').trigger('change.select2');
   });
 
   // === Khởi tạo validate ===
@@ -68,12 +93,14 @@ $(document).ready(function () {
       dateOfBirth: { required: true },
       userName: { required: true, maxlength: 20 },
       password: { required: true, minlength: 8 },
-      address: {
+      specificAddress: {
         normalizer: function (value) {
           return $.trim(value);
         },
         required: true,
       },
+      provinceCode: { required: true },
+      communeCode: { required: true },
     },
     messages: {
       fullName: {
@@ -99,7 +126,9 @@ $(document).ready(function () {
         required: "Mật khẩu không được để trống",
         minlength: "Mật khẩu không ít hơn 8 ký tự",
       },
-      address: { required: "Địa chỉ không được để trống" },
+      specificAddress: { required: "Địa chỉ cụ thể không được để trống" },
+      provinceCode: { required: "Chọn tỉnh/thành phố" },
+      communeCode: { required: "Chọn phường/xã" },
     },
     errorPlacement: function (error, element) {
       element.before(error);
@@ -133,6 +162,14 @@ $(document).ready(function () {
 
     if (avatarDropzone) avatarDropzone.removeAllFiles(true);
 
+    // Load provinces when opening modal (after form reset)
+    loadProvinces();
+
+    // Reinitialize Select2 in modal
+    setTimeout(() => {
+      initSelect2();
+    }, 100);
+
     $("#myModal").modal("show");
   }
 
@@ -140,6 +177,9 @@ $(document).ready(function () {
   function openEditModal(data, isEditable) {
     validator.resetForm();
     $("#employeeForm .error").removeClass("error");
+
+    // Load provinces first, then set values
+    loadProvinces();
 
     $("#userId").val(data.id);
     $("#maNv").val(data.userCode).prop("readonly", true);
@@ -149,7 +189,19 @@ $(document).ready(function () {
     $("#tenDangNhap").val(data.userName).prop("readonly", !isEditable);
     $("#matKhau").val("").prop("readonly", !isEditable);
     $("#vaiTro").val(data.role).prop("disabled", !isEditable);
-    $("#diaChi").val(data.address).prop("readonly", !isEditable);
+    $("#diaChiCuThe").val(data.specificAddress).prop("readonly", !isEditable);
+
+    // Reinitialize Select2 and set values
+    setTimeout(() => {
+      initSelect2();
+      $("#tinhThanh").val(data.provinceCode).prop("disabled", !isEditable);
+      if (data.provinceCode) {
+        loadCommunes(data.provinceCode);
+        setTimeout(() => {
+          $("#phuongXa").val(data.communeCode).prop("disabled", !isEditable);
+        }, 500);
+      }
+    }, 200);
     $("#dob").val(data.dateOfBirth).prop("readonly", !isEditable);
 
     $("#usernameGroup").hide();
@@ -168,7 +220,6 @@ $(document).ready(function () {
     $("#btnAdd").hide();
     $("#btnUpdate").toggle(isEditable);
 
-    // Loại bỏ required khi edit
     $("#tenDangNhap").rules("remove", "required");
     $("#matKhau").rules("remove", "required");
 
@@ -201,7 +252,9 @@ $(document).ready(function () {
       email: $(button).data("email"),
       userName: $(button).data("username"),
       phone: $(button).data("phone"),
-      address: $(button).data("address"),
+      specificAddress: $(button).data("specific-address"),
+      provinceCode: $(button).data("province-code"),
+      communeCode: $(button).data("commune-code"),
       role: $(button).data("role"),
       avatar: $(button).data("avatar"),
       gender: $(button).data("gender"),
@@ -217,15 +270,14 @@ $(document).ready(function () {
   // === Add ===
   $("#btnAdd").click(function (e) {
     e.preventDefault();
-    if (!$("#employeeForm").valid()) return;
+    if (!$("#employeeForm").valid()) return;em
 
-    Swal.fire({
-      title: "Xác nhận thêm nhân viên?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Thêm",
-      cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+      "Xác nhận thêm nhân viên?",
+      "Bạn có chắc chắn muốn thêm nhân viên với thông tin này?",
+      "Thêm",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
 
         const formData = new FormData();
@@ -234,7 +286,6 @@ $(document).ready(function () {
         const files = dz.getAcceptedFiles();
         const avatarFile = files.length > 0 ? files[0] : null;
 
-        // Chỉ thêm các trường cần thiết vào FormData
         $("#employeeForm")
           .serializeArray()
           .forEach((field) => {
@@ -251,7 +302,7 @@ $(document).ready(function () {
           contentType: false,
           data: formData,
           success: function (response) {
-            Swal.fire("Thành công!", response.message, "success");
+            SwalUtils.success("Thành công!", response.message);
 
             $("#myModal").modal("hide");
 
@@ -267,10 +318,9 @@ $(document).ready(function () {
             });
           },
           error: function (xhr) {
-            Swal.fire(
+            SwalUtils.error(
               "Lỗi!",
-              xhr.responseJSON?.message || "Thêm thất bại",
-              "error",
+              xhr.responseJSON?.message || "Thêm thất bại"
             );
           },
         });
@@ -283,13 +333,12 @@ $(document).ready(function () {
     e.preventDefault();
     if (!$("#employeeForm").valid()) return;
 
-    Swal.fire({
-      title: "Xác nhận cập nhật nhân viên?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Cập nhật",
-      cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.confirm(
+      "Xác nhận cập nhật nhân viên?",
+      "Bạn có chắc chắn muốn cập nhật thông tin nhân viên này?",
+      "Cập nhật",
+      "Hủy"
+    ).then((result) => {
       if (result.isConfirmed) {
         const formData = new FormData();
         const files = avatarDropzone.getAcceptedFiles();
@@ -315,16 +364,15 @@ $(document).ready(function () {
           processData: false,
           contentType: false,
           success: function (response) {
-            Swal.fire("Cập nhật thành công!", response.message, "success");
+            SwalUtils.success("Cập nhật thành công!", response.message);
             $("#myModal").modal("hide");
             const currentPage = $("#employeeForm").data("current-page") || 0;
             searchUser(currentPage);
           },
           error: function (xhr) {
-            Swal.fire(
+            SwalUtils.error(
               "Lỗi",
-              xhr.responseJSON?.message || "Cập nhật thất bại",
-              "error",
+              xhr.responseJSON?.message || "Cập nhật thất bại"
             );
           },
         });
@@ -356,21 +404,23 @@ $(document).ready(function () {
       ? "Bạn có chắc muốn vô hiệu hóa tài khoản này?"
       : "Bạn có chắc muốn kích hoạt tài khoản này?";
 
-    Swal.fire({
-      title: title,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Xác nhận",
-      cancelButtonText: "Hủy",
-      customClass: { popup: "swal-pop-zindex" },
-      backdrop: `rgba(0, 0, 0, 0.4)`,
-    }).then((result) => {
+    SwalUtils.confirm(
+      title,
+      "",
+      "Xác nhận",
+      "Hủy",
+      {
+        icon: "warning",
+        customClass: { popup: "swal-pop-zindex" },
+        backdrop: `rgba(0, 0, 0, 0.4)`
+      }
+    ).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
           url: `/admin/employee/${userId}/toggle-status`,
           type: "PUT",
           success: function (data) {
-            Swal.fire("Thành công", data.message, "success");
+            SwalUtils.success("Thành công", data.message);
             const currentPage =
               parseInt(
                 $("#paginationContainer .paginate_button.active a").text(),
@@ -378,10 +428,9 @@ $(document).ready(function () {
             searchUser(currentPage);
           },
           error: function (xhr) {
-            Swal.fire(
+            SwalUtils.error(
               "Lỗi",
-              xhr.responseJSON?.message || "Có lỗi xảy ra",
-              "error",
+              xhr.responseJSON?.message || "Có lỗi xảy ra"
             );
           },
         });
@@ -389,6 +438,67 @@ $(document).ready(function () {
     });
   };
 
-  window.openAddModal = openAddModal;
+  // === Khởi tạo Select2 ===
+  function initSelect2() {
+    $("#tinhThanh").select2({
+      placeholder: "-- Chọn Tỉnh/Thành phố --",
+      allowClear: true,
+      width: '100%'
+    });
+
+    $("#phuongXa").select2({
+      placeholder: "-- Chọn Phường/Xã --",
+      allowClear: true,
+      width: '100%'
+    });
+  }
+
+  // === Load provinces ===
+  function loadProvinces() {
+    console.log("Loading provinces...");
+    $.get("/api/provinces").done(function(data) {
+      console.log("Provinces loaded:", data);
+      $("#tinhThanh").empty().append('<option value="">-- Chọn Tỉnh/Thành phố --</option>');
+      data.forEach(function(province) {
+        $("#tinhThanh").append(`<option value="${province.code}">${province.name}</option>`);
+      });
+      // Trigger select2 after loading data
+      $("#tinhThanh").trigger('change.select2');
+    }).fail(function(xhr, status, error) {
+      console.error("Không thể tải danh sách tỉnh/thành phố:", xhr.responseText);
+    });
+  }
+
+  // === Load communes by province ===
+  function loadCommunes(provinceCode) {
+    console.log("Loading communes for province:", provinceCode);
+    console.log("API URL:", `/api/communes?provinceCode=${provinceCode}`);
+
+    $.get(`/api/communes?provinceCode=${provinceCode}`).done(function(data) {
+      console.log("Communes loaded - Response:", data);
+      console.log("Communes count:", data.length);
+
+      $("#phuongXa").empty().append('<option value="">-- Chọn Phường/Xã --</option>');
+
+      if (data.length === 0) {
+        console.log("No communes found for province:", provinceCode);
+        $("#phuongXa").append('<option value="">-- Không có dữ liệu --</option>');
+      } else {
+        data.forEach(function(commune) {
+          $("#phuongXa").append(`<option value="${commune.code}">${commune.name}</option>`);
+        });
+      }
+      // Trigger select2 after loading data
+      $("#phuongXa").trigger('change.select2');
+      console.log("Communes added to select");
+    }).fail(function(xhr, status, error) {
+      console.error("Không thể tải danh sách phường/xã:", status, error);
+      console.error("Response text:", xhr.responseText);
+      $("#phuongXa").empty().append('<option value="">-- Lỗi tải dữ liệu --</option>');
+      $("#phuongXa").trigger('change.select2');
+    });
+  }  window.openAddModal = openAddModal;
   window.searchUser = searchUser;
+  window.loadProvinces = loadProvinces;
+  window.loadCommunes = loadCommunes;
 });

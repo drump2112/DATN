@@ -346,7 +346,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
-        // Kiểm tra trạng thái hợp lệ
         if (!status.matches("PENDING|PROCESSING|COMPLETED|CANCELLED")) {
             throw new RuntimeException("Trạng thái không hợp lệ");
         }
@@ -354,6 +353,53 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(status);
         orderRepository.save(order);
         return true;
+    }
+
+    @Override
+    public Order findById(Integer orderId) {
+        return orderRepository.findById(orderId).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void updatePaymentStatus(Order order, String status, String transactionNo) {
+        order.setStatus(status);
+        order.setPaymentStatus("PAID");
+        order.setTransactionNo(transactionNo);
+        orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public void processOrderItems(Order order) {
+        System.out.println("🔄 Processing order items for order: " + order.getId());
+
+        for (OrderItem item : order.getItems()) {
+            ProductVariant variant = item.getProductVariant();
+            Integer currentQuantity = variant.getQuantity();
+            Integer orderQuantity = item.getQuantity();
+
+            System.out.println("📦 Product: " + variant.getProduct().getName() +
+                              ", Size: " + variant.getSize().getName() +
+                              ", Color: " + variant.getColor().getName() +
+                              ", Current Stock: " + currentQuantity +
+                              ", Order Quantity: " + orderQuantity);
+
+            if (currentQuantity >= orderQuantity) {
+                // Trừ số lượng trong kho
+                variant.setQuantity(currentQuantity - orderQuantity);
+                productVariantRepository.save(variant);
+
+                System.out.println("✅ Updated stock: " + (currentQuantity - orderQuantity));
+            } else {
+                System.err.println("WARNING: Insufficient stock for " +
+                                   variant.getProduct().getName() +
+                                   " - Available: " + currentQuantity +
+                                   ", Required: " + orderQuantity);
+            }
+        }
+
+        System.out.println("✅ Order items processing completed for order: " + order.getId());
     }
 }
 

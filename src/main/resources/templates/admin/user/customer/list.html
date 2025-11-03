@@ -70,7 +70,7 @@
 				<div class="modal-body">
 					<div class="row">
 						<form id="customerForm" role="form">
-							<div class="col-sm-6 b-r">
+							<div class="col-sm-4 b-r">
 								<input type="hidden" id="userId" name="userId">
 								<div class="form-group">
 									<label>Mã Khách Hàng</label>
@@ -103,11 +103,26 @@
 								</div>
 
 							</div>
-							<div class="col-sm-6">
+							<div class="col-sm-4 b-r">
 								<div class="form-group">
-									<label>Địa Chỉ</label>
-									<input type="text" id="diaChi" name="address" placeholder="Nhập Địa Chỉ" class="form-control">
-									<span class="text-danger" id="error-diaChi"></span>
+									<label>Địa Chỉ Cụ Thể</label>
+									<input type="text" id="diaChiCuThe" name="specificAddress" placeholder="Nhập số nhà, tên đường"
+										class="form-control">
+									<span class="text-danger" id="error-diaChiCuThe"></span>
+								</div>
+								<div class="form-group">
+									<label>Tỉnh/Thành phố</label>
+									<select class="form-control" id="tinhThanh" name="provinceCode">
+										<option value="">-- Chọn Tỉnh/Thành phố --</option>
+									</select>
+									<span class="text-danger" id="error-tinhThanh"></span>
+								</div>
+								<div class="form-group">
+									<label>Phường/Xã</label>
+									<select class="form-control" id="phuongXa" name="communeCode" disabled>
+										<option value="">-- Chọn Phường/Xã --</option>
+									</select>
+									<span class="text-danger" id="error-phuongXa"></span>
 								</div>
 								<div class="form-group">
 									<label style="margin-top: 7px;">Giới Tính</label>
@@ -130,6 +145,8 @@
 									<input type="date" id="dob" name="dateOfBirth" lang="vi" class="form-control">
 									<span class="text-danger" id="error-dob"></span>
 								</div>
+							</div>
+							<div class="col-sm-4">
 								<div class="form-group">
 									<label>Ảnh Đại Diện</label>
 									<div id="avatarDropzone" class="dropzone dz-clickable"></div>

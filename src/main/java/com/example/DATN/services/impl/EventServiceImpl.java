@@ -1,19 +1,16 @@
 package com.example.DATN.services.impl;
 
-
 import com.example.DATN.dtos.EventsDTO;
 import com.example.DATN.models.SalesEvent;
 import com.example.DATN.repositories.EventRepository;
 import com.example.DATN.services.EventService;
 import com.example.DATN.request.EventsRequest;
-import com.sun.jdi.request.EventRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -78,7 +75,6 @@ public class EventServiceImpl implements EventService {
    public boolean addEvents(EventsRequest eventRequest) {
        try {
            SalesEvent events = fromRequest(eventRequest);
-           // Giả sử Event là loại "Event", có thể set thêm field type nếu model có
            events.setDiscountType(eventRequest.getDiscountType()); // Nếu model có field type
            eventRepository.save(events);
            return true;
@@ -94,10 +90,8 @@ public class EventServiceImpl implements EventService {
            Optional<SalesEvent> optionalEvent = eventRepository.findById(id);
            if (optionalEvent.isPresent()) {
                SalesEvent events = optionalEvent.get();
-               // Update fields từ request, giữ nguyên id và type
                modelMapper.map(eventRequest, events); // Map các field chung
                events.setId(id);
-               // Giữ nguyên code nếu không muốn thay đổi, hoặc update nếu request có
                if (eventRequest.getCode() != null && !eventRequest.getCode().trim().isEmpty()) {
                    events.setCode(eventRequest.getCode());
                }
@@ -113,7 +107,6 @@ public class EventServiceImpl implements EventService {
    }
    @Override
    public Page<EventsDTO> searchEvents(String keyword, Boolean isActive, Pageable pageable) {
-       // Gọi repo method với query riêng
        Page<SalesEvent> Events = eventRepository.findBySearch(keyword, isActive, pageable);
        return Events.map(entity -> modelMapper.map(entity, EventsDTO.class));
    }
@@ -129,7 +122,6 @@ public class EventServiceImpl implements EventService {
        SalesEvent.SalesEventBuilder EventBuilder = SalesEvent.builder()
                .id(eventRequest.getId())
                .name(eventRequest.getName())
-//                nếu mã giảm giá null thì sẽ gọi hàm tự tạo mã
                .code(eventRequest.getCode() != null && !eventRequest.getCode().trim().isEmpty()
                        ? eventRequest.getCode()
                        : generateDiscountCode())
@@ -145,18 +137,14 @@ public class EventServiceImpl implements EventService {
    }
 
 
-   //     hàm tạo đợt giảm giá tự động
    public String generateDiscountCode() {
-       // Chọn ngẫu nhiên độ dài: 6 hoặc 8 ký tự (50% cơ hội mỗi loại)
        int length = RANDOM.nextBoolean() ? 6 : 8;
-
 
        StringBuilder code = new StringBuilder();
        for (int i = 0; i < length; i++) {
            int index = RANDOM.nextInt(CHARSET.length());
            code.append(CHARSET.charAt(index));
        }
-
 
        return code.toString();
    }

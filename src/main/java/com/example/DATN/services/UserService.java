@@ -1,6 +1,7 @@
 package com.example.DATN.services;
 
 import com.example.DATN.dtos.UserDTO;
+import com.example.DATN.models.User;
 import com.example.DATN.request.EmployeeRequest;
 
 import org.springframework.data.domain.Page;
@@ -21,4 +22,12 @@ public interface UserService {
 	boolean updateEmployee(Integer id, EmployeeRequest employeeRequest);
 
 	Page<UserDTO> searchUsers(String keyword, Boolean isActive, Pageable pageable);
+
+	com.example.DATN.dtos.ShippingInfoDTO getUserShippingInfo(Integer userId);
+
+	boolean updateUserAddress(Integer userId, Integer addressId);
+
+	User updateUser(User user);
+
+	boolean changePassword(User user, String currentPassword, String newPassword);
 }

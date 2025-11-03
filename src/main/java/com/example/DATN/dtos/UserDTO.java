@@ -32,6 +32,8 @@ public class UserDTO {
 
 	private String address;
 
+	private String fullAddress;
+
 	private String phone;
 
 	private Integer roleId;

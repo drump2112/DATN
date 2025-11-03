@@ -1,237 +1,677 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
-
-<section class="container" th:fragment="content">
+<section class="container features" th:fragment="content">
   <style>
-    .profile-wrapper {
-      margin: 80px 0;
-    }
-
-    .profile-card {
-      text-align: center;
-    }
-
     .profile-avatar {
-      width: 140px;
-      height: 140px;
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
       object-fit: cover;
-      border: 4px solid #f3f3f4;
     }
 
-    .profile-name {
-      margin-top: 15px;
-      font-size: 20px;
+    .modern-card-title {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      padding: 15px 20px;
+      border: none;
+    }
+
+    .modern-card-title h5 {
+      margin: 0;
       font-weight: 600;
-    }
-
-    .profile-meta {
-      color: #888;
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    .nav-tabs.profile-tabs>li>a {
-      padding: 12px 16px;
-      font-weight: 600;
-    }
-
-    .tab-pane {
-      padding: 20px 5px;
-    }
-
-    .form-group.required label:after {
-      content: "*";
-      color: #ed5565;
-      margin-left: 4px;
-    }
-
-    .kv {
+      font-size: 16px;
       display: flex;
-      gap: 8px;
       align-items: center;
-      margin: 6px 0;
-      color: #555;
+      gap: 8px;
     }
 
-    .kv i {
-      width: 16px;
-      text-align: center;
+    .ibox-content {
+      padding: 25px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-radius: 0 0 12px 12px;
+      border: 1px solid #e3f2fd;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .profile-info-section {
+      overflow-x: auto;
+    }
+
+    .table {
+      margin-bottom: 0;
+      word-break: break-word;
+    }
+
+    .table td {
+      vertical-align: middle;
+      padding: 8px 12px;
+    }
+
+    /* ===== MODAL STYLING ===== */
+    .modal-header.modern-modal-header {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      border: none;
+      padding: 20px 25px;
+    }
+
+    .modal-header.modern-modal-header .modal-title {
+      margin: 0;
+      font-weight: 600;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-header.modern-modal-header .close {
+      color: white;
+      opacity: 1;
+      font-size: 24px;
+      text-shadow: none;
+    }
+
+    .modal-header.modern-modal-header .close:hover {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .modal-body.modern-modal-body {
+      padding: 30px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .modern-form-label {
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modern-form-control {
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      padding: 12px 15px;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .modern-form-control:focus {
+      border-color: #1ab394;
+      box-shadow: 0 0 0 3px rgba(26, 179, 148, 0.1);
+    }
+
+    .modal-footer.modern-modal-footer {
+      border-top: 2px solid #e9ecef;
+      padding: 20px 30px;
+      background: #f8f9fa;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .btn-modern-modal {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-modern-modal:hover {
+      background: linear-gradient(135deg, #17a085, #138f75);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(26, 179, 148, 0.3);
+    }
+
+    .btn-cancel-modal {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-cancel-modal:hover {
+      background: #5a6268;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    /* ===== CUSTOM FILE INPUT FOR AVATAR ===== */
+    .custom-file-input-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    /* Override any default file input styling */
+    .custom-file-input-wrapper input[type="file"] {
+      display: none !important;
+      position: absolute !important;
+      left: -9999px !important;
+      top: -9999px !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    .custom-file-input-wrapper .form-control {
+      display: none !important;
+    }
+
+    /* Make sure no default file input shows anywhere in the modal */
+    #editProfileModal input[type="file"] {
+      position: absolute !important;
+      left: -9999px !important;
+      width: 1px !important;
+      height: 1px !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+
+    /* Hide any default file input styling */
+    #editProfileModal input[type="file"]::-webkit-file-upload-button {
+      display: none !important;
+    }
+
+    #editProfileModal input[type="file"]::file-selector-button {
+      display: none !important;
+    }
+
+    /* ===== RADIO BUTTON STYLING ===== */
+    .gender-radio-group {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .radio-option {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .radio-label:hover {
+      border-color: #1ab394;
+      background: #f0fff4;
+      transform: translateY(-1px);
+    }
+
+    .radio-input {
+      display: none;
+    }
+
+    .radio-custom {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #dee2e6;
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .radio-input:checked + .radio-custom {
+      border-color: #1ab394;
+      background: #1ab394;
+    }
+
+    .radio-input:checked + .radio-custom::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    .radio-input:checked ~ i,
+    .radio-input:checked ~ span {
       color: #1ab394;
     }
 
-    .btn-outline {
-      background: #fff;
-      border: 1px solid #e7eaec;
+    .radio-label:has(.radio-input:checked) {
+      border-color: #1ab394;
+      background: linear-gradient(135deg, #e8f5e8, #f0fff4);
+      box-shadow: 0 2px 8px rgba(26, 179, 148, 0.2);
     }
 
-    @media (max-width: 767px) {
-      .profile-avatar {
-        width: 110px;
-        height: 110px;
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #e9ecef;
+      object-fit: cover;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: #dee2e6;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .avatar-preview:hover {
+      border-color: #1ab394;
+      transform: scale(1.05);
+    }
+
+    .avatar-preview.has-image {
+      font-size: 0;
+    }
+
+    .custom-file-btn {
+      background: linear-gradient(135deg, #6c757d, #5a6268);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .custom-file-btn:hover {
+      background: linear-gradient(135deg, #5a6268, #495057);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    .custom-file-btn.has-image {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+    }
+
+    .custom-file-btn.has-image:hover {
+      background: linear-gradient(135deg, #c82333, #bd2130);
+    }
+
+    .hidden-file-input {
+      display: none !important;
+      visibility: hidden !important;
+      position: absolute !important;
+      left: -9999px !important;
+      width: 0 !important;
+      height: 0 !important;
+      opacity: 0 !important;
+    }
+
+    .file-info {
+      font-size: 12px;
+      color: #6c757d;
+      text-align: center;
+      margin-top: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .profile-info-section .col-sm-4,
+      .profile-info-section .col-sm-8 {
+        margin-bottom: 20px;
+      }
+
+      .table td {
+        font-size: 14px;
+        padding: 6px 8px;
+      }
+
+      .modal-dialog {
+        margin: 10px;
+      }
+
+      .modal-body.modern-modal-body {
+        padding: 20px;
+      }
+
+      .modal-footer.modern-modal-footer {
+        padding: 15px 20px;
+      }
+
+      .gender-radio-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .radio-option {
+        min-width: auto;
+      }
+
+      .radio-label {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+    }    .gender-badge {
+      display: inline-block;
+      padding: 6px 15px;
+      border-radius: 25px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .gender-male {
+      background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+      color: #1976d2;
+    }
+
+    .gender-female {
+      background: linear-gradient(145deg, #fce4ec, #f8bbd9);
+      color: #c2185b;
+    }
+
+    .empty-info {
+      color: #999;
+      font-style: italic;
+    }
+
+    .page-header {
+      text-align: center;
+      margin: 40px 0 60px 0;
+    }
+
+    .page-title {
+      color: #1ab394;
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .page-subtitle {
+      color: #666;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .not-logged-in {
+      text-align: center;
+      padding: 60px 40px;
+    }
+
+    .not-logged-icon {
+      font-size: 80px;
+      margin-bottom: 25px;
+      opacity: 0.7;
+    }
+
+    .not-logged-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .not-logged-text {
+      margin-bottom: 30px;
+      opacity: 0.9;
+      font-size: 16px;
+    }
+
+    .login-btn {
+      background: white;
+      color: #1ab394;
+      border: 2px solid white;
+      font-weight: 600;
+    }
+
+    .login-btn:hover {
+      background: rgba(255,255,255,0.9);
+      color: #17a085;
+    }
+
+    @media (max-width: 768px) {
+      .profile-info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-stats {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .profile-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn-modern {
+        width: 100%;
+        justify-content: center;
+        max-width: 300px;
+      }
+
+      .page-title {
+        font-size: 32px;
+      }
+
+      .profile-wrapper {
+        margin: 40px 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .profile-info-section {
+        padding: 25px 20px;
+      }
+
+      .profile-header-card {
+        padding: 30px 20px;
+      }
+    }
+
+    /* ===== MODERN PAGE HEADER ===== */
+    .modern-page-header {
+      text-align: center;
+      margin: 40px 0;
+      position: relative;
+    }
+
+    .header-decoration {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #1ab394, transparent);
+      margin: 20px auto;
+      width: 200px;
+      border-radius: 2px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .page-title i {
+      font-size: 36px;
+    }
+
+    .page-subtitle {
+      color: #6c757d;
+      font-size: 16px;
+      margin: 10px 0 0 0;
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 10px;
       }
     }
   </style>
 
-  <div class="profile-wrapper row animated fadeIn">
-    <div class="col-md-4">
-      <div class="ibox">
-        <div class="ibox-title">
-          <h5>Hồ sơ</h5>
-        </div>
-        <div class="ibox-content profile-card"
-          th:with="u=${#authentication != null && #authentication.isAuthenticated() ? #authentication.principal.user : null},
-                                                     avatarUrl=${u != null && u.avatar != null} ? @{${u.avatar}} : @{/assets/img/profile_big.jpg}">
-          <img class="profile-avatar" th:src="${avatarUrl}" alt="avatar">
-          <div class="profile-name" th:text="${u != null ? u.fullName : 'Người dùng'}">Người dùng</div>
-          <div class="profile-meta">
-            <div class="kv" th:if="${u != null && u.email}"><i class="fa fa-envelope"></i><span
-                th:text="${u.email}">email@example.com</span></div>
-            <div class="kv" th:if="${u != null && u.phone}"><i class="fa fa-phone"></i><span
-                th:text="${u.phone}">0123456789</span></div>
-            <div class="kv" th:if="${u != null && u.address}"><i class="fa fa-map-marker"></i><span
-                th:text="${u.address}">Địa chỉ</span></div>
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <i class="fa fa-user-circle"></i>
+      Thông Tin Cá Nhân
+    </h1>
+    <p class="page-subtitle">Quản lý thông tin tài khoản của bạn</p>
+  </div>
+
+  <div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row m-t-md">
+      <div class="col-lg-8 col-md-12">
+        <!-- Logged in state -->
+        <div th:if="${#authentication != null and #authentication.isAuthenticated()}">
+          <!-- Profile Info Card -->
+          <div class="ibox modern-profile-card">
+            <div class="ibox-title modern-card-title">
+              <h5><i class="fa fa-user text-white"></i> Thông Tin Cá Nhân</h5>
+            </div>
+            <div class="ibox-content">
+              <div class="row">
+                <div class="col-sm-4 col-xs-12 text-center">
+                  <img class="profile-avatar"
+                       th:src="${#authentication.principal.user.avatar != null ? #authentication.principal.user.avatar : '/assets/img/profile_big.jpg'}"
+                       alt="Avatar"
+                       id="avatarImg">
+                  <h3 class="m-t-sm" id="profile-fullname" th:text="${#authentication.principal.user.fullName ?: 'Người dùng'}">
+                    Người dùng
+                  </h3>
+                  <p class="text-muted">
+                    <i class="fa fa-shield"></i>
+                    <span th:text="${#authentication.principal.user.role?.nameRole ?: 'Khách hàng'}">Khách hàng</span>
+                  </p>
+                </div>
+                <div class="col-sm-8 col-xs-12">
+                  <div class="profile-info-section">
+                    <div class="table-responsive">
+                      <table class="table table-hover">
+                        <tbody>
+                  <tr>
+                    <td><strong><i class="fa fa-envelope text-primary"></i> Email:</strong></td>
+                    <td id="profile-email" th:text="${#authentication.principal.user.email ?: 'Chưa cập nhật'}">
+                      example@email.com
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong><i class="fa fa-phone text-success"></i> Số điện thoại:</strong></td>
+                    <td id="profile-phone" th:text="${#authentication.principal.user.phone ?: 'Chưa cập nhật'}">
+                      Chưa cập nhật
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong><i class="fa fa-venus-mars text-info"></i> Giới tính:</strong></td>
+                    <td>
+                      <span th:if="${#authentication.principal.user.gender != null}">
+                        <span th:if="${#authentication.principal.user.gender}" class="label label-primary">
+                          <i class="fa fa-mars"></i> Nam
+                        </span>
+                        <span th:unless="${#authentication.principal.user.gender}" class="label label-success">
+                          <i class="fa fa-venus"></i> Nữ
+                        </span>
+                      </span>
+                      <span th:unless="${#authentication.principal.user.gender != null}" class="text-muted">
+                        Chưa cập nhật
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong><i class="fa fa-birthday-cake text-warning"></i> Ngày sinh:</strong></td>
+                    <td th:text="${#authentication.principal.user.dateOfBirth != null ? #temporals.format(#authentication.principal.user.dateOfBirth, 'dd/MM/yyyy') : 'Chưa cập nhật'}">
+                      Chưa cập nhật
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong><i class="fa fa-id-card text-primary"></i> Mã khách hàng:</strong></td>
+                    <td th:text="${#authentication.principal.user.userCode ?: 'N/A'}">
+                      KH001
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong><i class="fa fa-calendar text-info"></i> Ngày tham gia:</strong></td>
+                    <td th:text="${#authentication.principal.user.createAt != null ? #dates.format(#authentication.principal.user.createAt, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+                      01/01/2024 10:30
+                    </td>
+                  </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="m-t-sm">
-            <label class="btn btn-white btn-sm">
-              <i class="fa fa-upload"></i>
-              <span>Đổi ảnh đại diện</span>
-              <input id="avatarInput" type="file" accept="image/*" style="display:none">
-            </label>
-            <a th:href="@{/orders}" class="btn btn-outline btn-sm"><i class="fa fa-list"></i> Đơn hàng của tôi</a>
+        </div>
+
+        <!-- Not logged in state -->
+        <div th:unless="${#authentication != null and #authentication.isAuthenticated()}">
+          <div class="ibox modern-profile-card">
+            <div class="ibox-title modern-card-title">
+              <h5><i class="fa fa-user-circle text-white"></i> Thông Tin Cá Nhân</h5>
+            </div>
+            <div class="ibox-content text-center">
+              <i class="fa fa-user-circle" style="font-size: 80px; color: #dee2e6; margin-bottom: 20px;"></i>
+              <h3>Bạn chưa đăng nhập</h3>
+              <p class="text-muted">Vui lòng đăng nhập để xem thông tin cá nhân và quản lý tài khoản của bạn</p>
+              <a th:href="@{/customer/auth/}" class="btn btn-primary btn-lg">
+                <i class="fa fa-sign-in"></i> Đăng nhập ngay
+              </a>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="col-md-8">
-      <div class="ibox">
-        <div class="ibox-title">
-          <h5>Quản lý tài khoản</h5>
-        </div>
-        <div class="ibox-content">
-          <ul class="nav nav-tabs profile-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#tab-info" role="tab" data-toggle="tab">Thông tin</a></li>
-            <li role="presentation"><a href="#tab-address" role="tab" data-toggle="tab">Địa chỉ</a></li>
-            <li role="presentation"><a href="#tab-security" role="tab" data-toggle="tab">Bảo mật</a></li>
-          </ul>
-
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="tab-info"
-              th:with="u=${#authentication != null && #authentication.isAuthenticated() ? #authentication.principal.user : null}">
-              <form action="#" method="post" onsubmit="return false;">
-                <div class="row">
-                  <div class="col-sm-6">
-                    <div class="form-group required">
-                      <label>Họ và tên</label>
-                      <input type="text" class="form-control" th:value="${u != null ? u.fullName : ''}"
-                        placeholder="Nhập họ tên" />
-                    </div>
-                  </div>
-                  <div class="col-sm-6">
-                    <div class="form-group required">
-                      <label>Email</label>
-                      <input type="email" class="form-control" th:value="${u != null ? u.email : ''}"
-                        placeholder="email@example.com" />
-                    </div>
-                  </div>
-                  <div class="col-sm-6">
-                    <div class="form-group">
-                      <label>Số điện thoại</label>
-                      <input type="text" class="form-control" th:value="${u != null ? u.phone : ''}"
-                        placeholder="0123 456 789" />
-                    </div>
-                  </div>
-                  <div class="col-sm-6">
-                    <div class="form-group">
-                      <label>Ngày sinh</label>
-                      <input type="date" class="form-control"
-                        th:value="${u != null && u.dateOfBirth != null ? u.dateOfBirth : ''}" />
-                    </div>
-                  </div>
-                  <div class="col-sm-6">
-                    <div class="form-group">
-                      <label>Giới tính</label>
-                      <select class="form-control" th:value="${u != null ? u.gender : ''}">
-                        <option th:selected="${u != null && u.gender == true}">Nam</option>
-                        <option th:selected="${u != null && u.gender == false}">Nữ</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-sm-12">
-                    <div class="form-group">
-                      <label>Địa chỉ</label>
-                      <textarea class="form-control" rows="2" th:text="${u != null ? u.address : ''}"
-                        placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" style="resize: none;"></textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <button type="button" class="btn btn-primary" disabled title="Chưa kết nối API">Lưu thay đổi</button>
-                </div>
-              </form>
-            </div>
-
-            <div role="tabpanel" class="tab-pane" id="tab-address">
-              <p>Quản lý địa chỉ giao hàng của bạn. Tính năng đang được kết nối với dữ liệu hành chính (tỉnh/huyện/xã).
-              </p>
-              <div class="row">
-                <div class="col-sm-6">
-                  <div class="form-group required">
-                    <label>Tỉnh/Thành</label>
-                    <select id="province" class="form-control">
-                      <option>— Chọn tỉnh/thành —</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="col-sm-6">
-                  <div class="form-group required">
-                    <label>Phường/Xã</label>
-                    <select id="ward" class="form-control">
-                      <option>— Chọn phường/xã —</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="col-sm-12">
-                  <div class="form-group">
-                    <label>Địa chỉ chi tiết</label>
-                    <input class="form-control" placeholder="Số nhà, tên đường"/>
-                  </div>
-                </div>
-              </div>
-              <div class="text-right">
-                <button type="button" class="btn btn-primary" disabled title="Chưa kết nối API">Lưu địa chỉ</button>
-              </div>
-            </div>
-
-            <div role="tabpanel" class="tab-pane" id="tab-security">
-              <form action="#" method="post" onsubmit="return false;">
-                <div class="row">
-                  <div class="col-sm-6">
-                    <div class="form-group required">
-                      <label>Mật khẩu hiện tại</label>
-                      <input type="password" class="form-control" placeholder="••••••••" />
-                    </div>
-                  </div>
-                  <div class="col-sm-6"></div>
-                  <div class="col-sm-6">
-                    <div class="form-group required">
-                      <label>Mật khẩu mới</label>
-                      <input type="password" class="form-control" placeholder="••••••••" />
-                    </div>
-                  </div>
-                  <div class="col-sm-6">
-                    <div class="form-group required">
-                      <label>Nhập lại mật khẩu</label>
-                      <input type="password" class="form-control" placeholder="••••••••" />
-                    </div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <button type="button" class="btn btn-primary" disabled title="Chưa kết nối API">Đổi mật khẩu</button>
-                </div>
-              </form>
+      <div class="col-lg-4 col-md-12">
+        <div class="ibox modern-actions-card">
+          <div class="ibox-title modern-card-title">
+            <h5><i class="fa fa-cogs text-white"></i> Thao Tác</h5>
+          </div>
+          <div class="ibox-content">
+            <div class="profile-actions">
+              <button type="button" class="btn btn-primary btn-block m-b-sm" onclick="editProfile()">
+                <i class="fa fa-edit"></i> Chỉnh sửa thông tin
+              </button>
+              <a th:href="@{/orders}" class="btn btn-success btn-block m-b-sm">
+                <i class="fa fa-list"></i> Đơn hàng của tôi
+              </a>
+              <button type="button" class="btn btn-warning btn-block m-b-sm" onclick="changePassword()">
+                <i class="fa fa-lock"></i> Đổi mật khẩu
+              </button>
+              <button type="button" class="btn btn-info btn-block" onclick="manageAddress()">
+                <i class="fa fa-map-marker"></i> Quản lý địa chỉ
+              </button>
             </div>
           </div>
         </div>
@@ -239,39 +679,498 @@
     </div>
   </div>
 
+  <!-- Edit Profile Modal -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header modern-modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">
+            <i class="fa fa-edit"></i>
+            <span>Chỉnh sửa thông tin cá nhân</span>
+          </h4>
+        </div>
+        <div class="modal-body modern-modal-body">
+          <form id="editProfileForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="modern-form-label">
+                    <i class="fa fa-user text-primary"></i>
+                    <span>Họ và tên *</span>
+                  </label>
+                  <input type="text" class="form-control modern-form-control" name="fullName" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="modern-form-label">
+                    <i class="fa fa-envelope text-info"></i>
+                    <span>Email *</span>
+                  </label>
+                  <input type="email" class="form-control modern-form-control" name="email" required>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="modern-form-label">
+                    <i class="fa fa-phone text-success"></i>
+                    <span>Số điện thoại</span>
+                  </label>
+                  <input type="tel" class="form-control modern-form-control" name="phone">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="modern-form-label">
+                    <i class="fa fa-birthday-cake text-warning"></i>
+                    <span>Ngày sinh</span>
+                  </label>
+                  <input type="date" class="form-control modern-form-control" name="dateOfBirth">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="modern-form-label">
+                    <i class="fa fa-venus-mars text-info"></i>
+                    <span>Giới tính</span>
+                  </label>
+                  <div class="gender-radio-group">
+                    <div class="radio-option">
+                      <label class="radio-label">
+                        <input type="radio" name="gender" value="true" class="radio-input">
+                        <span class="radio-custom"></span>
+                        <i class="fa fa-mars text-primary"></i>
+                        <span>Nam</span>
+                      </label>
+                    </div>
+                    <div class="radio-option">
+                      <label class="radio-label">
+                        <input type="radio" name="gender" value="false" class="radio-input">
+                        <span class="radio-custom"></span>
+                        <i class="fa fa-venus text-success"></i>
+                        <span>Nữ</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="modern-form-label">
+                    <i class="fa fa-image text-primary"></i>
+                    <span>Ảnh đại diện</span>
+                  </label>
+                  <div class="custom-file-input-wrapper">
+                    <div class="avatar-preview" id="avatarPreview" onclick="triggerFileSelect()">
+                      <i class="fa fa-camera"></i>
+                    </div>
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*" class="hidden-file-input" onchange="previewAvatar(this)" style="display: none !important;">
+                    <button type="button" class="custom-file-btn" id="avatarBtn" onclick="triggerFileSelect()">
+                      <i class="fa fa-upload"></i>
+                      <span>Chọn ảnh</span>
+                    </button>
+                    <div class="file-info" id="fileInfo">JPG, PNG tối đa 5MB</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer modern-modal-footer">
+          <button type="button" class="btn btn-cancel-modal" data-dismiss="modal">
+            <i class="fa fa-times"></i>
+            <span>Hủy</span>
+          </button>
+          <button type="button" class="btn btn-modern-modal" onclick="saveProfile()">
+            <i class="fa fa-save"></i>
+            <span>Lưu thay đổi</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    (function () {
-      var tabs = document.querySelectorAll('.profile-tabs a[data-toggle="tab"]');
-      var panes = document.querySelectorAll('.tab-pane');
-      function showTab(targetId) {
-        panes.forEach(function (p) { p.classList.remove('active'); });
-        var el = document.querySelector(targetId);
-        if (el) el.classList.add('active');
-        tabs.forEach(function (a) { a.parentElement.classList.remove('active'); });
-        var activeTab = Array.prototype.find.call(tabs, function (a) { return a.getAttribute('href') === targetId; });
-        if (activeTab) activeTab.parentElement.classList.add('active');
+    // Load user data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Check if user is authenticated by looking for profile elements
+        const profileName = document.getElementById('profile-fullname');
+        const isAuthenticated = profileName && profileName.textContent.trim() !== '';
+
+        if (isAuthenticated) {
+          // Update statistics
+          updateUserStats();
+        }
+
+        console.log('Profile page loaded successfully');
+      } catch (error) {
+        console.error('Error loading profile page:', error);
       }
-      tabs.forEach(function (a) {
-        a.addEventListener('click', function (e) {
-          e.preventDefault();
-          showTab(a.getAttribute('href'));
-        });
+    });
+
+    function triggerFileSelect() {
+      const fileInput = document.getElementById('avatarInput');
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+
+    // Preview avatar function
+    function previewAvatar(input) {
+      const avatarPreview = document.getElementById('avatarPreview');
+      const avatarBtn = document.getElementById('avatarBtn');
+      const fileInfo = document.getElementById('fileInfo');
+
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+
+        // Check file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Kích thước file không được vượt quá 5MB!',
+            confirmButtonColor: '#1ab394'
+          });
+          input.value = '';
+          return;
+        }
+
+        // Check file type
+        if (!file.type.match('image.*')) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Vui lòng chọn file hình ảnh!',
+            confirmButtonColor: '#1ab394'
+          });
+          input.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          avatarPreview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+          avatarPreview.classList.add('has-image');
+
+          // Update button
+          avatarBtn.classList.add('has-image');
+          avatarBtn.innerHTML = '<i class="fa fa-trash"></i><span>Xóa ảnh</span>';
+          avatarBtn.onclick = removeAvatar;
+
+          // Update file info
+          fileInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(1)}KB)`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function removeAvatar() {
+      const avatarPreview = document.getElementById('avatarPreview');
+      const avatarBtn = document.getElementById('avatarBtn');
+      const fileInfo = document.getElementById('fileInfo');
+      const avatarInput = document.getElementById('avatarInput');
+
+      // Reset preview
+      avatarPreview.innerHTML = '<i class="fa fa-camera"></i>';
+      avatarPreview.classList.remove('has-image');
+      avatarPreview.onclick = triggerFileSelect;
+
+      // Reset button
+      avatarBtn.classList.remove('has-image');
+      avatarBtn.innerHTML = '<i class="fa fa-upload"></i><span>Chọn ảnh</span>';
+      avatarBtn.onclick = triggerFileSelect;
+
+      // Reset file info
+      fileInfo.textContent = 'JPG, PNG tối đa 5MB';
+
+      // Clear input
+      avatarInput.value = '';
+    }
+
+    function editProfile() {
+      // Clear form first
+      document.getElementById('editProfileForm').reset();
+
+      // Reset avatar preview
+      removeAvatar();
+
+      // Get values from profile display elements
+      const fullName = document.getElementById('profile-fullname');
+      const email = document.getElementById('profile-email');
+      const phone = document.getElementById('profile-phone');
+
+      // Populate form
+      if (fullName && fullName.textContent.trim() !== 'Người dùng') {
+        document.querySelector('input[name="fullName"]').value = fullName.textContent.trim();
+      }
+
+      if (email && email.textContent.trim() !== 'Chưa cập nhật') {
+        document.querySelector('input[name="email"]').value = email.textContent.trim();
+      }
+
+      if (phone && phone.textContent.trim() !== 'Chưa cập nhật') {
+        document.querySelector('input[name="phone"]').value = phone.textContent.trim();
+      }
+
+      // Handle gender radio buttons
+      const genderLabels = document.querySelectorAll('.radio-label');
+      genderLabels.forEach(label => {
+        const genderText = label.textContent.trim();
+        // Check from current profile display - looking for gender badges
+        const profileGender = document.querySelector('.label.label-primary, .label.label-success');
+        if (profileGender) {
+          const currentGender = profileGender.textContent.trim();
+          if ((currentGender === 'Nam' && genderText.includes('Nam')) ||
+              (currentGender === 'Nữ' && genderText.includes('Nữ'))) {
+            const radioInput = label.querySelector('input[type="radio"]');
+            if (radioInput) {
+              radioInput.checked = true;
+            }
+          }
+        }
       });
 
-      var input = document.getElementById('avatarInput');
-      if (input) {
-        input.addEventListener('change', function (e) {
-          var file = e.target.files && e.target.files[0];
-          if (!file) return;
-          var reader = new FileReader();
-          reader.onload = function (ev) {
-            var img = document.querySelector('.profile-avatar');
-            if (img) img.src = ev.target.result;
-          };
-          reader.readAsDataURL(file);
+      // Load current avatar if exists
+      const currentAvatar = document.getElementById('avatarImg');
+      if (currentAvatar && currentAvatar.src && !currentAvatar.src.includes('profile_big.jpg')) {
+        const avatarPreview = document.getElementById('avatarPreview');
+        avatarPreview.innerHTML = `<img src="${currentAvatar.src}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        avatarPreview.classList.add('has-image');
+
+        const avatarBtn = document.getElementById('avatarBtn');
+        avatarBtn.classList.add('has-image');
+        avatarBtn.innerHTML = '<i class="fa fa-trash"></i><span>Xóa ảnh</span>';
+        avatarBtn.onclick = removeAvatar;
+
+        document.getElementById('fileInfo').textContent = 'Ảnh hiện tại';
+      }
+
+      // Show modal
+      if (typeof $ !== 'undefined') {
+        $('#editProfileModal').modal('show');
+      } else {
+        document.getElementById('editProfileModal').style.display = 'block';
+      }
+    }
+
+    function saveProfile() {
+      const form = document.getElementById('editProfileForm');
+      const formData = new FormData(form);
+
+      // Basic validation
+      const fullName = formData.get('fullName');
+      const email = formData.get('email');
+
+      if (!fullName || fullName.trim() === '') {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Thông tin thiếu!',
+          text: 'Vui lòng nhập họ và tên!',
+          confirmButtonColor: '#1ab394'
+        });
+        return;
+      }
+
+      if (!email || email.trim() === '') {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Thông tin thiếu!',
+          text: 'Vui lòng nhập email!',
+          confirmButtonColor: '#1ab394'
+        });
+        return;
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Email không hợp lệ!',
+          confirmButtonColor: '#1ab394'
+        });
+        return;
+      }
+
+      // Phone validation (if provided)
+      const phone = formData.get('phone');
+      if (phone && phone.trim() !== '') {
+        const phoneRegex = /^[0-9]{10,11}$/;
+        if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Số điện thoại không hợp lệ!',
+            confirmButtonColor: '#1ab394'
+          });
+          return;
+        }
+      }
+
+      // Show loading state
+      const saveBtn = document.querySelector('#editProfileModal .btn-modern');
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...';
+      saveBtn.disabled = true;
+
+      // Send AJAX request to update profile
+      fetch('/profile/update', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Thành công!',
+            text: data.message || 'Thông tin đã được cập nhật thành công!',
+            confirmButtonColor: '#1ab394',
+            timer: 2000,
+            timerProgressBar: true
+          }).then(() => {
+            if (typeof $ !== 'undefined') {
+              $('#editProfileModal').modal('hide');
+            } else {
+              document.getElementById('editProfileModal').style.display = 'none';
+            }
+            // Reload page to see changes
+            window.location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: data.message || 'Có lỗi xảy ra khi cập nhật thông tin!',
+            confirmButtonColor: '#1ab394'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi!',
+          text: 'Có lỗi xảy ra khi cập nhật thông tin!',
+          confirmButtonColor: '#1ab394'
+        });
+      })
+      .finally(() => {
+        // Reset button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+      });
+    }
+
+    function changePassword() {
+      // Show confirmation before redirecting
+      Swal.fire({
+        title: 'Đổi mật khẩu',
+        text: 'Bạn có muốn đổi mật khẩu không?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#1ab394',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fa fa-check"></i> Có, đổi mật khẩu',
+        cancelButtonText: '<i class="fa fa-times"></i> Hủy'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to change password page
+          window.location.href = '/profile/change-password';
+        }
+      });
+    }
+
+    function manageAddress() {
+      // Show confirmation before redirecting
+      Swal.fire({
+        title: 'Quản lý địa chỉ',
+        text: 'Bạn có muốn quản lý địa chỉ giao hàng không?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#1ab394',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fa fa-map-marker"></i> Có, quản lý địa chỉ',
+        cancelButtonText: '<i class="fa fa-times"></i> Hủy'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to address management page
+          window.location.href = '/profile/address-management';
+        }
+      });
+    }
+
+    function updateUserStats() {
+      // Fetch real user statistics from backend
+      fetch('/profile/stats')
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('orderCount').textContent = data.orderCount || 0;
+          document.getElementById('loyaltyPoints').textContent = data.loyaltyPoints || 0;
+        } else {
+          console.warn('Failed to load user stats:', data.message);
+          // Fallback to mock data
+          document.getElementById('orderCount').textContent = Math.floor(Math.random() * 50);
+          document.getElementById('loyaltyPoints').textContent = Math.floor(Math.random() * 1000);
+        }
+      })
+      .catch(error => {
+        console.error('Error loading user stats:', error);
+        // Fallback to mock data
+        document.getElementById('orderCount').textContent = Math.floor(Math.random() * 50);
+        document.getElementById('loyaltyPoints').textContent = Math.floor(Math.random() * 1000);
+      });
+    }
+
+    // Handle avatar click to change image
+    document.addEventListener('DOMContentLoaded', function() {
+      const avatar = document.getElementById('avatarImg');
+      if (avatar) {
+        avatar.style.cursor = 'pointer';
+        avatar.addEventListener('click', function() {
+          Swal.fire({
+            icon: 'info',
+            title: 'Thay đổi ảnh đại diện',
+            text: 'Nhấp vào "Chỉnh sửa thông tin" để thay đổi ảnh đại diện!',
+            confirmButtonColor: '#1ab394',
+            confirmButtonText: '<i class="fa fa-edit"></i> Chỉnh sửa ngay',
+            showCancelButton: true,
+            cancelButtonColor: '#6c757d',
+            cancelButtonText: 'Đóng'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              editProfile();
+            }
+          });
         });
       }
-    })();
+    });
+
+    // Handle file input change to preview image
+    document.addEventListener('change', function(e) {
+      if (e.target.type === 'file' && e.target.accept === 'image/*') {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            // Preview the image (you can add image preview functionality here)
+            console.log('Image selected:', file.name);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
   </script>
 </section>
 

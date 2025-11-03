@@ -5,159 +5,258 @@
 >
   <section class="container features" th:fragment="content">
     <div class="wrapper wrapper-content animated fadeInRight">
+      <div class="modern-page-header">
+        <div class="header-decoration"></div>
+        <h1 class="page-title">
+          <i class="fa fa-user-plus text-success"></i>
+          <span>Đăng Ký Tài Khoản</span>
+        </h1>
+        <p class="page-subtitle">Tạo tài khoản mới để bắt đầu mua sắm cùng chúng tôi</p>
+        <div class="header-decoration"></div>
+      </div>
       <div class="row">
         <div class="col-lg-12">
-          <div class="navy-line"></div>
-          <h1 class="text-center">ĐĂNG KÝ</h1>
-          <div class="row">
-            <form class="m-t" role="form" action="index.html">
-              <div class="col-md-4">
-                <div class="form-group">
-                  <label for="name"
-                    >Email <span style="color: red">(*)</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Email"
-                    required=""
-                  />
+          <div class="ibox modern-register-card">
+            <div class="ibox-title modern-card-title">
+              <h5><i class="fa fa-edit text-white"></i> Thông Tin Đăng Ký</h5>
+            </div>
+            <div class="ibox-content modern-card-content">
+              <form class="modern-register-form" role="form" action="index.html">
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="register-section">
+                      <h6 class="section-title">
+                        <i class="fa fa-user text-primary"></i>
+                        Thông Tin Đăng Nhập
+                      </h6>
+
+                      <div class="form-field">
+                        <label class="field-label">
+                          <i class="fa fa-envelope text-info"></i>
+                          Email <span class="required">*</span>
+                        </label>
+                        <input type="email" id="email" name="email" class="form-input-modern" placeholder="Nhập địa chỉ email" required />
+                        <span class="text-danger" id="error-email"></span>
+                      </div>
+
+                      <div class="form-field">
+                        <label class="field-label">
+                          <i class="fa fa-user text-success"></i>
+                          Tên Đăng Nhập <span class="required">*</span>
+                        </label>
+                        <input type="text" id="userName" name="userName" class="form-input-modern" placeholder="Nhập tên đăng nhập" required />
+                        <span class="text-danger" id="error-userName"></span>
+                      </div>
+
+                      <div class="form-field">
+                        <label class="field-label">
+                          <i class="fa fa-lock text-warning"></i>
+                          Mật Khẩu <span class="required">*</span>
+                        </label>
+                        <input type="password" id="password" name="password" class="form-input-modern" placeholder="Nhập mật khẩu" required />
+                        <span class="text-danger" id="error-password"></span>
+                      </div>
+
+                      <div class="form-field">
+                        <label class="field-label">
+                          <i class="fa fa-phone text-primary"></i>
+                          Số Điện Thoại <span class="required">*</span>
+                        </label>
+                        <input type="tel" id="sdt" name="phone" class="form-input-modern"
+                               placeholder="Nhập số điện thoại" />
+                        <span class="text-danger" id="error-phone"></span>
+                      </div>
+                    </div>
+                  </div>
+
+              <!-- Personal Information Section -->
+              <div class="register-section">
+                <div class="section-title">
+                  <i class="fa fa-user"></i>
+                  Thông tin cá nhân
                 </div>
-                <div class="form-group">
-                  <label for="name"
-                    >Tên Đăng Nhập <span style="color: red">(*)</span></label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Tên Đăng Nhập"
-                    required=""
-                  />
-                </div>
-                <div class="form-group">
-                  <label for="password"
-                    >Mật Khẩu <span style="color: red">(*)</span></label
-                  >
-                  <input
-                    type="password"
-                    class="form-control"
-                    placeholder="Mật Khẩu"
-                    required=""
-                  />
-                </div>
-                <div class="form-group">
-                  <label
-                    >Số Điện Thoại <span style="color: red">(*)</span></label
-                  >
-                  <input
-                    type="text"
-                    id="sdt"
-                    name="phone"
-                    placeholder="Nhập Số Điện Thoại"
-                    class="form-control"
-                  />
-                </div>
-              </div>
-              <div class="col-md-8">
+
                 <div class="row">
                   <div class="col-md-6">
-                    <div class="form-group">
-                      <label>Họ Tên <span style="color: red">(*)</span></label>
+                    <div class="form-field">
+                      <label class="field-label">
+                        <i class="fa fa-user"></i>
+                        Họ Tên
+                        <span class="required">*</span>
+                      </label>
                       <input
                         type="text"
                         id="hoTen"
                         name="fullName"
-                        placeholder="Nhập Họ Tên"
-                        class="form-control"
+                        placeholder="Nhập họ và tên đầy đủ"
+                        class="form-input-modern"
                       />
                       <span class="text-danger" id="error-hoTen"></span>
                     </div>
-                    <div class="form-group" id="ngaySinhGroup">
-                      <label
-                        >Ngày Sinh <span style="color: red">(*)</span></label
-                      >
+
+                    <div class="form-field" id="ngaySinhGroup">
+                      <label class="field-label">
+                        <i class="fa fa-calendar"></i>
+                        Ngày Sinh
+                        <span class="required">*</span>
+                      </label>
                       <input
                         type="date"
                         id="dob"
                         name="dateOfBirth"
                         lang="vi"
-                        class="form-control"
+                        class="form-input-modern"
                       />
                       <span class="text-danger" id="error-dob"></span>
                     </div>
-                    <div class="form-group">
-                      <label style="margin-top: 7px">Giới Tính</label>
-                      <div class="row" style="display: flex; margin-left: 2px">
-                        <div class="i-checks">
-                          <label>
+
+                    <div class="form-field">
+                      <label class="field-label">
+                        <i class="fa fa-venus-mars"></i>
+                        Giới Tính
+                      </label>
+                      <div class="gender-options">
+                        <div class="gender-option">
+                          <label class="gender-radio-label">
                             <input
                               type="radio"
                               value="true"
                               id="genderNam"
                               name="gender"
                             />
-                            Nam
+                            <div class="radio-custom"></div>
+                            <div class="gender-content">
+                              <i class="fa fa-mars text-primary"></i>
+                              Nam
+                            </div>
                           </label>
                         </div>
-                        <div class="i-checks m-l">
-                          <label>
+                        <div class="gender-option">
+                          <label class="gender-radio-label">
                             <input
                               type="radio"
                               value="false"
                               id="genderNu"
                               name="gender"
                             />
-                            Nữ
+                            <div class="radio-custom"></div>
+                            <div class="gender-content">
+                              <i class="fa fa-venus text-danger"></i>
+                              Nữ
+                            </div>
                           </label>
                         </div>
                       </div>
                     </div>
                   </div>
+
                   <div class="col-md-6">
-                    <div class="form-group">
-                      <label>Ảnh Đại Diện</label>
-                      <div
-                        id="avatarDropzone"
-                        class="dropzone dz-clickable"
-                      ></div>
-                      <input
-                        type="file"
-                        id="avatarInput"
-                        name="avatar"
-                        style="display: none"
-                      />
-                      <span class="text-danger" id="error-avatar"></span>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <div class="form-group">
-                      <label>Địa Chỉ <span style="color: red">(*)</span></label>
-                      <input
-                        type="text"
-                        id="diaChi"
-                        name="address"
-                        placeholder="Nhập Địa Chỉ"
-                        class="form-control"
-                      />
+                    <div class="form-field">
+                      <label class="field-label">
+                        <i class="fa fa-image"></i>
+                        Ảnh Đại Diện
+                      </label>
+                      <div class="avatar-upload-section">
+                        <div
+                          id="avatarDropzone"
+                          class="avatar-dropzone"
+                        >
+                          <div class="dropzone-content">
+                            <i class="fa fa-cloud-upload"></i>
+                            <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                            <small>Chấp nhận: JPG, PNG, GIF (Max: 5MB)</small>
+                          </div>
+                        </div>
+                        <input
+                          type="file"
+                          id="avatarInput"
+                          name="avatar"
+                          style="display: none"
+                          accept="image/*"
+                        />
+                        <span class="text-danger" id="error-avatar"></span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div class="form-group">
-                <div class="col-md-5"></div>
-                <div class="col-md-2">
-                  <button
-                    type="submit"
-                    class="btn btn-primary block full-width m-b"
-                    id="btnRegister"
-                  >
-                    Đăng Ký
-                  </button>
+            <!-- Address Information Section -->
+            <div class="register-section">
+              <div class="section-title">
+                <i class="fa fa-map-marker"></i>
+                Thông tin địa chỉ
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-field">
+                    <label class="field-label">
+                      <i class="fa fa-building"></i>
+                      Tỉnh/Thành phố
+                      <span class="required">*</span>
+                    </label>
+                    <select
+                      id="provinceSelect"
+                      name="provinceCode"
+                      class="form-select-modern"
+                      required=""
+                    >
+                      <option value="">Chọn Tỉnh/Thành phố</option>
+                    </select>
+                    <span class="text-danger" id="error-province"></span>
+                  </div>
                 </div>
-                <div class="col-md-5"></div>
+                <div class="col-md-6">
+                  <div class="form-field">
+                    <label class="field-label">
+                      <i class="fa fa-map"></i>
+                      Phường/Xã
+                      <span class="required">*</span>
+                    </label>
+                    <select
+                      id="communeSelect"
+                      name="communeCode"
+                      class="form-select-modern"
+                      required=""
+                      disabled
+                    >
+                      <option value="">Chọn Phường/Xã</option>
+                    </select>
+                    <span class="text-danger" id="error-commune"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-field">
+                    <label class="field-label">
+                      <i class="fa fa-home"></i>
+                      Địa chỉ cụ thể
+                    </label>
+                    <input
+                      type="text"
+                      id="specificAddress"
+                      name="specificAddress"
+                      placeholder="Số nhà, đường, khu vực..."
+                      class="form-input-modern"
+                    />
+                  </div>
+                </div>
+              </div>
+              </div>
+
+              <!-- Submit Button Section -->
+              <div class="text-center">
+                <button
+                  type="submit"
+                  class="btn-submit-register"
+                  id="btnRegister"
+                >
+                  <i class="fa fa-user-plus"></i>
+                  Đăng Ký Tài Khoản
+                </button>
               </div>
             </form>
           </div>
@@ -165,6 +264,401 @@
         <hr />
       </div>
     </div>
-  </section>
-</html>
 
+  <!-- Modern Register Styling -->
+  <style>
+    /* ===== MODERN PAGE HEADER ===== */
+    .modern-page-header {
+      text-align: center;
+      margin: 40px 0;
+      position: relative;
+    }
+
+    .header-decoration {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #1ab394, transparent);
+      margin: 20px auto;
+      width: 200px;
+      border-radius: 2px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .page-title i {
+      font-size: 36px;
+    }
+
+    .page-subtitle {
+      color: #6c757d;
+      font-size: 16px;
+      margin: 10px 0 0 0;
+      font-style: italic;
+    }
+
+    .modern-register-card .ibox-content {
+      padding: 30px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-radius: 12px;
+      border: 1px solid #e3f2fd;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .modern-card-title {
+      background: linear-gradient(135deg, #1ab394, #0eb493);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      padding: 18px 25px;
+      border: none;
+    }
+
+    .modern-card-title h5 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ===== REGISTER SECTIONS ===== */
+    .register-section {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .section-title {
+      color: #2c3e50;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ===== FORM FIELDS ===== */
+    .form-field {
+      margin-bottom: 18px;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 8px;
+      font-size: 14px;
+      gap: 8px;
+    }
+
+    .required {
+      color: #dc3545;
+      margin-left: 4px;
+    }
+
+    .form-input-modern, .form-select-modern {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .form-input-modern:focus, .form-select-modern:focus {
+      outline: none;
+      border-color: #1ab394;
+      box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+
+    /* ===== GENDER OPTIONS ===== */
+    .gender-options {
+      display: flex;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .gender-option {
+      flex: 1;
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .gender-option:hover {
+      border-color: #1ab394;
+    }
+
+    .gender-radio-label {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      cursor: pointer;
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .gender-radio-label input[type="radio"] {
+      display: none;
+    }
+
+    .radio-custom {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ddd;
+      border-radius: 50%;
+      margin-right: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .gender-radio-label input[type="radio"]:checked + .radio-custom {
+      border-color: #1ab394;
+      background: #1ab394;
+    }
+
+    .gender-radio-label input[type="radio"]:checked + .radio-custom::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+    background: white;
+      border-radius: 50%;
+      margin: 4px;
+    }
+
+    .gender-content {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .gender-option:has(input:checked) {
+      border-color: #1ab394;
+      background: linear-gradient(135deg, #f0fff4, #ffffff);
+    }
+
+    /* ===== AVATAR UPLOAD ===== */
+    .avatar-upload-section {
+      margin-top: 10px;
+    }
+
+    .avatar-dropzone {
+      border: 2px dashed #e9ecef;
+      border-radius: 10px;
+      padding: 30px 20px;
+      text-align: center;
+      background: #f8f9fa;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .avatar-dropzone:hover {
+      border-color: #28a745;
+      background: #f0fff4;
+    }
+
+    .dropzone-content i {
+      font-size: 40px;
+      color: #6c757d;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .dropzone-content p {
+      color: #2c3e50;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .dropzone-content small {
+      color: #6c757d;
+      font-size: 12px;
+    }
+
+    /* ===== SUBMIT BUTTON ===== */
+    .btn-submit-register {
+      background: linear-gradient(135deg, #1ab394, #0eb493);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px auto;
+    }
+
+    .btn-submit-register:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      background: linear-gradient(135deg, #218838, #17a2b8);
+    }
+
+    /* ===== FORM VALIDATION STATES ===== */
+    .form-input-modern.is-invalid,
+    .form-select-modern.is-invalid {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    }
+
+    .text-danger {
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 5px;
+      display: block;
+    }
+
+    /* ===== LOADING STATE ===== */
+    .btn-submit-register:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-submit-register.loading {
+      position: relative;
+      color: transparent;
+    }
+
+    .btn-submit-register.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin-left: -10px;
+      margin-top: -10px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== SELECT2 STYLES ===== */
+    .select2-container {
+      width: 100% !important;
+    }
+
+    .select2-selection {
+      height: 48px !important;
+      border: 2px solid #e9ecef !important;
+      border-radius: 8px !important;
+    }
+
+    .select2-selection__rendered {
+      line-height: 44px !important;
+      padding-left: 16px !important;
+      color: #495057 !important;
+    }
+
+    .select2-selection__placeholder {
+      color: #6c757d !important;
+    }
+
+    .select2-selection__arrow {
+      height: 44px !important;
+      right: 10px !important;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection {
+      border-color: #1ab394 !important;
+      box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1) !important;
+    }
+
+    .select2-dropdown {
+      border: 2px solid #e9ecef !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    }
+
+    .select2-results__option--highlighted {
+      background-color: #1ab394 !important;
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .register-section {
+        margin-bottom: 15px;
+      }
+
+      .gender-options {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .modern-register-card .ibox-content {
+        padding: 20px;
+      }
+    }
+  </style>
+
+  </section>
+
+  <!-- Debug Script -->
+  <script>
+    $(document).ready(function() {
+      console.log("Register page loaded");
+      console.log("jQuery version:", $.fn.jquery);
+      console.log("Select2 available:", typeof $.fn.select2 !== 'undefined');
+      console.log("Province select exists:", $("#provinceSelect").length > 0);
+      console.log("Commune select exists:", $("#communeSelect").length > 0);
+
+      // Test API directly
+      setTimeout(function() {
+        console.log("=== Testing API directly ===");
+        fetch('/api/provinces')
+          .then(response => {
+            console.log("Fetch response status:", response.status);
+            console.log("Fetch response headers:", response.headers);
+            return response.text();
+          })
+          .then(text => {
+            console.log("Raw response text:", text);
+            try {
+              const json = JSON.parse(text);
+              console.log("Parsed JSON:", json);
+              console.log("Is parsed JSON an array:", Array.isArray(json));
+            } catch (e) {
+              console.log("Failed to parse as JSON:", e);
+            }
+          })
+          .catch(error => {
+            console.error("Fetch error:", error);
+          });
+      }, 1000);
+    });
+  </script>
+</html>

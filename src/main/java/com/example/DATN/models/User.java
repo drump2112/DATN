@@ -45,8 +45,9 @@ public class User {
 	@Column(name = "FullName", length = 100)
 	private String fullName;
 
-	@Column(name = "Address", columnDefinition = "nvarchar(max)")
-	private String address;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "AddressID")
+	private Address address;
 
 	@Column(name = "Phone", length = 10)
 	private String phone;

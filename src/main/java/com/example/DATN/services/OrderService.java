@@ -30,4 +30,10 @@ public interface OrderService {
   OrderDTO getOrderById(Integer orderId);
 
   boolean updateOrderStatus(Integer orderId, String status);
+
+  Order findById(Integer orderId);
+
+  void updatePaymentStatus(Order order, String status, String transactionNo);
+
+  void processOrderItems(Order order);
 }

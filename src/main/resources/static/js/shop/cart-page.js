@@ -6,50 +6,66 @@ $(document).ready(function () {
 
   function renderCart(cart) {
     const $tbody = $(".shoping-cart-table tbody");
+    const $tableContainer = $("#cartTableContainer");
+    const $emptyState = $("#emptyCartState");
+    const $productCount = $(".product-count strong");
+
     $tbody.empty();
 
+    // Update product count
+    $productCount.text(cart ? cart.length : 0);
+
     if (!cart || cart.length === 0) {
-      $tbody.append(`
-      <tr>
-        <td colspan="5" class="text-center">Giỏ hàng trống</td>
-      </tr>
-    `);
+      // Show empty state
+      $tableContainer.hide();
+      $emptyState.show();
       $(".cart-summary-total").text("0 VNĐ");
-      $(".ibox-title .pull-right strong").text("0");
+      $("#subtotalAmount").text("0 VNĐ");
       return;
     }
+
+    // Hide empty state and show table
+    $emptyState.hide();
+    $tableContainer.show();
 
     cart.forEach((item, index) => {
       $tbody.append(`
       <tr data-variant-id="${item.variantId}">
-        <td width="90">
-          <img src="${item.image}" alt="${item.name}" style="width:80px;height:auto;"/>
-        </td>
-        <td class="desc">
-          <h3>${item.name}-${item.variantCode}</h3>
-          <p><small>Màu: ${item.colorName} | Size: ${item.sizeName}</small></p>
-        </td>
-        <td>${item.price.toLocaleString()} VNĐ</td>
         <td>
-          <input type="number" min="1" class="form-control quantity-input" value="${item.quantity}" style="width:80px"/>
+          <img src="${item.image || '/static/assets/img/no-image.png'}" alt="${item.name}" class="product-image"/>
+        </td>
+        <td class="product-info">
+          <div class="product-name">${item.name}-${item.variantCode}</div>
+          <div class="product-variant">Màu: ${item.colorName} | Size: ${item.sizeName}</div>
         </td>
         <td>
-          <strong>${(item.price * item.quantity).toLocaleString()} VNĐ</strong>
+          <span class="price-display">${item.price.toLocaleString()} VNĐ</span>
         </td>
         <td>
-          <button class="btn btn-danger btn-sm remove-item">
-            <i class="fa fa-trash"></i>
-          </button>
+          <div class="quantity-controls">
+            <input type="number" min="1" class="quantity-input" value="${item.quantity}"/>
+          </div>
+        </td>
+        <td>
+          <span class="total-price">${(item.price * item.quantity).toLocaleString()} VNĐ</span>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-remove remove-item">
+              <i class="fa fa-trash"></i> Xóa
+            </button>
+          </div>
         </td>
       </tr>
     `);
     });
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    $(".cart-summary-total").text(total.toLocaleString() + " VNĐ");
+    const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    $(".cart-summary-total").text(subtotal.toLocaleString() + " VNĐ");
+    $("#subtotalAmount").text(subtotal.toLocaleString() + " VNĐ");
 
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    $(".ibox-title .pull-right strong").text(totalItems);
+    $productCount.text(cart.length);
   }
 
   function loadCart() {
@@ -74,25 +90,14 @@ $(document).ready(function () {
 
     if (!variantId) {
       console.error("Variant ID not found");
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi',
-        text: 'Không thể xóa sản phẩm. Vui lòng thử lại!',
-        confirmButtonText: 'OK'
-      });
+      SwalUtils.error('Lỗi', 'Không thể xóa sản phẩm. Vui lòng thử lại!');
       return;
     }
 
-    Swal.fire({
-      title: 'Xác nhận xóa',
-      text: 'Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Xóa',
-      cancelButtonText: 'Hủy'
-    }).then((result) => {
+    SwalUtils.confirmDelete(
+      'Xác nhận xóa',
+      'Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?'
+    ).then((result) => {
       if (result.isConfirmed) {
         $.ajax({
           url: `/cart/remove/${variantId}`,
@@ -103,23 +108,12 @@ $(document).ready(function () {
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             $("#cart-count").text(totalItems);
 
-            Swal.fire({
-              icon: 'success',
-              title: 'Thành công',
-              text: 'Đã xóa sản phẩm khỏi giỏ hàng',
-              timer: 1500,
-              showConfirmButton: false
-            });
+            SwalUtils.toast('success', 'Đã xóa sản phẩm khỏi giỏ hàng', { timer: 1500 });
           },
           error: function (xhr, status, error) {
             console.error("Error removing item:", xhr, status, error);
             console.error("Response:", xhr.responseText);
-            Swal.fire({
-              icon: 'error',
-              title: 'Lỗi',
-              text: 'Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại!',
-              confirmButtonText: 'OK'
-            });
+            SwalUtils.error('Lỗi', 'Có lỗi xảy ra khi xóa sản phẩm. Vui lòng thử lại!');
           }
         });
       }

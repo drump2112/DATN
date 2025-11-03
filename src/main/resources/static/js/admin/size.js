@@ -63,7 +63,7 @@ function validateSizeName() {
     }
 
     if (errorMessage) {
-        Swal.fire("Lỗi!", errorMessage, "error");
+        SwalUtils.showErrorAlert("Lỗi!", errorMessage);
         return false;
     }
     return true;
@@ -74,13 +74,11 @@ function validateSizeName() {
 $("#btnAddSize").click(function () {
     if (!validateSizeName()) return; //   check trước khi gửi
 
-    Swal.fire({
-        title: "Xác nhận thêm kích thước?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Thêm",
-        cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.showConfirmDialog(
+        "Xác nhận thêm kích thước?",
+        "Thêm",
+        "Hủy"
+    ).then((result) => {
         if (result.isConfirmed) {
             const formData = new FormData();
             formData.append("id", $("#id").val().trim());
@@ -95,7 +93,7 @@ $("#btnAddSize").click(function () {
                 contentType: false,
                 data: formData,
                 success: function (response) {
-                    Swal.fire("Thành công!", response.message, "success");
+                    SwalUtils.showSuccessToast(response.message);
 
                     $("#myModal").modal("hide");
 
@@ -109,10 +107,9 @@ $("#btnAddSize").click(function () {
                     });
                 },
                 error: function (xhr) {
-                    Swal.fire(
+                    SwalUtils.showErrorAlert(
                         "Lỗi!",
-                        xhr.responseJSON?.message || "Thêm thất bại",
-                        "error",
+                        xhr.responseJSON?.message || "Thêm thất bại"
                     );
                 },
             });
@@ -159,31 +156,24 @@ window.toggleStatus = function (userId, isActive) {
         : "Bạn có chắc muốn kích hoạt kích thước này?";
 
 
-    Swal.fire({
-        title: title,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Xác nhận",
-        cancelButtonText: "Hủy",
-        customClass: {
-            popup: "swal-pop-zindex",
-        },
-        backdrop: `rgba(0, 0, 0, 0.4)`,
-    }).then((result) => {
+    SwalUtils.showWarningConfirmDialog(
+        title,
+        "Xác nhận",
+        "Hủy"
+    ).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
                 url: `/admin/size/${userId}/toggle-status`,
                 type: "PUT",
                 success: function (data) {
-                    Swal.fire("Thành công", data.message, "success");
+                    SwalUtils.showSuccessToast(data.message);
                     const currentPage = getCurrentPage();
                     searchSize(currentPage);
                 },
                 error: function (xhr) {
-                    Swal.fire(
-                        "Lỗi",
-                        xhr.responseJSON?.message || "Có lỗi xảy ra",
-                        "error",
+                    SwalUtils.showErrorAlert(
+                        "Lỗi!",
+                        xhr.responseJSON?.message || "Có lỗi xảy ra"
                     );
                 },
             });
@@ -195,13 +185,11 @@ $("#btnUpdate").on("click", function () {
     if (!validateSizeName(false)) return;
 
 
-    Swal.fire({
-        title: "Xác nhận cập nhật kích thước?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Cập nhật",
-        cancelButtonText: "Hủy",
-    }).then((result) => {
+    SwalUtils.showConfirmDialog(
+        "Xác nhận cập nhật kích thước",
+        "Cập nhật",
+        "Hủy"
+    ).then((result) => {
         if (result.isConfirmed) {
             const formData = new FormData();
             formData.append("sizeCode", $("#code").val().trim());
@@ -216,7 +204,7 @@ $("#btnUpdate").on("click", function () {
                 processData: false,
                 contentType: false,
                 success: function (response) {
-                    Swal.fire("Cập nhật thành công!", response.message, "success");
+                    SwalUtils.showSuccessToast(response.message);
                     $("#myModal").modal("hide");
                     const currentPage = $("#colorForm").data("current-page") || 0;
                     searchSize(currentPage);

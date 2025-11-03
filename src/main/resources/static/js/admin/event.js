@@ -295,13 +295,11 @@ $(document).on("click", "#btnSaveEvent", function () {
 
 
 
-   Swal.fire({
-       title: "Xác nhận thêm event?",
-       icon: "question",
-       showCancelButton: true,
-       confirmButtonText: "Thêm",
-       cancelButtonText: "Hủy",
-   }).then((result) => {
+   SwalUtils.showConfirmDialog(
+       "Xác nhận thêm sự kiện?",
+       "Thêm",
+       "Hủy"
+   ).then((result) => {
        if (result.isConfirmed) {
            const formData = new FormData($("#eventForm")[0]);
            formData.append("isActive", $("#eventIsActive").val());
@@ -319,13 +317,13 @@ $(document).on("click", "#btnSaveEvent", function () {
                    $("#btnSaveEvent").prop("disabled", true).text("Đang thêm...");
                },
                success: function (response) {
-                   Swal.fire("Thành công!", response.message, "success");
+                   SwalUtils.showSuccessToast(response.message);
                    $("#modalEvent").modal("hide");
                    refreshEventTable();
                    searchEvent($("#paginationContainer").data("current-page") || 0);
                },
                error: function (xhr) {
-                   Swal.fire("Lỗi!", xhr.responseJSON?.message || "Thêm thất bại!", "error");
+                   SwalUtils.showErrorAlert("Lỗi!", xhr.responseJSON?.message || "Thêm thất bại!");
                },
                complete: function () {
                    $("#btnSaveEvent").prop("disabled", false).text("Thêm/Lưu");
@@ -369,12 +367,12 @@ $(document).on("click", "#btnUpdateEvent", function () {
                    $("#btnUpdateEvent").prop("disabled", true).text("Đang cập nhật...");
                },
                success: function (response) {
-                   Swal.fire("Thành công!", response.message, "success");
+                   SwalUtils.showSuccessToast(response.message);
                    searchEvent($("#paginationContainer").data("current-page") || 0);
                    $("#modalEvent").modal("hide");
                },
                error: function (xhr) {
-                   Swal.fire("Lỗi!", xhr.responseJSON?.message || "Cập nhật thất bại!", "error");
+                   SwalUtils.showErrorAlert("Lỗi!", xhr.responseJSON?.message || "Cập nhật thất bại!");
                },
                complete: function () {
                    $("#btnUpdateEvent").prop("disabled", false).text("Cập Nhật");
@@ -404,7 +402,7 @@ function searchEvent(page = 0) {
            $("#eventTableContainer").html(response);
        },
        error: function () {
-           // Swal.fire("Lỗi!", "Không tải được dữ liệu event!", "error");
+           // SwalUtils.showErrorAlert("Lỗi!", "Không tải được dữ liệu event!");
            searchEvent(0);
        }
    });
@@ -434,11 +432,11 @@ window.toggleEventStatus = function (eventId, isActive) {
                    $(`button[data-id="${eventId}"]`).prop("disabled", true);
                },
                success: function (data) {
-                   Swal.fire("Thành công!", data.message, "success");
+                   SwalUtils.showSuccessToast(data.message);
                    searchEvent($("#paginationContainer").data("current-page") || 0);
                },
                error: function (xhr) {
-                   Swal.fire("Lỗi!", xhr.responseJSON?.message || "Có lỗi xảy ra!", "error");
+                   SwalUtils.showErrorAlert("Lỗi!", xhr.responseJSON?.message || "Có lỗi xảy ra!");
                },
                complete: function () {
                    $(`button[data-id="${eventId}"]`).prop("disabled", false);

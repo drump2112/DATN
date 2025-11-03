@@ -1,6 +1,6 @@
 <th:block th:fragment="script">
-    <script th:src="@{/assets/js/bootstrap.min.js}"></script>
     <script th:src="@{/assets/js/jquery-3.1.1.min.js}"></script>
+    <script th:src="@{/assets/js/bootstrap.min.js}"></script>
     <script th:src="@{/assets/js/plugins/slimscroll/jquery.slimscroll.min.js}"></script>
     <script th:src="@{/assets/js/plugins/steps/jquery.steps.min.js}"></script>
     <script th:src="@{/assets/js/inspinia.js}"></script>
@@ -9,7 +9,11 @@
     <script th:src="@{/assets/js/plugins/slick/slick.min.js}"></script>
     <script th:src="@{/assets/js/plugins/iCheck/icheck.min.js}"></script>
     <script th:src="@{/assets/js/plugins/dropzone/dropzone.js}"></script>
+    <!-- Select2 JS -->
+    <script th:src="@{/assets/js/plugins/select2/select2.full.min.js}"></script>
     <script th:src="'https://cdn.jsdelivr.net/npm/sweetalert2@11'"></script>
+    <!-- SweetAlert Config - phải load sau SweetAlert2 -->
+    <script th:src="@{/js/sweetalert-config.js}"></script>
     <script th:src="@{/assets/js/plugins/toastr/toastr.min.js}"></script>
     <script th:src="@{/js/shop/cart-icon.js}"></script>
     <script th:src="@{/js/shop/product-detail.js}"></script>
@@ -80,6 +84,4 @@
 
         new WOW().init();
     </script>
-
-    <script th:src="@{/assets/js/bootstrap.min.js}"></script>
 </th:block>

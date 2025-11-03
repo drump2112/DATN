@@ -1,6 +1,24 @@
 Dropzone.autoDiscover = false;
 var avatarDropzone = null;
 $(document).ready(function () {
+   // === Load dữ liệu tỉnh/thành phố ===
+   loadProvinces();
+
+   // === Xử lý thay đổi tỉnh/thành phố ===
+   $(document).on('change', '#tinhThanh', function() {
+       const provinceCode = $(this).val();
+       console.log("Province code selected:", provinceCode);
+       $("#phuongXa").empty().append('<option value="">-- Chọn Phường/Xã --</option>');
+
+       if (provinceCode) {
+           console.log("Loading communes for province:", provinceCode);
+           loadCommunes(provinceCode);
+           $("#phuongXa").prop("disabled", false);
+       } else {
+           $("#phuongXa").prop("disabled", true);
+       }
+   });
+
    // === Khởi tạo Dropzone ===
    avatarDropzone = new Dropzone("#avatarDropzone", {
        url: "/dummy-upload",
@@ -69,11 +87,14 @@ $(document).ready(function () {
                pattern: /^(03|05|07|08|09)\d{8}$/,
            },
            dateOfBirth: {required: true},
-           address: {
+           tinhThanh: {required: true},
+           phuongXa: {required: true},
+           specificAddress: {
                normalizer: function (value) {
                    return $.trim(value);
                },
                required: true,
+               maxlength: 100,
            },
        },
        messages: {
@@ -92,7 +113,12 @@ $(document).ready(function () {
                pattern: "Số điện thoại không hợp lệ",
            },
            dateOfBirth: {required: "Chọn ngày sinh"},
-           address: {required: "Địa chỉ không được để trống"},
+           tinhThanh: {required: "Vui lòng chọn Tỉnh/Thành phố"},
+           phuongXa: {required: "Vui lòng chọn Phường/Xã"},
+           specificAddress: {
+               required: "Địa chỉ cụ thể không được để trống",
+               maxlength: "Địa chỉ cụ thể không quá 100 ký tự",
+           },
        },
        errorPlacement: function (error, element) {
            element.before(error);
@@ -128,6 +154,11 @@ $(document).ready(function () {
        $('input[name="gender"]').iCheck("uncheck");
        $("#genderNam").iCheck("check");
 
+       // Reset địa chỉ
+       $("#tinhThanh").val("").prop("disabled", false);
+       $("#phuongXa").val("").prop("disabled", true);
+       $("#specificAddress").val("").prop("readonly", false);
+
 
        if (avatarDropzone) avatarDropzone.removeAllFiles(true);
 
@@ -148,8 +179,25 @@ $(document).ready(function () {
        $("#emailrs").val(data.email).prop("readonly", !isEditable);
        $("#sdtrs").val(data.phone).prop("readonly", !isEditable);
        $("#vaiTro").val(data.role).prop("disabled", !isEditable);
-       $("#diaChi").val(data.address).prop("readonly", !isEditable);
        $("#dob").val(data.dateOfBirth).prop("readonly", !isEditable);
+
+       // Xử lý địa chỉ có cấu trúc
+       if (data.provinceCode && data.communeCode) {
+           // Nếu có dữ liệu địa chỉ cấu trúc mới
+           $("#tinhThanh").val(data.provinceCode).prop("disabled", !isEditable);
+           $("#phuongXa").val(data.communeCode).prop("disabled", !isEditable);
+           $("#specificAddress").val(data.specificAddress).prop("readonly", !isEditable);
+
+           // Load communes cho province được chọn nếu đang ở chế độ edit
+           if (isEditable) {
+               loadCommunes(data.provinceCode);
+           }
+       } else if (data.address) {
+           // Dữ liệu địa chỉ cũ (chuỗi đơn), gán vào địa chỉ cụ thể
+           $("#specificAddress").val(data.address).prop("readonly", !isEditable);
+           $("#tinhThanh").val("").prop("disabled", !isEditable);
+           $("#phuongXa").val("").prop("disabled", true);
+       }
 
 
        $("#ngaySinhGroup").appendTo(".col-sm-6:last");
@@ -198,8 +246,6 @@ $(document).ready(function () {
    }
 
 
-
-
    var validator = $("#updateMatKhauForm").validate({
        messages: {
            rules: {
@@ -232,6 +278,11 @@ $(document).ready(function () {
            userName: $(button).data("username"),
            phone: $(button).data("phone"),
            address: $(button).data("address"),
+           provinceCode: $(button).data("provincecode"),
+           provinceName: $(button).data("provincename"),
+           communeCode: $(button).data("communecode"),
+           communeName: $(button).data("communename"),
+           specificAddress: $(button).data("specificaddress"),
            role: $(button).data("role"),
            avatar: $(button).data("avatar"),
            gender: $(button).data("gender"),
@@ -275,21 +326,23 @@ $(document).ready(function () {
            : "Bạn có chắc muốn kích hoạt tài khoản này?";
 
 
-       Swal.fire({
-           title: title,
-           icon: "warning",
-           showCancelButton: true,
-           confirmButtonText: "Xác nhận",
-           cancelButtonText: "Hủy",
-           customClass: {popup: "swal-pop-zindex"},
-           backdrop: `rgba(0, 0, 0, 0.4)`,
-       }).then((result) => {
+       SwalUtils.confirm(
+           title,
+           "",
+           "Xác nhận",
+           "Hủy",
+           {
+               icon: "warning",
+               customClass: {popup: "swal-pop-zindex"},
+               backdrop: `rgba(0, 0, 0, 0.4)`
+           }
+       ).then((result) => {
            if (result.isConfirmed) {
                $.ajax({
                    url: `/admin/employee/${userId}/toggle-status`,
                    type: "PUT",
                    success: function (data) {
-                       Swal.fire("Thành công", data.message, "success");
+                       SwalUtils.success("Thành công", data.message);
                        const currentPage =
                            parseInt(
                                $("#paginationContainer .paginate_button.active a").text(),
@@ -297,10 +350,9 @@ $(document).ready(function () {
                        searchUser(currentPage);
                    },
                    error: function (xhr) {
-                       Swal.fire(
+                       SwalUtils.error(
                            "Lỗi",
-                           xhr.responseJSON?.message || "Có lỗi xảy ra",
-                           "error",
+                           xhr.responseJSON?.message || "Có lỗi xảy ra"
                        );
                    },
                });
@@ -317,13 +369,12 @@ $(document).ready(function () {
        if (!$("#customerForm").valid()) return;
 
 
-       Swal.fire({
-           title: "Xác nhận thêm Khách hàng?",
-           icon: "question",
-           showCancelButton: true,
-           confirmButtonText: "Thêm",
-           cancelButtonText: "Hủy",
-       }).then((result) => {
+       SwalUtils.confirm(
+           "Xác nhận thêm Khách hàng?",
+           "Bạn có chắc chắn muốn thêm khách hàng với thông tin này?",
+           "Thêm",
+           "Hủy"
+       ).then((result) => {
            if (result.isConfirmed) {
 
 
@@ -353,7 +404,7 @@ $(document).ready(function () {
                    contentType: false,
                    data: formData,
                    success: function (response) {
-                       Swal.fire("Thành công!", response.message, "success");
+                       SwalUtils.success("Thành công!", response.message);
 
 
                        $("#myModal").modal("hide");
@@ -372,10 +423,9 @@ $(document).ready(function () {
                        });
                    },
                    error: function (xhr) {
-                       Swal.fire(
+                       SwalUtils.error(
                            "Lỗi!",
-                           xhr.responseJSON?.message || "Thêm thất bại",
-                           "error",
+                           xhr.responseJSON?.message || "Thêm thất bại"
                        );
                    },
                });
@@ -390,13 +440,12 @@ $(document).ready(function () {
        if (!$("#customerForm").valid()) return;
 
 
-       Swal.fire({
-           title: "Xác nhận cập nhật Khách hàng?",
-           icon: "question",
-           showCancelButton: true,
-           confirmButtonText: "Cập nhật",
-           cancelButtonText: "Hủy",
-       }).then((result) => {
+       SwalUtils.confirm(
+           "Xác nhận cập nhật Khách hàng?",
+           "Bạn có chắc chắn muốn cập nhật thông tin khách hàng này?",
+           "Cập nhật",
+           "Hủy"
+       ).then((result) => {
            if (result.isConfirmed) {
                const formData = new FormData();
                const files = avatarDropzone.getAcceptedFiles();
@@ -404,8 +453,6 @@ $(document).ready(function () {
                    formData.append("avatar", files[0]);
                }
 
-
-               // Chỉ thêm các trường cần thiết, loại bỏ tenDangNhap và matKhau
                $("#customerForm")
                    .serializeArray()
                    .forEach((field) => {
@@ -414,9 +461,7 @@ $(document).ready(function () {
                        }
                    });
 
-
                const employeeId = $("#userId").val();
-
 
                $.ajax({
                    url: `/admin/employee/${employeeId}`,
@@ -425,25 +470,21 @@ $(document).ready(function () {
                    processData: false,
                    contentType: false,
                    success: function (response) {
-                       Swal.fire("Cập nhật thành công!", response.message, "success");
+                       SwalUtils.success("Cập nhật thành công!", response.message);
                        $("#myModal").modal("hide");
                        const currentPage = $("#customerForm").data("current-page") || 0;
                        searchUser(currentPage);
                    },
                    error: function (xhr) {
-                       Swal.fire(
+                       SwalUtils.error(
                            "Lỗi",
-                           xhr.responseJSON?.message || "Cập nhật thất bại",
-                           "error",
+                           xhr.responseJSON?.message || "Cập nhật thất bại"
                        );
                    },
                });
            }
        });
    });
-
-
-
 
    //  reset password
    window.handleResetpMatKhau = function (button) {
@@ -486,13 +527,12 @@ $(document).ready(function () {
 
    $("#btnUpdatematKhau").click(function (e) {
      if (!validatePassword()) return;
-       Swal.fire({
-           title: "Xác nhận cập nhật mật khẩu Khách hàng?",
-           icon: "question",
-           showCancelButton: true,
-           confirmButtonText: "Cập nhật",
-           cancelButtonText: "Hủy",
-       }).then((result) => {
+       SwalUtils.confirm(
+           "Xác nhận cập nhật mật khẩu Khách hàng?",
+           "",
+           "Cập nhật",
+           "Hủy"
+       ).then((result) => {
            if (result.isConfirmed) {
                const passwordValue = document.getElementById("password").value;
                const formData = new FormData();
@@ -505,15 +545,14 @@ $(document).ready(function () {
                    processData: false,
                    contentType: false,
                    success: function (response) {
-                       Swal.fire("Cập nhật mật khẩu thành công!", response.message, "success");
+                       SwalUtils.success("Cập nhật mật khẩu thành công!", response.message);
                        $("#updateMatKhau").modal("hide");
                        searchUser($("#paginationContainer").data("current-page") || 0);
                    },
                    error: function (xhr) {
-                       Swal.fire(
+                       SwalUtils.error(
                            "Lỗi",
-                           xhr.responseJSON?.message || "Cập nhật mật khẩu thất bại",
-                           "error",
+                           xhr.responseJSON?.message || "Cập nhật mật khẩu thất bại"
                        );
                    },
                });
@@ -533,15 +572,13 @@ $(document).ready(function () {
        const userId = $("#id").val()
        console.log(userId + "id để reset")
        console.log(userId + "oge");
-       Swal.fire({
-           title: 'Bạn có chắc muốn cấp lại mật khẩu cho tài khoản này?',
-           icon: 'warning',
-           showCancelButton: true,
-           confirmButtonColor: '#3085d6',
-           cancelButtonColor: '#d33',
-           confirmButtonText: 'Xác nhận',
-           cancelButtonText: 'Hủy'
-       }).then((result) => {
+       SwalUtils.confirm(
+           'Bạn có chắc muốn cấp lại mật khẩu cho tài khoản này?',
+           '',
+           'Xác nhận',
+           'Hủy',
+           { icon: 'warning' }
+       ).then((result) => {
            if (result.isConfirmed) {
                fetch(`/admin/customers/${userId}/resetpassword`, {
                    method: 'PUT'
@@ -551,16 +588,18 @@ $(document).ready(function () {
                        return res.json();
                    })
                    .then(data => {
-                       Swal.fire({
-                           icon: 'success',
-                           title: data.message,
-                           timer: 1500,
-                           showConfirmButton: false
-                       });
+                       SwalUtils.success(
+                           data.message,
+                           '',
+                           {
+                               timer: 1500,
+                               showConfirmButton: false
+                           }
+                       );
                        setTimeout(() => location.reload(), 1000);
                    })
                    .catch(err => {
-                       Swal.fire("Lỗi", err.message, "error");
+                       SwalUtils.error("Lỗi", err.message);
                    });
            }
        });
@@ -572,4 +611,61 @@ $(document).ready(function () {
    window.openAddModal = openAddModal;
    window.searchUser = searchUser;
 });
+
+// === Load danh sách Tỉnh/Thành phố ===
+function loadProvinces() {
+    fetch('/api/provinces')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(provinces => {
+            console.log("Loaded provinces:", provinces);
+            const select = $("#tinhThanh");
+            select.empty();
+            select.append('<option value="">-- Chọn Tỉnh/Thành phố --</option>');
+
+            provinces.forEach(province => {
+                select.append(`<option value="${province.code}">${province.name}</option>`);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading provinces:', error);
+            SwalUtils.error('Lỗi!', 'Không thể tải danh sách tỉnh/thành phố.');
+        });
+}
+
+// === Load danh sách Phường/Xã theo Tỉnh ===
+function loadCommunes(provinceCode) {
+    fetch(`/api/communes?provinceCode=${provinceCode}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(communes => {
+            console.log(`Loaded communes for province ${provinceCode}:`, communes);
+            const select = $("#phuongXa");
+            select.empty();
+            select.append('<option value="">-- Chọn Phường/Xã --</option>');
+
+            if (communes && communes.length > 0) {
+                communes.forEach(commune => {
+                    select.append(`<option value="${commune.code}">${commune.name}</option>`);
+                });
+            } else {
+                console.warn(`No communes found for province code: ${provinceCode}`);
+                select.append('<option value="">Không có dữ liệu phường/xã</option>');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading communes:', error);
+            const select = $("#phuongXa");
+            select.empty();
+            select.append('<option value="">Lỗi tải dữ liệu</option>');
+        });
+}
 
