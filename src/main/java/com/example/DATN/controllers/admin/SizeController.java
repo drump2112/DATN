@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.example.DATN.dtos.SizeDTO;
 import com.example.DATN.request.SizeRequest;
 import com.example.DATN.services.SizeService;
+import com.example.DATN.repositories.SizeRepository;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ public class SizeController {
 
     @Autowired
     private SizeService sizeService;
+
+    @Autowired
+    private SizeRepository sizeRepository;
 
 
     @GetMapping("/")
@@ -131,6 +135,22 @@ public class SizeController {
         boolean newStatus = sizeService.toggleStatus(id);
         String message = newStatus ? "Kích hoạt kích thước thành công" : "Đã khóa kích thước";
         return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    @GetMapping("/check-duplicate")
+    @ResponseBody
+    public ResponseEntity<?> checkSizeNameExists(
+            @RequestParam String name,
+            @RequestParam(required = false) Integer excludeId) {
+        boolean exists;
+        if (excludeId != null) {
+            // Check cho update - loại trừ record hiện tại
+            exists = sizeRepository.existsByNameAndIdNot(name.trim(), excludeId);
+        } else {
+            // Check cho add - kiểm tra tất cả
+            exists = sizeRepository.existsByName(name.trim());
+        }
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 
 }

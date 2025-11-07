@@ -1,6 +1,6 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
-<section class="container features" th:fragment="content">
+<section class="container features" th:fragment="content" style="width: 95%; max-width: 1600px;">
   <div class="wrapper wrapper-content animated fadeInRight">
     <div class="modern-page-header">
       <div class="header-decoration"></div>
@@ -85,32 +85,10 @@
                   <i class="fa fa-credit-card"></i>
                   <span>Đặt Hàng</span>
                 </a>
-                <a th:href="@{/}" class="btn-continue-shopping">
-                  <i class="fa fa-arrow-left"></i>
-                  <span>Tiếp Tục Mua Sắm</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Coupon Card -->
-          <div class="ibox modern-coupon-card">
-            <div class="ibox-title modern-card-title">
-              <h5><i class="fa fa-tags text-white"></i> Mã Giảm Giá</h5>
-            </div>
-            <div class="ibox-content modern-card-content">
-              <div class="coupon-form">
-                <div class="coupon-input-group">
-                  <input type="text" class="coupon-input" placeholder="Nhập mã giảm giá" id="couponCode">
-                  <button class="btn-apply-coupon" type="button">
-                    <i class="fa fa-check"></i>
-                    Áp Dụng
-                  </button>
-                </div>
-                <small class="coupon-hint">
-                  <i class="fa fa-info-circle text-info"></i>
-                  Nhập mã để được giảm giá đặc biệt
-                </small>
+                <button class="btn-continue-shopping">
+                  <i class="fa fa-shopping-bag"></i>
+                  Tiếp Tục Mua Sắm
+                </button>
               </div>
             </div>
           </div>
@@ -449,6 +427,16 @@
       .product-variant {
         color: #6c757d;
         font-size: 12px;
+      }
+
+      .stock-info {
+        margin-top: 4px;
+      }
+
+      .stock-info small {
+        color: #1ab394 !important;
+        font-weight: 600;
+        font-size: 11px;
       }
 
       .price-display {

@@ -131,6 +131,8 @@ public class ColorController {
         String message = newStatus ? "Kích hoạt màu sắc thành công" : "Đã khóa màu sắc";
         return ResponseEntity.ok(Map.of("message", message));
     }
+
+
 }
 
 

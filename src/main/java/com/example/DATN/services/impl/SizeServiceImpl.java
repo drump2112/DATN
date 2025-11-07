@@ -66,8 +66,7 @@ public class SizeServiceImpl implements SizeService {
 
 	@Override
 	public boolean addSize(SizeRequest sizerequest) {
-		if (sizeRepository.existsByName(sizerequest.getName())) {
-			// note
+		if (sizeRepository.existsByName(sizerequest.getName().trim())) {
 			throw new BusinessException("Kích thước đã tồn tại");
 		}
 		Size size = fromRequest(sizerequest);
@@ -77,10 +76,16 @@ public class SizeServiceImpl implements SizeService {
 
 	@Override
 	public boolean updateSize(Integer id, SizeRequest sizerequet) {
-		// check tồn tại
+		// Check tồn tại
 		Size existingSize = sizeRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("Không tìm thấy kích thước có id: " + id));
-		existingSize.setName(sizerequet.getName());
+
+		// Check trùng tên (loại trừ record hiện tại)
+		if (sizeRepository.existsByNameAndIdNot(sizerequet.getName().trim(), id)) {
+			throw new BusinessException("Kích thước đã tồn tại");
+		}
+
+		existingSize.setName(sizerequet.getName().trim());
 		existingSize.setSizeCode(sizerequet.getSizeCode());
 		sizeRepository.save(existingSize);
 		return true;
@@ -101,7 +106,7 @@ public class SizeServiceImpl implements SizeService {
 
 		Size.SizeBuilder sizeBuilder = Size.builder()
 				.sizeCode(req.getSizeCode())
-				.name(req.getName())
+				.name(req.getName().trim())
 				.isActive(true);
 
 		String sizeCode = generateSizeCode();

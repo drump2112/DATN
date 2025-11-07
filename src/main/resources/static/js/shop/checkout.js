@@ -45,6 +45,218 @@ $(document).ready(function () {
     }
 
     let appliedVoucher = null;
+    let suggestedVoucher = null; // Biến lưu voucher được gợi ý
+
+    // === VOUCHER SUGGESTION FUNCTIONS ===
+
+    // Hàm load voucher tốt nhất khi trang được tải
+    function loadBestVoucherSuggestion() {
+        const subtotal = parseFloat($("#totalAmount").text().replace(/[^\d]/g, '')) || 0;
+        console.log('Loading voucher suggestion for subtotal:', subtotal);
+
+        // Gọi API để lấy voucher tốt nhất
+        $.ajax({
+            url: '/api/vouchers/available',
+            method: 'GET',
+            data: { orderTotal: subtotal },
+            success: function(vouchers) {
+                console.log('Available vouchers:', vouchers);
+                if (vouchers && vouchers.length > 0) {
+                    // Tìm voucher tốt nhất giống logic trong modal
+                    let best = null;
+                    vouchers.forEach((v) => {
+                        if (v.discountAmount > 0 && (!best || v.discountAmount > best.discountAmount)) {
+                            best = v;
+                        }
+                    });
+
+                    if (best) {
+                        console.log('Best voucher found:', best);
+                        // Convert format để phù hợp với function showVoucherSuggestion
+                        const suggestionVoucher = {
+                            code: best.code,
+                            discountType: best.discountType,
+                            discountValue: best.discountValue,
+                            maxDiscountAmount: best.maxDiscountValue || best.maxDiscountAmount,
+                            minOrderAmount: best.minOrderAmount,
+                            discountAmount: best.discountAmount
+                        };
+                        showVoucherSuggestion(suggestionVoucher);
+                    }
+                } else {
+                    // Fallback với sample data
+                    useFallbackVoucher(subtotal);
+                }
+            },
+            error: function(xhr) {
+                console.log('Không thể tải voucher, dùng fallback:', xhr);
+                useFallbackVoucher(subtotal);
+            }
+        });
+    }
+
+    // Function riêng cho fallback voucher
+    function useFallbackVoucher(subtotal) {
+        const sampleVouchers = [
+            {
+                code: "SALE10",
+                discountType: "PERCENT",
+                discountValue: 10,
+                maxDiscountAmount: 50000,
+                minOrderAmount: 100000,
+                discountAmount: 50000,
+            },
+            {
+                code: "FLAT50",
+                discountType: "AMOUNT",
+                discountValue: 50000,
+                minOrderAmount: 200000,
+                discountAmount: 50000,
+            },
+            {
+                code: "WELCOME20",
+                discountType: "PERCENT",
+                discountValue: 20,
+                maxDiscountAmount: 100000,
+                minOrderAmount: 300000,
+                discountAmount: 100000,
+            },
+        ];
+
+        // Tìm voucher tốt nhất trong sample
+        let best = null;
+        sampleVouchers.forEach((v) => {
+            if (subtotal >= v.minOrderAmount && (!best || v.discountAmount > best.discountAmount)) {
+                best = v;
+            }
+        });
+
+        if (best) {
+            console.log('Using fallback voucher:', best);
+            showVoucherSuggestion(best);
+        }
+    }
+
+    // Hàm hiển thị gợi ý voucher
+    function showVoucherSuggestion(voucher) {
+        suggestedVoucher = voucher;
+
+        // Hiển thị phần gợi ý
+        const voucherCode = $("#suggestedVoucherCode");
+        const voucherDesc = $("#suggestedVoucherDesc");
+
+        voucherCode.text(voucher.code);
+
+        // Tạo mô tả voucher - xử lý cả PERCENT và PERCENTAGE
+        let description = '';
+        const discountType = voucher.discountType || voucher.type;
+
+        if (discountType === 'PERCENTAGE' || discountType === 'PERCENT') {
+            description = `Giảm ${voucher.discountValue}%`;
+            const maxDiscount = voucher.maxDiscountAmount || voucher.maxDiscountValue;
+            if (maxDiscount && maxDiscount > 0) {
+                description += ` (tối đa ${maxDiscount.toLocaleString()} VNĐ)`;
+            }
+        } else {
+            description = `Giảm ${voucher.discountValue.toLocaleString()} VNĐ`;
+        }
+
+        if (voucher.minOrderAmount > 0) {
+            description += ` cho đơn hàng từ ${voucher.minOrderAmount.toLocaleString()} VNĐ`;
+        }
+
+        voucherDesc.text(description);
+        $("#voucherSuggestion").fadeIn(400);
+        console.log('Voucher suggestion displayed:', voucher);
+    }    // Hàm ẩn gợi ý voucher
+    function hideVoucherSuggestion() {
+        $("#voucherSuggestion").fadeOut(300);
+        suggestedVoucher = null;
+    }
+
+    // Hàm áp dụng voucher được gợi ý
+    function applySuggestedVoucher() {
+        if (!suggestedVoucher) return;
+
+        console.log('Applying suggested voucher:', suggestedVoucher);
+
+        // Áp dụng voucher trực tiếp giống logic trong modal
+        const discountAmount = suggestedVoucher.discountAmount || calculateDiscountAmount(suggestedVoucher);
+
+        // Ẩn gợi ý và hiển thị voucher đã áp dụng
+        hideVoucherSuggestion();
+        showAppliedVoucher(discountAmount, suggestedVoucher.code);
+
+        // Cập nhật appliedVoucher global
+        appliedVoucher = {
+            id: suggestedVoucher.id,
+            code: suggestedVoucher.code,
+            discount: discountAmount
+        };
+
+        // Cập nhật lại totals
+        $.get('/cart/items').done(function (cart) {
+            calculateTotals(cart);
+        });
+
+        // Hiển thị thông báo thành công
+        if (typeof SwalUtils !== 'undefined') {
+            SwalUtils.success('Thành công!', 'Áp dụng mã giảm giá thành công!');
+        } else {
+            alert('Áp dụng mã giảm giá thành công!');
+        }
+    }
+
+    // Hàm tính toán discount amount nếu chưa có
+    function calculateDiscountAmount(voucher) {
+        if (voucher.discountAmount) return voucher.discountAmount;
+
+        const subtotal = parseFloat($("#totalAmount").text().replace(/[^\d]/g, '')) || 0;
+        const discountType = voucher.discountType || voucher.type;
+
+        if (discountType === 'PERCENTAGE' || discountType === 'PERCENT') {
+            let discount = subtotal * (voucher.discountValue / 100);
+            const maxDiscount = voucher.maxDiscountAmount || voucher.maxDiscountValue;
+            if (maxDiscount && discount > maxDiscount) {
+                discount = maxDiscount;
+            }
+            return discount;
+        } else {
+            return voucher.discountValue;
+        }
+    }
+
+    // Hàm hiển thị voucher đã áp dụng
+    function showAppliedVoucher(discountAmount, voucherCode) {
+        // Ẩn gợi ý
+        $("#voucherSuggestion").hide();
+
+        // Cập nhật voucher đã áp dụng
+        appliedVoucher = {
+            code: voucherCode,
+            discount: discountAmount
+        };
+
+        // Hiển thị voucher đã áp dụng với format chuẩn
+        $("#discountValue").text(discountAmount.toLocaleString() + " VNĐ");
+        $("#appliedVoucherArea").show();
+        $("#clearVoucherInline").show();
+    }
+
+    // Hàm cập nhật tổng đơn hàng khi áp dụng voucher
+    function updateOrderSummaryFromVoucher(data) {
+        if (data.newTotal) {
+            $("#totalPayment").text(formatCurrency(data.newTotal));
+        }
+        if (data.shippingFee) {
+            $("#shippingValue").text(formatCurrency(data.shippingFee));
+        }
+    }
+
+    // Hàm format tiền tệ
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
+    }
 
     function calculateTotals(cart) {
         const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -53,15 +265,20 @@ $(document).ready(function () {
         const total = Math.max(0, subtotal + shipping - discount);
 
         // Cập nhật giá trị hiển thị
-        $("#finalTotal").text(subtotal.toLocaleString() + " VNĐ");
+        $("#totalAmount").text(subtotal.toLocaleString() + " VNĐ");
         $("#shippingValue").text(shipping.toLocaleString() + " VNĐ");
-        $("#discountValue").text(discount.toLocaleString() + " VNĐ");
         $("#totalPayment").text(total.toLocaleString() + " VNĐ");
         $("#appliedVoucherCode").val(appliedVoucher ? appliedVoucher.code : "");
 
+        // Cập nhật UI phần discount
         if (discount > 0) {
+            $("#discountValue").text(discount.toLocaleString() + " VNĐ");
+            $("#appliedVoucherArea").show();
             $("#clearVoucherInline").show();
+            $("#voucherSuggestion").hide();
         } else {
+            $("#discountValue").text("0 VNĐ");
+            $("#appliedVoucherArea").hide();
             $("#clearVoucherInline").hide();
         }
     }
@@ -148,15 +365,20 @@ $(document).ready(function () {
                 const voucher = vouchers.find((x) => x.code === code);
 
                 if (voucher) {
+                    // Ẩn gợi ý voucher nếu có
+                    hideVoucherSuggestion();
+
                     appliedVoucher = {
                         id: voucher.id,
                         code: voucher.code,
                         discount: voucher.discountAmount
                     };
+
                     $('.voucher-card').removeClass('active');
                     $card.addClass('active');
 
-                    $('#clearVoucherInline').show();
+                    // Hiển thị voucher đã áp dụng
+                    showAppliedVoucher(voucher.discountAmount, voucher.code);
 
                     $('#suggestionText').text(
                         `Đã áp dụng: ${appliedVoucher.code} — Tiết kiệm ${appliedVoucher.discount.toLocaleString()} VNĐ`
@@ -165,21 +387,37 @@ $(document).ready(function () {
                     $.get('/cart/items').done(function (cart) {
                         calculateTotals(cart);
                     });
-                }
 
+                    // Đóng modal
+                    $('#voucherModal').modal('hide');
+                }
             });
 
     }
 
     // Hủy mã
     $('#clearVoucherInline').off('click').on('click', function () {
+        clearSelectedVoucher();
+    });
+
+    // Hàm clear voucher (tách riêng để có thể gọi từ nơi khác)
+    function clearSelectedVoucher() {
         appliedVoucher = null;
         $('#discountValue').text('0 VNĐ');
         $('#clearVoucherInline').hide();
+        $('#appliedVoucherArea').hide();
         $('#voucherList li').removeClass('active');
+        $('.voucher-card').removeClass('active selected');
         $('#suggestionText').text('Không có mã phù hợp');
-        $.get('/cart/items').done(function (cart) { calculateTotals(cart); });
-    });
+
+        $("#voucherSuggestion").hide();
+
+        $.get('/cart/items').done(function (cart) {
+            calculateTotals(cart);
+            // Load lại gợi ý voucher sau khi clear
+            setTimeout(loadBestVoucherSuggestion, 500);
+        });
+    }
 
     // Mở modal chọn mã
     $("#openVoucherModal").click(function () {
@@ -235,14 +473,24 @@ $(document).ready(function () {
     // ===== ĐẶT HÀNG =====
     // Khởi chạy
     loadCheckoutItems();
+
+    // Load vouchers và suggestion
     $.get("/cart/items")
         .done(function (cart) {
             const subtotal = cart.reduce((s, it) => s + it.price * it.quantity, 0);
             loadVouchers(subtotal);
+            // Load voucher suggestion khi trang được tải
+            setTimeout(loadBestVoucherSuggestion, 1000);
         })
         .fail(function () {
             loadVouchers(0);
         });
+
+    // Event listener cho nút áp dụng voucher gợi ý
+    $(document).on('click', '#applySuggestedVoucher', applySuggestedVoucher);
+
+    // Expose clearSelectedVoucher function globally để có thể gọi từ nơi khác
+    window.clearSelectedVoucher = clearSelectedVoucher;
 
     function enableEdit(id) {
         const span = document.getElementById(id);
@@ -466,6 +714,7 @@ $(document).ready(function () {
 
     // === Xử lý địa chỉ giao hàng ===
     loadShippingProvinces();
+    updateMapWithCurrentAddress(); // Load map với địa chỉ hiện tại khi tải trang
 
     // Sự kiện thay đổi loại địa chỉ với animation
     $('input[name="addressType"]').change(function() {
@@ -482,6 +731,8 @@ $(document).ready(function () {
             $('#shippingSpecificAddress').prop('required', false);
             // Reset giá phí ship về mặc định khi dùng địa chỉ hiện tại
             calculateShippingFee(null, null);
+            // Cập nhật map về địa chỉ hiện tại
+            updateMapWithCurrentAddress();
         }
     });    // Sự kiện thay đổi tỉnh để load phường/xã và tính phí ship
     $('#shippingProvince').change(function() {
@@ -505,6 +756,16 @@ $(document).ready(function () {
 
         if (provinceCode && communeCode) {
             calculateShippingFee(provinceCode, communeCode);
+            // Cập nhật map với địa chỉ mới
+            updateMapWithNewAddress();
+        }
+    });
+
+    // Sự kiện thay đổi địa chỉ cụ thể để cập nhật map
+    $('#shippingSpecificAddress').on('blur', function() {
+        const specificAddress = $(this).val().trim();
+        if (specificAddress && $('#shippingProvince').val() && $('#shippingCommune').val()) {
+            updateMapWithNewAddress();
         }
     });
 });
@@ -686,11 +947,66 @@ function saveShippingAddress() {
         // Tính phí ship cho địa chỉ mới
         calculateShippingFee(provinceCode, communeCode);
 
+        // Cập nhật map với địa chỉ mới được lưu
+        updateMapWithAddress(fullAddress);
+
         SwalUtils.success('Thành công!', 'Đã cập nhật địa chỉ giao hàng');
     }
 
     // Ẩn form chỉnh sửa
     cancelAddressEdit();
+}
+
+// === Các function xử lý map ===
+
+// Cập nhật map với địa chỉ hiện tại
+function updateMapWithCurrentAddress() {
+    const currentAddress = $('#currentFullAddress').text().trim();
+    if (currentAddress && currentAddress !== 'Chưa có địa chỉ') {
+        updateMapWithAddress(currentAddress);
+    } else {
+        // Fallback về Hà Nội nếu không có địa chỉ
+        updateMapWithAddress('Hanoi, Vietnam');
+    }
+}
+
+// Cập nhật map với địa chỉ mới đang nhập
+function updateMapWithNewAddress() {
+    const provinceName = $('#shippingProvince option:selected').text();
+    const communeName = $('#shippingCommune option:selected').text();
+    const specificAddress = $('#shippingSpecificAddress').val().trim();
+
+    let searchAddress = '';
+    if (specificAddress) {
+        searchAddress = `${specificAddress}, ${communeName}, ${provinceName}, Vietnam`;
+    } else if (communeName && communeName !== '-- Chọn Phường/Xã --') {
+        searchAddress = `${communeName}, ${provinceName}, Vietnam`;
+    } else if (provinceName && provinceName !== '-- Chọn Tỉnh/Thành phố --') {
+        searchAddress = `${provinceName}, Vietnam`;
+    }
+
+    if (searchAddress) {
+        updateMapWithAddress(searchAddress);
+    }
+}
+
+// Function chính để cập nhật map
+function updateMapWithAddress(address) {
+    const mapFrame = $('#deliveryMap');
+    if (mapFrame.length && address) {
+        // Encode địa chỉ để đảm bảo URL hợp lệ
+        const encodedAddress = encodeURIComponent(address);
+        const mapUrl = `https://www.google.com/maps?q=${encodedAddress}&output=embed`;
+
+        console.log('Updating map with address:', address);
+        mapFrame.attr('src', mapUrl);
+
+        // Optional: Hiệu ứng loading cho map
+        mapFrame.css('opacity', '0.5');
+        setTimeout(() => {
+            mapFrame.css('opacity', '1');
+        }, 1000);
+    }
 }
 
 // Cập nhật preview phí ship trong form

@@ -34,6 +34,13 @@ public class UserDTO {
 
 	private String fullAddress;
 
+	// Thông tin địa chỉ chi tiết
+	private String specificAddress;
+
+	private String provinceCode;
+
+	private String communeCode;
+
 	private String phone;
 
 	private Integer roleId;

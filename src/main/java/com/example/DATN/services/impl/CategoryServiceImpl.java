@@ -62,7 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 	public boolean toggleStatus(Integer id) {
 		Category category = categoryRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục"));
+				.orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
 		category.setIsActive(!category.getIsActive());
 		categoryRepository.save(category);
 		return category.getIsActive();
@@ -70,6 +70,9 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Override
 	public boolean addCategory(CategoryRequest categoryRequest) {
+		// Trim dữ liệu input
+		categoryRequest.setName(categoryRequest.getName() != null ? categoryRequest.getName().trim() : null);
+
 		if (categoryRepository.existsByName(categoryRequest.getName())) {
 			throw new BusinessException("Danh mục đã tồn tại");
 		}
@@ -80,11 +83,23 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Override
 	public boolean updateCategory(Integer id, CategoryRequest categoryRequest) {
-		// check tồn tại
+		// Trim dữ liệu input
+		categoryRequest.setName(categoryRequest.getName() != null ? categoryRequest.getName().trim() : null);
+
+		// Check tồn tại
 		Category existingCategory = categoryRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục có id: " + id));
+				.orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
+
+		// Kiểm tra trùng tên (loại trừ chính danh mục hiện tại)
+		if (!existingCategory.getName().equals(categoryRequest.getName()) &&
+			categoryRepository.existsByName(categoryRequest.getName())) {
+			throw new BusinessException("Tên danh mục đã tồn tại");
+		}
+
+		// Chỉ cập nhật name, giữ nguyên cateCode
 		existingCategory.setName(categoryRequest.getName());
-		existingCategory.setCateCode(categoryRequest.getCateCode());
+		// Không set cateCode vì nó không nên thay đổi
+
 		categoryRepository.save(existingCategory);
 		return true;
 	}

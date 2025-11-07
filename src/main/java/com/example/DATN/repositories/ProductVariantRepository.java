@@ -88,7 +88,7 @@ public interface ProductVariantRepository
 			""")
 	List<Object[]> findBestSellingProducts(Pageable pageable);
 
-	// Lấy các biến thể sản phẩm bán chạy nhất (ProductVariant)
+	// Lấy các biến thể sản phẩm bán chạy nhất (ProductVariant) = Lấy theo tháng gần nhát hoặc quý
 	@Query("""
 			SELECT pv.id, SUM(oi.quantity) as totalSold
 			FROM OrderItem oi

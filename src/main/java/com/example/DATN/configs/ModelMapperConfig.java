@@ -112,6 +112,15 @@ public class ModelMapperConfig {
 					if (source.getAddress() != null) {
 						dest.setAddress(source.getAddress().getSpecificAddress());
 						dest.setFullAddress(source.getAddress().getFullAddress());
+						dest.setSpecificAddress(source.getAddress().getSpecificAddress());
+
+						if (source.getAddress().getProvince() != null) {
+							dest.setProvinceCode(source.getAddress().getProvince().getProvinceCode());
+						}
+
+						if (source.getAddress().getCommune() != null) {
+							dest.setCommuneCode(source.getAddress().getCommune().getCommuneCode());
+						}
 					}
 
 					if (source.getRole() != null) {

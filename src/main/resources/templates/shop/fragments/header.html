@@ -4,8 +4,20 @@
             <div class="container" style="overflow: visible !important;">
                 <div class="row" style="overflow: visible !important;">
                     <div class="col-lg-2 d-flex align-items-center">
-                        <a th:href="@{/}" class="navbar-brand logo-area">
-                            <img th:src="@{/assets/img/landing/img_logo1.png}">
+                        <a th:href="@{/}" class="navbar-brand logo-area" style="
+                            display: flex;
+                            width: 100%;
+                            height: 70px;
+                            padding: 5px;
+                            align-items: center;
+                            justify-content: flex-start;
+                        ">
+                            <img th:src="@{/assets/img/landing/img_logo1.png}" style="
+                                height: 100%;
+                                width: auto;
+                                object-fit: contain;
+                                max-width: 100%;
+                            ">
                         </a>
                     </div>
                     <div class="col-lg-7">

@@ -27,4 +27,10 @@ public interface BrandRepository extends JpaRepository<Brand, Integer> {
     Page<Brand> search(@Param("keyword") String keyword,
                        @Param("isActive") Boolean isActive,
                        Pageable pageable);
+
+    // Check duplicate name (excluding current brand for update)
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Integer id);
+
+    // Check duplicate name for add
+    boolean existsByNameIgnoreCase(String name);
 }

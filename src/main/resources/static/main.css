@@ -19,6 +19,18 @@
   position: relative;
 }
 
+/* Style cho quantity input validation */
+.quantity-input.invalid-quantity {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.quantity-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 /* Dropdown kết quả hiển thị nổi (giống Select2) */
 #searchResults {
   position: absolute;

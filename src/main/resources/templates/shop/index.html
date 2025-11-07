@@ -23,7 +23,7 @@
               </div>
 
               <div class="product-desc">
-                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 0)} + ' VNĐ'">
+                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
                 </span>
                 <small class="text-muted">
                   <span th:text="${variant.brandName}">Brand</span> |
@@ -67,7 +67,7 @@
               </div>
 
               <div class="product-desc">
-                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 0)} + ' VNĐ'">
+                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
                 </span>
                 <small class="text-muted">
                   <span th:text="${variant.brandName}">Brand</span> |
@@ -110,11 +110,10 @@
               <div class="product-desc">
                 <span class="product-price"
                   th:if="${item.minPrice != null and item.maxPrice != null and item.minPrice != item.maxPrice}"
-                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 0)} + ' - ' + ${#numbers.formatDecimal(item.maxPrice, 0, 0)} + ' VNĐ'">
+                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 'COMMA', 0, 'POINT')} + ' - ' + ${#numbers.formatDecimal(item.maxPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
                 </span>
-                <span class="product-price"
-                  th:if="${item.minPrice != null and item.minPrice == item.maxPrice}"
-                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 0)} + ' VNĐ'">
+                <span class="product-price" th:if="${item.minPrice != null and item.minPrice == item.maxPrice}"
+                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
                 </span>
                 <small class="text-muted" th:text="${item.brandName}">Category</small>
                 <a href="#" class="product-name" th:text="${item.name}">Product</a>

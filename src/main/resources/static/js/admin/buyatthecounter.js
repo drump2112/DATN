@@ -1,5 +1,25 @@
 $(document).ready(function () {
   console.log("buyatthecounter.js loaded");
+
+  // Cấu hình toastr để hiển thị ở góc trên phải
+  toastr.options = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "3000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+  };
+
   updateClock();
   setInterval(updateClock, 1000);
 
@@ -88,9 +108,8 @@ $(document).ready(function () {
 
     const newTabContent = `
       <div id="${newTabId}" class="tab-pane">
-        <div class="table-responsive">
+        <div class="order-table-body">
           <table class="table table-striped table-hover" id="table-${newTabId}">
-
             <tbody></tbody>
           </table>
         </div>
@@ -101,14 +120,14 @@ $(document).ready(function () {
     // thêm dữ liệu vào orders (per-tab state)
     orders[newTabId] = { items: [], customerId: null, voucher: null, discountAmount: 0 };
 
-    // active tab mới
-    $(".nav-tabs li").removeClass("active");
-    $(`.nav-tabs a[href="#${newTabId}"]`).parent().addClass("active");
-    $(".tab-pane").removeClass("active");
-    $(`#${newTabId}`).addClass("active");
+    // active tab mới bằng Bootstrap API
+    $(`.nav-tabs a[href="#${newTabId}"]`).tab('show');
 
     updateTabLabels();
     updateClientDetail(newTabId);
+
+    // Debug: log để kiểm tra
+    console.log(`Created new tab: ${newTabId}`, orders[newTabId]);
   });
 
 
@@ -126,15 +145,12 @@ $(document).ready(function () {
       return;
     }
 
-    // Kích hoạt tab đầu tiên
-    const firstTab = $(".nav-tabs li:not(:last) a").first().attr("href");
-    $(".nav-tabs li").removeClass("active");
-    $(`a[href='${firstTab}']`).parent().addClass("active");
-    $(".tab-pane").removeClass("active");
-    $(firstTab).addClass("active");
+    // Kích hoạt tab đầu tiên bằng Bootstrap API
+    const firstTab = $(".nav-tabs li:not(:last) a").first();
+    firstTab.tab('show');
 
     updateTabLabels();
-    updateClientDetail(firstTab.replace("#", ""));
+    updateClientDetail(firstTab.attr("href").replace("#", ""));
   });
 
   function updateTabLabels() {
@@ -221,6 +237,7 @@ $(document).ready(function () {
     const activeTabId = $(".nav-tabs li.active a")
       .attr("href")
       .replace("#", "");
+    console.log(`Adding product to active tab: ${activeTabId}`);
     const tbody = $(`#table-${activeTabId} tbody`);
     const price = parseFloat($(this).data("price"));
     const variantCode = $(this).data("code");
@@ -241,6 +258,9 @@ $(document).ready(function () {
     // find existing in this tab
     const existingItem = orders[activeTabId].items.find((i) => i.code === variantCode);
     if (existingItem) {
+      // Remove empty cart message when updating existing product
+      tbody.find('.empty-cart-row').remove();
+
       if (existingItem.quantity < remainingQuantity) {
         existingItem.quantity++;
         existingItem.total = existingItem.price * existingItem.quantity;
@@ -248,6 +268,9 @@ $(document).ready(function () {
         const row = tbody.find(`tr[data-code="${variantCode}"]`);
         row.find(".quantity-input").val(existingItem.quantity);
         row.find(".total").text(existingItem.total.toLocaleString() + "đ");
+
+        // Show update notification
+        toastr.info(`<b>Đã cập nhật số lượng!</b><br>${$(this).data("name")} - SL: ${existingItem.quantity}`);
       } else {
         toastr.warning("Đã đạt tối đa số lượng tồn kho còn lại!");
       }
@@ -265,22 +288,25 @@ $(document).ready(function () {
         total: price,
         quantityAvailable, // lưu tồn kho thực tế
       };
+      // Remove empty cart message before adding product
+      tbody.find('.empty-cart-row').remove();
+
       orders[activeTabId].items.push(product);
 
-      const row = `
+      // Show success notification
+      toastr.success(`<b>Đã thêm sản phẩm vào đơn hàng!</b><br>${product.name} - ${product.color}/${product.size}`);      const row = `
         <tr data-code="${product.code}">
-            <td><img src="${product.image}" width="50"></td>
-            <td>${product.code}</td>
-            <td>${product.name}</td>
+            <td><img src="${product.image}"></td>
+            <td title="${product.code}">${product.code.length > 8 ? product.code.substring(0, 8) + '...' : product.code}</td>
+            <td title="${product.name}">${product.name.length > 15 ? product.name.substring(0, 15) + '...' : product.name}</td>
             <td>${product.color}</td>
             <td>${product.size}</td>
-            <td style="text-align: center;">
-                <input type="number" class="form-control form-control-sm quantity-input"
-                        min="1" max="${remainingQuantity}" value="1" style="width:70px; margin: 0 auto;">
+            <td>
+                <input type="number" class="form-control quantity-input" min="1" max="${remainingQuantity}" value="1">
             </td>
             <td>${product.price.toLocaleString()}đ</td>
-            <td class="total">${product.total.toLocaleString()}đ</td>
-            <td><button class="btn btn-danger btn-sm delete-row"><i class="fa fa-trash"></i></button></td>
+            <td class="total" style="font-weight: bold; color: #1ab394;">${product.total.toLocaleString()}đ</td>
+            <td><button class="btn btn-danger btn-xs delete-row" title="Xóa"><i class="fa fa-trash"></i></button></td>
         </tr>`;
       tbody.append(row);
     }
@@ -348,12 +374,27 @@ $(document).ready(function () {
 
   // ========== Cập nhật tổng tiền ==========
   function updateClientDetail(tabId) {
+    console.log(`Updating client detail for tab: ${tabId}`, orders[tabId]);
     const state = orders[tabId] || { items: [], customerId: null, voucher: null, discountAmount: 0 };
     const list = state.items;
     const total = list.reduce((sum, item) => sum + item.total, 0);
 
-
+    // Handle empty cart state
+    const tbody = $(`#table-${tabId} tbody`);
     if (list.length === 0) {
+      // Show empty state message only if tbody is completely empty or has no product rows
+      if (tbody.find('tr[data-code]').length === 0) {
+        tbody.html(`
+          <tr class="empty-cart-row">
+            <td colspan="9" class="order-table-empty">
+              <i class="fa fa-shopping-cart fa-2x" style="color: #d1d1d1; margin-bottom: 10px;"></i>
+              <div>Giỏ hàng trống</div>
+              <small>Thêm sản phẩm để bắt đầu tạo đơn hàng</small>
+            </td>
+          </tr>
+        `);
+      }
+
       state.voucher = null;
       state.discountValue = 0;
       state.discountAmount = 0
@@ -362,9 +403,10 @@ $(document).ready(function () {
       $("#finalTotal").text("0 VNĐ");
       $("#selectedVoucherInfo").hide();
       // $("#showListVoucher").show();
+    } else {
+      // Remove empty state message if there are products
+      tbody.find('.empty-cart-row').remove();
     }
-
-
     if (total > 0 && !state.voucher) {
       $.get(`/api/vouchers/suggest?orderTotal=${total}`)
         .done(function (suggestion) {
@@ -483,23 +525,34 @@ $(document).ready(function () {
     }
 
     products.forEach((p, idx) => {
+      const isOutOfStock = p.quantity <= 0;
+      const stockClass = isOutOfStock ? 'text-danger' : (p.quantity <= 5 ? 'text-warning' : 'text-muted');
+      const stockText = isOutOfStock ? 'HẾT HÀNG' : `SL: ${p.quantity}`;
+
       const html = `
-            <div class="col-md-3 mb-3">
-              <div class="ibox">
-                <div class="ibox-content product-box">
-                  <div class="product-imitation">
-                    <img src="${p.imageUrls && p.imageUrls.length > 0 ? p.imageUrls[0] : '/img/no-image.png'}"
-                      alt="${p.productName}">
-                  </div>
-                  <div class="product-desc">
-                    <span class="product-price">${p.price.toLocaleString()} VNĐ</span>
-                    <a href="#" class="product-name d-block mt-1">${p.productName} - ${p.variantCode}</a>
-                    <small class="text-muted">${p.colorName} / ${p.sizeName} - SL: ${p.quantity}</small>
-                    <div class="m-t text-right mt-2">
-                      <button class="btn btn-xs btn-outline btn-primary addToOrderBtn" data-idx="${idx}"
-                        data-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
-                        <i class="fa fa-cart-plus"></i> Thêm
-                      </button>
+            <div class="col-md-6 mb-3">
+              <div class="ibox ${isOutOfStock ? 'out-of-stock' : ''}" style="margin-bottom: 10px;">
+                <div class="ibox-content product-box" style="padding: 10px;">
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <div class="product-imitation ${isOutOfStock ? 'opacity-50' : ''}" style="position: relative; height: 60px;">
+                        <img src="${p.imageUrls && p.imageUrls.length > 0 ? p.imageUrls[0] : '/img/no-image.png'}"
+                          alt="${p.productName}" style="width: 100%; height: 60px; object-fit: cover; border-radius: 4px;">
+                        ${isOutOfStock ? '<div class="out-of-stock-overlay"><span style="font-size: 10px;">HẾT HÀNG</span></div>' : ''}
+                      </div>
+                    </div>
+                    <div class="col-sm-8">
+                      <div class="product-desc">
+                        <div style="font-size: 12px; font-weight: bold; color: #1ab394;">${p.price.toLocaleString()} VNĐ</div>
+                        <div style="font-size: 11px; margin: 2px 0;">${p.productName}</div>
+                        <div style="font-size: 10px;" class="${stockClass}">${p.colorName} / ${p.sizeName}</div>
+                        <div style="font-size: 10px; margin: 2px 0;" class="${stockClass}"><strong>${stockText}</strong></div>
+                        <button class="btn btn-xs btn-outline btn-primary addToOrderBtn ${isOutOfStock ? 'disabled' : ''}"
+                          data-idx="${idx}" data-id="${p.id}" data-name="${p.name}" data-price="${p.price}"
+                          ${isOutOfStock ? 'disabled' : ''} style="font-size: 10px; padding: 2px 6px; margin-top: 2px;">
+                          <i class="fa fa-cart-plus"></i> ${isOutOfStock ? 'Hết hàng' : 'Thêm'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -553,6 +606,9 @@ $(document).ready(function () {
     // Nếu đã tồn tại trong tab hiện tại, tăng số lượng
     const existingItem = orders[activeTabId].items.find((i) => i.code === variantCode);
     if (existingItem) {
+      // Remove empty cart message when updating existing product
+      tbody.find('.empty-cart-row').remove();
+
       if (existingItem.quantity < remainingQuantity) {
         existingItem.quantity++;
         existingItem.total = existingItem.price * existingItem.quantity;
@@ -560,6 +616,9 @@ $(document).ready(function () {
         const row = tbody.find(`tr[data-code="${variantCode}"]`);
         row.find('.quantity-input').val(existingItem.quantity);
         row.find('.total').text(existingItem.total.toLocaleString() + 'đ');
+
+        // Show update notification
+        toastr.info(`<b>Đã cập nhật số lượng!</b><br>${product.productName || product.name} - SL: ${existingItem.quantity}`);
       } else {
         toastr.warning('Đã đạt tối đa số lượng tồn kho còn lại!');
       }
@@ -578,22 +637,27 @@ $(document).ready(function () {
         quantityAvailable: quantityAvailable,
       };
 
+      // Remove empty cart message before adding product
+      tbody.find('.empty-cart-row').remove();
+
       orders[activeTabId].items.push(prodObj);
+
+      // Show success notification
+      toastr.success(`<b>Đã thêm sản phẩm vào đơn hàng!</b><br>${prodObj.name} - ${prodObj.color}/${prodObj.size}`);
 
       const row = `
         <tr data-code="${prodObj.code}">
-            <td><img src="${prodObj.image}" width="50"></td>
-            <td>${prodObj.code}</td>
-            <td>${prodObj.name}</td>
+            <td><img src="${prodObj.image}"></td>
+            <td title="${prodObj.code}">${prodObj.code.length > 8 ? prodObj.code.substring(0, 8) + '...' : prodObj.code}</td>
+            <td title="${prodObj.name}">${prodObj.name.length > 15 ? prodObj.name.substring(0, 15) + '...' : prodObj.name}</td>
             <td>${prodObj.color}</td>
             <td>${prodObj.size}</td>
-            <td style="text-align: center;">
-                <input type="number" class="form-control form-control-sm quantity-input"
-                        min="1" max="${remainingQuantity}" value="1" style="width:70px; margin: 0 auto;">
+            <td>
+                <input type="number" class="form-control quantity-input" min="1" max="${remainingQuantity}" value="1">
             </td>
             <td>${prodObj.price.toLocaleString()}đ</td>
-            <td class="total">${prodObj.total.toLocaleString()}đ</td>
-            <td><button class="btn btn-danger btn-sm delete-row"><i class="fa fa-trash"></i></button></td>
+            <td class="total" style="font-weight: bold; color: #1ab394;">${prodObj.total.toLocaleString()}đ</td>
+            <td><button class="btn btn-danger btn-xs delete-row" title="Xóa"><i class="fa fa-trash"></i></button></td>
         </tr>`;
       tbody.append(row);
 
@@ -704,6 +768,9 @@ $(document).ready(function () {
           $("#discountValue").text("0 VNĐ");
           $("#finalTotal").text("0 VNĐ");
 
+          // Cập nhật số lượng sản phẩm trong cache
+          updateProductQuantitiesAfterOrder(orderItems);
+
           // Reset tab to empty per-tab state
           orders[tabId] = { items: [], customerId: null, voucher: null, discountAmount: 0 };
           $(`#table-${tabId} tbody`).empty();
@@ -718,9 +785,26 @@ $(document).ready(function () {
     });
   }
 
+  // Function để cập nhật số lượng sản phẩm sau khi thanh toán thành công
+  function updateProductQuantitiesAfterOrder(orderItems) {
+    console.log("🔄 Updating product quantities after successful order...");
 
+    // Cập nhật productsCache
+    orderItems.forEach(orderItem => {
+      const productInCache = productsCache.find(p => p.id === orderItem.productVariantId);
+      if (productInCache) {
+        const newQuantity = Math.max(0, productInCache.quantity - orderItem.quantity);
+        console.log(`📦 Product ${productInCache.variantCode}: ${productInCache.quantity} → ${newQuantity}`);
+        productInCache.quantity = newQuantity;
+      }
+    });
 
+    // Re-render lại danh sách sản phẩm với số lượng mới
+    renderProductList(productsCache);
 
+    // Thông báo
+    toastr.info("Đã cập nhật số lượng sản phẩm!");
+  }
 
   let currentInvoice = null;
 

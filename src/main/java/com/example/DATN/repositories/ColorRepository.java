@@ -26,5 +26,7 @@ public interface ColorRepository extends JpaRepository<Color, Integer> {
                        Pageable pageable);
 
     boolean existsByName(String name);
+
+    boolean existsByNameAndIdNot(String name, Integer id);
 }
 

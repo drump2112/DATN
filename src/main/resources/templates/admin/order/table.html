@@ -1,0 +1,280 @@
+<th:block th:fragment="table">
+  <style>
+    .order-row {
+      transition: all 0.3s ease;
+    }
+
+    .order-row:hover {
+      background-color: #f8f9fa;
+    }
+
+    .order-detail-row {
+      background-color: #f9fafb;
+      border-left: 4px solid #1ab394;
+    }
+
+    .order-detail-container {
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .detail-header {
+      border-bottom: 2px solid #e7eaec;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .detail-section {
+      margin-bottom: 20px;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #676a6c;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .detail-value {
+      color: #1c1e21;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .product-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid #e7eaec;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      background: white;
+      transition: all 0.2s ease;
+    }
+
+    .product-item:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .product-image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 15px;
+      border: 2px solid #e7eaec;
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-name {
+      font-weight: 600;
+      color: #1c1e21;
+      margin-bottom: 5px;
+    }
+
+    .product-meta {
+      font-size: 12px;
+      color: #676a6c;
+    }
+
+    .product-pricing {
+      text-align: right;
+    }
+
+    .product-quantity {
+      font-size: 14px;
+      color: #676a6c;
+      margin-bottom: 5px;
+    }
+
+    .product-price {
+      font-weight: 600;
+      color: #1ab394;
+      font-size: 16px;
+    }
+
+    .order-summary {
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e7eaec;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+      font-weight: 600;
+      font-size: 16px;
+      color: #1ab394;
+      padding-top: 12px;
+    }
+
+    .btn-toggle-detail {
+      transition: all 0.3s ease;
+    }
+
+    .btn-toggle-detail:hover {
+      transform: scale(1.1);
+    }
+
+    .btn-toggle-detail.active {
+      background-color: #1ab394;
+      color: white;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      text-align: center;
+    }
+
+    .select2-container--default .select2-results__option {
+      text-align: center;
+    }
+
+    .select2-container .select2-selection--single {
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      height: auto !important;
+      padding: 0 !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 1.5 !important;
+      color: #fff;
+    }
+
+    .info-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      min-width: 100px;
+      text-align: center;
+    }
+
+    .money-cell {
+      text-align: right;
+      /* font-family: 'Courier New', monospace; */
+      font-weight: bold;
+      color: #1ab394;
+      background-color: #f9fff9;
+      border-left: 3px solid #1ab394;
+    }
+
+    .money-amount {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1ab394;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+  </style>
+
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th width="5%">ID</th>
+        <th width="10%">Mã ĐH</th>
+        <th width="10%">Mã KH</th>
+        <th width="12%">Tên Khách Hàng</th>
+        <th width="10%">SĐT</th>
+        <th width="10%">Ngày Tạo</th>
+        <th width="10%" style="text-align: right;">Tổng Tiền</th>
+        <th width="8%">Kênh</th>
+        <th width="8%">Thanh Toán</th>
+        <th width="10%">Trạng Thái</th>
+        <th width="7%">Hành Động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <th:block th:each="item : ${orders}">
+        <tr class="order-row">
+          <td th:text="${item.id}"></td>
+          <td><strong th:text="${item.orderCode}"></strong></td>
+          <td th:text="${item.userCode}"></td>
+          <td th:text="${item.customerName}"></td>
+          <td th:text="${item.shippingPhone}"></td>
+          <td th:text="${#temporals.format(item.orderDate,'dd/MM/yyyy HH:mm')}"></td>
+          <td class="money-cell">
+            <span class="money-amount" th:text="${#numbers.formatDecimal(item.finalAmount, 0, 'POINT', 0, 'COMMA')} + ' VNĐ'"></span>
+          </td>
+          <td th:switch="${item.orderType}">
+            <span th:case="ONLINE" class="badge badge-success">Online</span>
+            <span th:case="COUNTER" class="badge badge-warning">Tại Quầy</span>
+          </td>
+          <td th:switch="${item.paymentMethod}">
+            <span th:case="CASH" class="badge badge-primary">Tiền Mặt</span>
+            <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
+          </td>
+          <td th:switch="${item.status}">
+            <span th:case="PENDING" class="badge badge-warning">Chờ xử lý</span>
+            <span th:case="PROCESSING" class="badge badge-info">Đang xử lý</span>
+            <span th:case="COMPLETED" class="badge badge-success">Hoàn thành</span>
+            <span th:case="CANCELLED" class="badge badge-danger">Đã hủy</span>
+          </td>
+          <td class="text-center">
+            <button class="btn btn-info btn-sm btn-toggle-detail" th:attr="data-id=${item.id}"
+              onclick="toggleOrderItems(this)" title="Xem chi tiết">
+              <i class="fa fa-eye"></i>
+            </button>
+          </td>
+        </tr>
+        <tr th:attr="id='order-items-' + ${item.id}" class="order-detail-row" style="display:none;">
+          <td colspan="11" class="p-0">
+            <div class="order-items-container text-center text-muted py-3">
+              <i class="fa fa-spinner fa-spin"></i> Đang tải...
+            </div>
+          </td>
+        </tr>
+      </th:block>
+    </tbody>
+  </table>
+
+  <div class="text-center" th:if="${totalPages > 1}">
+    <ul class="pagination">
+      <li th:class="${currentPage == 0} ? 'disabled' : ''">
+        <a th:if="${currentPage > 0}" href="#" th:onclick="'searchOrder(' + (${currentPage - 1}) + ')'">
+          <i class="fa fa-angle-left"></i> Trước
+        </a>
+        <span th:if="${currentPage == 0}" class="disabled">
+          <i class="fa fa-angle-left"></i> Trước
+        </span>
+      </li>
+
+      <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+          th:class="${i == currentPage} ? 'active' : ''">
+        <a href="#" th:onclick="'searchOrder(' + (${i}) + ')'" th:text="${i + 1}">1</a>
+      </li>
+
+      <li th:class="${currentPage == totalPages - 1} ? 'disabled' : ''">
+        <a th:if="${currentPage < totalPages - 1}" href="#" th:onclick="'searchOrder(' + (${currentPage + 1}) + ')'">
+          Sau <i class="fa fa-angle-right"></i>
+        </a>
+        <span th:if="${currentPage == totalPages - 1}" class="disabled">
+          Sau <i class="fa fa-angle-right"></i>
+        </span>
+      </li>
+    </ul>
+    <p class="text-muted">
+      Hiển thị trang <strong th:text="${currentPage + 1}">1</strong>
+      / <strong th:text="${totalPages}">1</strong>
+      (Tổng <strong th:text="${totalItems}">0</strong> đơn hàng)
+    </p>
+  </div>
+</th:block>

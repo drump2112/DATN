@@ -30,6 +30,288 @@
       margin-bottom: 20px;
     }
 
+    /* Modern Horizontal Layout */
+    .order-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      padding: 20px 25px;
+      border-radius: 12px;
+      border: 1px solid #e7eaec;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    .order-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .order-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-pill {
+      padding: 8px 16px;
+      border-radius: 25px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .status-pending { background: #f39c12; color: white; }
+    .status-shipping { background: #3498db; color: white; }
+    .status-completed { background: #27ae60; color: white; }
+    .status-cancelled { background: #e74c3c; color: white; }
+    .status-return { background: #f39c12; color: white; }
+    .status-processing { background: #9b59b6; color: white; }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 4px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .status-info-pill {
+      padding: 8px 16px;
+      background: #ecf0f1;
+      color: #34495e;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Customer Actions Info */
+    .customer-actions-info {
+      background: linear-gradient(135deg, #e8f4fd 0%, #ffffff 100%);
+      border: 1px solid #bee5eb;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-text {
+      color: #495057;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Order Items Section */
+    .order-items-section {
+      background: white;
+      border: 1px solid #e7eaec;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .section-header {
+      background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .section-header h5 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-content {
+      padding: 20px;
+    }
+
+    .loading-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 30px;
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+
+    .loading-placeholder i {
+      font-size: 18px;
+    }
+
+    /* Order Status Sections */
+    .order-status-section {
+      margin-bottom: 25px;
+    }
+
+    .shipping-info, .completed-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid #17a2b8;
+    }
+
+    .return-details {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .return-info-box {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .return-reason {
+      color: #d63031;
+      font-weight: 600;
+    }
+
+    .return-date {
+      color: #636e72;
+    }
+
+    .return-products {
+      margin-top: 10px;
+    }
+
+    .return-product-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin: 5px 0;
+      border-left: 3px solid #ff9800;
+    }
+
+    .admin-return-actions {
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid #28a745;
+    }
+
+    .admin-return-actions h6 {
+      color: #155724;
+      margin-bottom: 10px;
+    }
+
+    /* Enhanced Status Badge */
+    .status-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Section Headers */
+    .order-status-section h6 {
+      color: #495057;
+      font-weight: 600;
+      margin-bottom: 8px;
+      margin-top: 15px;
+    }
+
+    .order-status-section h6:first-child {
+      margin-top: 0;
+    }
+
+    /* Info Icons */
+    .order-status-section i.fa {
+      margin-right: 5px;
+      width: 16px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .row {
+        margin: 0;
+      }
+
+      .col-md-8, .col-md-4 {
+        padding: 0 5px;
+        margin-bottom: 15px;
+      }
+
+      .card-body {
+        padding: 12px;
+      }
+
+      .actions-area {
+        padding: 12px;
+      }
+
+      .status-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .col-md-8, .col-md-4 {
+        width: 100%;
+        padding: 0;
+      }
+
+      .detail-card {
+        margin-bottom: 10px;
+      }
+
+      .card-header h5 {
+        font-size: 14px;
+      }
+
+      .admin-action-btn {
+        font-size: 13px;
+        padding: 8px 15px;
+      }
+    }
+
     .detail-label {
       font-weight: 600;
       color: #676a6c;
@@ -135,25 +417,14 @@
       color: white;
     }
 
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-      text-align: center;
-    }
-
-    .select2-container--default .select2-results__option {
-      text-align: center;
-    }
-
-    .select2-container .select2-selection--single {
-      background-color: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      height: auto !important;
-      padding: 0 !important;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-      line-height: 1.5 !important;
-      color: #fff;
+    /* Status Badge Styles */
+    .badge {
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .info-badge {
@@ -168,6 +439,21 @@
       min-width: 100px;
       text-align: center;
     }
+
+    .money-cell {
+      text-align: right;
+      font-weight: bold;
+      color: #1ab394;
+      background-color: #f9fff9;
+      border-left: 3px solid #1ab394;
+    }
+
+    .money-amount {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1ab394;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
   </style>
 
   <table class="table table-striped table-hover">
@@ -179,7 +465,7 @@
         <th width="12%">Tên Khách Hàng</th>
         <th width="10%">SĐT</th>
         <th width="10%">Ngày Tạo</th>
-        <th width="10%">Tổng Tiền</th>
+        <th width="10%" style="text-align: right;">Tổng Tiền</th>
         <th width="8%">Kênh</th>
         <th width="8%">Thanh Toán</th>
         <th width="10%">Trạng Thái</th>
@@ -195,7 +481,9 @@
           <td th:text="${item.customerName}"></td>
           <td th:text="${item.shippingPhone}"></td>
           <td th:text="${#temporals.format(item.orderDate,'dd/MM/yyyy HH:mm')}"></td>
-          <td><strong th:text="${#numbers.formatDecimal(item.finalAmount, 0, 0)} + ' VNĐ'"></strong></td>
+          <td class="money-cell">
+            <span class="money-amount" th:text="${#numbers.formatDecimal(item.finalAmount, 0, 'POINT', 0, 'COMMA')} + ' VNĐ'"></span>
+          </td>
           <td th:switch="${item.orderType}">
             <span th:case="ONLINE" class="badge badge-success">Online</span>
             <span th:case="COUNTER" class="badge badge-warning">Tại Quầy</span>
@@ -204,26 +492,26 @@
             <span th:case="CASH" class="badge badge-primary">Tiền Mặt</span>
             <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
           </td>
-          <td>
-            <select th:data-id="${item.id}" class="form-control status-dropdown status-badge"
-              th:onchange="updateOrderStatus(this)">
-              <option value="PENDING" th:selected="${item.status=='PENDING'}">PENDING</option>
-              <option value="PROCESSING" th:selected="${item.status=='PROCESSING'}">PROCESSING</option>
-              <option value="COMPLETED" th:selected="${item.status=='COMPLETED'}">COMPLETED</option>
-              <option value="CANCELLED" th:selected="${item.status=='CANCELLED'}">CANCELLED</option>
-            </select>
+          <td th:switch="${item.status}">
+            <span th:case="PENDING" class="badge badge-warning">Chờ xử lý</span>
+            <span th:case="PROCESSING" class="badge badge-info">Đang xử lý</span>
+            <span th:case="SHIPPING" class="badge badge-primary">Đang giao</span>
+            <span th:case="COMPLETED" class="badge badge-success">Hoàn thành</span>
+            <span th:case="CANCELLED" class="badge badge-danger">Đã hủy</span>
+            <span th:case="RETURN" class="badge badge-warning">Đổi/trả</span>
           </td>
           <td class="text-center">
-            <button class="btn btn-info btn-sm btn-toggle-detail" th:attr="data-id=${item.id}"
-              onclick="toggleOrderItems(this)" title="Xem chi tiết">
-              <i class="fa fa-eye"></i>
+            <!-- Chỉ có nút xem chi tiết -->
+            <button class="btn btn-info btn-xs btn-toggle-detail" th:attr="data-id=${item.id}"
+              onclick="toggleOrderItems(this)" title="Xem chi tiết đơn hàng">
+              <i class="fa fa-eye"></i> Chi tiết
             </button>
           </td>
         </tr>
         <tr th:attr="id='order-items-' + ${item.id}" class="order-detail-row" style="display:none;">
-          <td colspan="11" class="p-0">
-            <div class="order-items-container text-center text-muted py-3">
-              <i class="fa fa-spinner fa-spin"></i> Đang tải...
+          <td colspan="11" class="p-3">
+            <div th:replace="admin/order/orderDetailActions :: orderDetail(orderId=${item.id}, orderStatus=${item.status})">
+              <!-- Fragment sẽ được load ở đây -->
             </div>
           </td>
         </tr>

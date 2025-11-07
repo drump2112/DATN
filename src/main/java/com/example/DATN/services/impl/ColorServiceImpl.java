@@ -77,8 +77,8 @@ public class ColorServiceImpl implements ColorService {
 
     @Override
     public boolean addColor(ColorRequest ColorRequest) {
-        if (colorRepository.existsByName(ColorRequest.getName())) {
-            throw new BusinessException("Màu sắc đã tồn tại");
+        if (colorRepository.existsByName(ColorRequest.getName().trim())) {
+            throw new BusinessException("Tên màu sắc đã tồn tại");
         }
         Color Color = fromRequest(ColorRequest);
         colorRepository.save(Color);
@@ -87,9 +87,15 @@ public class ColorServiceImpl implements ColorService {
 
     @Override
     public boolean updateColor(Integer id, ColorRequest ColorRequest) {
-//         check tồn tại
+        // Check tồn tại
         Color existingColor = colorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy kích thước có id: " + id));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy màu sắc có id: " + id));
+
+        // Check trùng tên (loại trừ record hiện tại)
+        if (colorRepository.existsByNameAndIdNot(ColorRequest.getName().trim(), id)) {
+            throw new BusinessException("Tên màu sắc đã tồn tại");
+        }
+
         existingColor.setName(ColorRequest.getName());
         existingColor.setColorCode(ColorRequest.getColorCode());
         colorRepository.save(existingColor);
@@ -111,7 +117,7 @@ public class ColorServiceImpl implements ColorService {
 
         Color.ColorBuilder ColorBuilder = Color.builder()
                 .colorCode(req.getColorCode())
-                .name(req.getName())
+                .name(req.getName().trim())
                 .isActive(true);
 
         String ColorCode = generateColorCode();

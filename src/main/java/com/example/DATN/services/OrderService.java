@@ -36,4 +36,24 @@ public interface OrderService {
   void updatePaymentStatus(Order order, String status, String transactionNo);
 
   void processOrderItems(Order order);
+
+  Page<OrderDTO> searchOnlineOrders(String keyword, String paymentMethod,
+                                   LocalDate dateStart, LocalDate dateEnd,
+                                   int page, int size);
+
+  Page<OrderDTO> searchOfflineOrders(String keyword, String paymentMethod,
+                                    LocalDate dateStart, LocalDate dateEnd,
+                                    int page, int size);
+
+  Page<OrderDTO> getCompletedOrders(int page, int size);
+
+  Page<OrderDTO> searchCompletedOrders(String keyword, String paymentMethod,
+                                      LocalDate dateStart, LocalDate dateEnd,
+                                      int page, int size);
+
+  Page<OrderDTO> searchCompletedOrdersWithTypeFilter(String keyword, String paymentMethod, String orderTypeFilter,
+                                                     LocalDate dateStart, LocalDate dateEnd,
+                                                     int page, int size);
+
+  Order findByOrderCode(String orderCode);
 }

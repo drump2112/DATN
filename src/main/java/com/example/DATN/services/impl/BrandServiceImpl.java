@@ -45,13 +45,16 @@ public class BrandServiceImpl implements BrandService {
 	@Override
 	public boolean addBrand(BrandRequest brandRequest) {
 		try {
+			// Check duplicate name
+			if (brandRepository.existsByNameIgnoreCase(brandRequest.getName().trim())) {
+				throw new RuntimeException("Tên thương hiệu đã tồn tại");
+			}
+
 			Brand brand = fromRequest(brandRequest);
-
 			brandRepository.save(brand);
-
 			return true;
 		} catch (Exception e) {
-			throw new RuntimeException("Loi them thuong hieu: " + e.getMessage(), e);
+			throw new RuntimeException("Lỗi thêm thương hiệu: " + e.getMessage(), e);
 		}
 	}
 
@@ -81,6 +84,11 @@ public class BrandServiceImpl implements BrandService {
 			Brand existingBrand = brandRepository.findById(id)
 					.orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu với ID: " + id));
 
+			// Check duplicate name (excluding current brand)
+			if (brandRepository.existsByNameIgnoreCaseAndIdNot(brandRequest.getName().trim(), id)) {
+				throw new RuntimeException("Tên thương hiệu đã tồn tại");
+			}
+
 			String logoUrl = handleUploadLogo(brandRequest.getLogoUrl(), existingBrand.getLogoUrl());
 
 			Brand updateBrand = existingBrand.toBuilder()
@@ -91,7 +99,7 @@ public class BrandServiceImpl implements BrandService {
 			brandRepository.save(updateBrand);
 			return true;
 		} catch (Exception e) {
-			throw new RuntimeException("Lỗi cập nhật thương hiệu: " + e.getMessage(), e);
+			throw new RuntimeException( e.getMessage(), e);
 		}
 	}
 

@@ -58,6 +58,16 @@
 	</div>
 	<th:block th:fragment="script">
 		<script th:src="@{/js/admin/brand.js}"></script>
+		<script>
+			// Backup function definition directly in HTML
+			window.searchBrand = window.searchBrand || function(page) {
+				console.log("Using backup searchBrand function, page:", page);
+				location.reload(); // Fallback: just reload the page
+			};
+
+			// Test function availability
+			console.log("HTML script - searchBrand available:", typeof window.searchBrand);
+		</script>
 	</th:block>
 </th:block>
 

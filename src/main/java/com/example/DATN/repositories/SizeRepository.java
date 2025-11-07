@@ -36,5 +36,7 @@ public interface SizeRepository extends JpaRepository<Size, Integer> {
 
     boolean existsByName(String name);
 
+    boolean existsByNameAndIdNot(String name, Integer id);
+
 
 }

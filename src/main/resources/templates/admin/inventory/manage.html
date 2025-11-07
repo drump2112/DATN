@@ -1,0 +1,174 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
+<th:block th:fragment="content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Quản Lý Kho Hàng - Tồn Kho/Nhập/Xuất</h5>
+                </div>
+                <div class="ibox-content">
+                    <!-- Stats Cards -->
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <div class="widget style1 navy-bg">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <i class="fa fa-cubes fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-8 text-right">
+                                        <span> Tổng SP</span>
+                                        <h2 class="font-bold" id="totalProducts">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="widget style1 red-bg">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <i class="fa fa-exclamation-triangle fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-8 text-right">
+                                        <span> Sắp hết hàng</span>
+                                        <h2 class="font-bold" id="lowStockCount">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="widget style1 yellow-bg">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <i class="fa fa-ban fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-8 text-right">
+                                        <span> Hết hàng</span>
+                                        <h2 class="font-bold" id="outOfStockCount">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="widget style1 green-bg">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <i class="fa fa-check fa-5x"></i>
+                                    </div>
+                                    <div class="col-xs-8 text-right">
+                                        <span> Còn hàng</span>
+                                        <h2 class="font-bold" id="inStockCount">0</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="row m-t-lg">
+                        <div class="col-sm-4 m-b-xs">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." class="form-control">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary" onclick="loadInventory(0)">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <select id="stockFilter" class="form-control" onchange="loadInventory(0)">
+                                <option value="">Tất cả</option>
+                                <option value="in-stock">Còn hàng</option>
+                                <option value="low-stock">Sắp hết hàng</option>
+                                <option value="out-of-stock">Hết hàng</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <select id="categoryFilter" class="form-control" onchange="loadInventory(0)">
+                                <option value="">Tất cả danh mục</option>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <select id="brandFilter" class="form-control" onchange="loadInventory(0)">
+                                <option value="">Tất cả thương hiệu</option>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-sm-2">
+                            <button class="btn btn-success" onclick="exportInventory()">
+                                <i class="fa fa-download"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Table -->
+                    <div class="row m-t-lg">
+                        <div class="col-lg-12">
+                            <div class="ibox">
+                                <div class="ibox-content">
+                                    <div class="table-responsive" id="inventoryTableContainer">
+                                        <!-- Table will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stock Action Modal -->
+    <div class="modal fade" id="quickStockModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Cập Nhật Kho Nhanh</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="selectedProductInfo" class="alert alert-info">
+                        <!-- Product info will be shown here -->
+                    </div>
+                    <form id="quickStockForm">
+                        <input type="hidden" id="selectedVariantId">
+                        <div class="form-group">
+                            <label>Loại thao tác:</label>
+                            <select id="quickActionType" class="form-control" required>
+                                <option value="">-- Chọn thao tác --</option>
+                                <option value="stock-in">Nhập thêm hàng</option>
+                                <option value="stock-out">Xuất hàng</option>
+                                <option value="update-stock">Cập nhật số lượng</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="quickQuantityGroup">
+                            <label>Số lượng:</label>
+                            <input type="number" id="quickQuantity" class="form-control" min="1">
+                        </div>
+                        <div class="form-group" id="quickNewQuantityGroup" style="display:none;">
+                            <label>Số lượng mới:</label>
+                            <input type="number" id="quickNewQuantity" class="form-control" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Ghi chú:</label>
+                            <textarea id="quickNote" class="form-control" rows="2" placeholder="Ghi chú (tùy chọn)"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="executeQuickStockAction()">Cập nhật</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block th:fragment="script">
+        <script th:src="@{/js/admin/inventory.js}"></script>
+    </th:block>
+</th:block>
+</html>

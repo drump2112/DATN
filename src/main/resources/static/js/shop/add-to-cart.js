@@ -1,6 +1,7 @@
-// add-to-cart.js
+// add-to-cart.js - DISABLED - Chức năng đã được chuyển vào product-detail.js
 $(document).ready(function () {
-  $(document).on("click", "#add-to-cart", function () {
+  // Tạm thời vô hiệu hóa để tránh conflict với product-detail.js
+  /*$(document).on("click", "#add-to-cart", function () {
     const variants = window.productVariants;
     let cart = window.cartData;
 
@@ -73,5 +74,5 @@ $(document).ready(function () {
         },
       );
     }
-  });
+  });*/
 });

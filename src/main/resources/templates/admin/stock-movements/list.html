@@ -1,0 +1,136 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
+<th:block th:fragment="content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Lịch Sử Biến Động Kho</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="row">
+                        <div class="col-sm-4 m-b-xs">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" name="searchInput" value=""
+                                    placeholder="Tìm kiếm (Mã sản phẩm, tên sản phẩm)" class="form-control">
+                                <span class="input-group-btn">
+                                    <button class="btn btn btn-primary" onclick="searchMovements(0)">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <select id="movementTypeFilter" name="movementTypeFilter" class="form-control">
+                                    <option value="" selected>Loại biến động</option>
+                                    <option value="IN">Nhập kho</option>
+                                    <option value="OUT">Xuất kho</option>
+                                    <option value="SALE">Bán hàng</option>
+                                    <option value="RETURN">Hoàn trả</option>
+                                    <option value="DAMAGE">Hàng hỏng</option>
+                                    <option value="MANUAL">Cập nhật thủ công</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <div class="input-group date">
+                                    <input id="dateStartFilter" type="date" class="form-control" value="">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <div class="input-group date">
+                                    <input id="dateEndFilter" type="date" class="form-control" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="ibox">
+                                <div class="ibox-content">
+                                    <div class="table-responsive" id="movementTableContainer">
+                                        <th:block th:replace="admin/stock-movements/table :: table"></th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thao tác kho -->
+    <div class="modal fade" id="stockActionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                    <h4 class="modal-title">Thao tác kho</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="stockActionForm">
+                        <div class="form-group">
+                            <label>Loại thao tác:</label>
+                            <select id="actionType" class="form-control" required>
+                                <option value="">-- Chọn loại thao tác --</option>
+                                <option value="stock-in">Nhập kho</option>
+                                <option value="stock-out">Xuất kho</option>
+                                <option value="damage">Báo hàng hỏng</option>
+                                <option value="update-stock">Cập nhật số lượng</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mã sản phẩm variant:</label>
+                            <input type="number" id="variantId" class="form-control" required
+                                placeholder="Nhập ID của product variant">
+                        </div>
+                        <div class="form-group" id="quantityGroup">
+                            <label>Số lượng:</label>
+                            <input type="number" id="quantity" class="form-control" required min="1"
+                                placeholder="Nhập số lượng">
+                        </div>
+                        <div class="form-group" id="newQuantityGroup" style="display:none;">
+                            <label>Số lượng mới:</label>
+                            <input type="number" id="newQuantity" class="form-control" min="0"
+                                placeholder="Nhập số lượng mới">
+                        </div>
+                        <div class="form-group">
+                            <label>Ghi chú:</label>
+                            <textarea id="note" class="form-control" rows="3"
+                                placeholder="Nhập ghi chú (tùy chọn)"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="executeStockAction()">Thực hiện</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block th:fragment="script">
+        <script th:src="@{/js/admin/stock-movements.js}"></script>
+        <script>
+            // Show/hide fields based on action type
+            $('#actionType').change(function() {
+                const actionType = $(this).val();
+                if (actionType === 'update-stock') {
+                    $('#quantityGroup').hide();
+                    $('#newQuantityGroup').show();
+                } else {
+                    $('#quantityGroup').show();
+                    $('#newQuantityGroup').hide();
+                }
+            });
+        </script>
+    </th:block>
+</th:block>
+</html>

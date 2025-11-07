@@ -63,17 +63,16 @@
                         <li><a th:href="@{/admin/size/}"><i class="fa fa-minus"></i> Danh Sách Kích Thước</a></li>
                     </ul>
                 </li>
-                <!-- <li>
+                <li>
                     <a href="index.html"><i class="fa fa-home"></i><span class="nav-label"> Quản Lý Kho</span>
                         <span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
-                        <li><a th:href="@{/admin/inventory/}"><i class="fa fa-calculator"></i> Tồn kho/Nhập/Xuất</a>
-                        </li>
+                        <li> <a class="nav-link" href="/admin/stock-management/history">
+                                <i class="fas fa-chart-line"></i>
+                                Lịch sử biến động kho
+                            </a></li>
                     </ul>
-                    <ul class="nav nav-second-level">
-                        <li><a href=""><i class="fa fa-exchange"></i> Lịch Sử Biến Động</a></li>
-                    </ul>
-                </li> -->
+                </li>
                 <li>
                     <a href="index.html"><i class="fa fa-money"></i><span class="nav-label"> Quản Lý Giảm giá</span>
                         <span class="fa arrow"></span></a>
@@ -89,11 +88,12 @@
                     <a href="index.html"><i class="fa fa-paste"></i></i><span class="nav-label"> Quản Lý Đơn Hàng</span>
                         <span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
-                        <li><a th:href="@{/admin/order/offline/}"><i class="fa fa-database"></i> Danh Sách Đơn Hàng </a></li>
+                        <li><a th:href="@{/admin/order/completed/}"><i class="fa fa-database"></i> Đơn Hàng Đã Hoàn Thành </a>
+                        </li>
                     </ul>
                     <ul class="nav nav-second-level">
-                        <li><a th:href="@{/admin/order/Online/}"><i class="fa fa-database"></i> Danh Sách Đơn Hàng
-                                Online</a></li>
+                        <li><a th:href="@{/admin/order/Online/}"><i class="fa fa-database"></i> Xử Lý Đơn Hàng Online
+                                </a></li>
                     </ul>
                 </li>
 

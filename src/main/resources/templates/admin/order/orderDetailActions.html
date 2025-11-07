@@ -1,0 +1,90 @@
+<th:block th:fragment="orderDetail">
+  <div class="order-detail-container">
+
+    <!-- Header Bar with Status & Quick Actions -->
+    <div class="order-header-bar">
+      <div class="order-info">
+        <h4 class="order-title">
+          <i class="fa fa-shopping-cart"></i>
+          Đơn hàng #<span th:text="${orderId}">000</span>
+        </h4>
+        <span th:text="${orderStatus}"
+              th:class="'status-pill status-' + ${#strings.toLowerCase(orderStatus)}"
+              class="status-pill">Loading...</span>
+      </div>
+
+      <!-- Inline Quick Actions -->
+      <div class="quick-actions">
+        <!-- PENDING Actions -->
+        <div th:if="${orderStatus == 'PENDING'}" class="action-group">
+          <button class="btn btn-success btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='confirm'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Xác nhận đơn hàng">
+            <i class="fa fa-check"></i> Xác nhận
+          </button>
+          <button class="btn btn-danger btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='cancel'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Hủy đơn hàng">
+            <i class="fa fa-times"></i> Hủy
+          </button>
+        </div>
+
+        <!-- RETURN Actions -->
+        <div th:if="${orderStatus == 'RETURN'}" class="action-group">
+          <button class="btn btn-success btn-action" title="Chấp nhận đổi/trả">
+            <i class="fa fa-check"></i> Chấp nhận
+          </button>
+          <button class="btn btn-danger btn-action" title="Từ chối đổi/trả">
+            <i class="fa fa-times"></i> Từ chối
+          </button>
+        </div>
+
+        <!-- Status Info for other states -->
+        <div th:if="${orderStatus == 'SHIPPING'}" class="status-info-pill">
+          <i class="fa fa-truck"></i> Đang giao hàng
+        </div>
+        <div th:if="${orderStatus == 'COMPLETED'}" class="status-info-pill">
+          <i class="fa fa-check-circle"></i> Đã hoàn thành
+        </div>
+        <div th:if="${orderStatus == 'CANCELLED'}" class="status-info-pill">
+          <i class="fa fa-ban"></i> Đã hủy
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Actions Info -->
+    <div th:if="${orderStatus == 'PENDING' || orderStatus == 'SHIPPING' || orderStatus == 'COMPLETED'}"
+         class="customer-actions-info">
+      <div class="info-item" th:if="${orderStatus == 'PENDING'}">
+        <i class="fa fa-user text-primary"></i>
+        <span class="info-text">Khách hàng có thể hủy đơn hàng từ trang cá nhân</span>
+      </div>
+      <div class="info-item" th:if="${orderStatus == 'SHIPPING'}">
+        <i class="fa fa-user text-info"></i>
+        <span class="info-text">Khách hàng có thể xác nhận đã nhận hàng</span>
+      </div>
+      <div class="info-item" th:if="${orderStatus == 'COMPLETED'}">
+        <i class="fa fa-user text-success"></i>
+        <span class="info-text">Khách hàng có thể mua lại hoặc yêu cầu đổi/trả</span>
+      </div>
+    </div>
+
+    <!-- Order Items Section -->
+    <div class="order-items-section">
+      <div class="section-header">
+        <h5><i class="fa fa-list"></i> Chi tiết sản phẩm</h5>
+      </div>
+      <div class="section-content">
+        <div id="order-items-content">
+          <div class="loading-placeholder">
+            <i class="fa fa-spinner fa-spin"></i>
+            <span>Đang tải danh sách sản phẩm...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</th:block>

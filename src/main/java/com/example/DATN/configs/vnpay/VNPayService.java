@@ -2,7 +2,7 @@ package com.example.DATN.configs.vnpay;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -90,10 +90,10 @@ public class VNPayService {
 
         String orderInfo = "Payment for order " + order.getOrderCode();
         params.put("vnp_OrderInfo", orderInfo);
-        params.put("vnp_OrderType", "250000");
+        params.put("vnp_OrderType", "other");
         params.put("vnp_Locale", "vn");
         params.put("vnp_ReturnUrl", vnp_ReturnUrl);
-        params.put("vnp_IpnUrl", vnp_IpnUrl);
+        // params.put("vnp_IpnUrl", vnp_IpnUrl);
         params.put("vnp_CreateDate", vnp_CreateDate);
         params.put("vnp_ExpireDate", vnp_ExpireDate);
         params.put("vnp_IpAddr", clientIp);
@@ -157,18 +157,14 @@ public class VNPayService {
         for (int i = 0; i < fieldNames.size(); i++) {
             String fieldName = fieldNames.get(i);
             String fieldValue = params.get(fieldName);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                hashData.append(fieldName).append('=').append(fieldValue);
+            if (fieldValue != null && fieldValue.length() > 0) {
+                String encodedValue = java.net.URLEncoder.encode(fieldValue, "UTF-8");
 
-                try {
-                    query.append(java.net.URLEncoder.encode(fieldName, "UTF-8"))
-                            .append('=')
-                            .append(java.net.URLEncoder.encode(fieldValue, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    // Fallback nếu encoding lỗi
-                    query.append(fieldName).append('=').append(fieldValue);
-                    System.err.println("Warning: Failed to encode " + fieldName + "=" + fieldValue);
-                }
+                hashData.append(fieldName).append('=').append(encodedValue);
+
+                query.append(java.net.URLEncoder.encode(fieldName, "UTF-8"))
+                        .append('=')
+                        .append(encodedValue);
 
                 if (i < fieldNames.size() - 1) {
                     hashData.append('&');
@@ -251,28 +247,66 @@ public class VNPayService {
         return fields;
     }
 
-    public boolean validateSignature(Map<String, String> fields) {
+    // public boolean validateSignature(Map<String, String> fields) {
+    // String vnp_SecureHash = fields.get("vnp_SecureHash");
+    // fields.remove("vnp_SecureHashType");
+    // fields.remove("vnp_SecureHash");
+
+    // List<String> fieldNames = new ArrayList<>(fields.keySet());
+    // Collections.sort(fieldNames);
+    // StringBuilder hashData = new StringBuilder();
+
+    // for (int i = 0; i < fieldNames.size(); i++) {
+    // String fieldName = fieldNames.get(i);
+    // String fieldValue = fields.get(fieldName);
+    // if (fieldValue != null && fieldValue.length() > 0) {
+    // hashData.append(fieldName).append('=').append(fieldValue);
+    // if (i < fieldNames.size() - 1) {
+    // hashData.append('&');
+    // }
+    // }
+    // }
+
+    // String signValue = hmacSHA512(vnp_HashSecret, hashData.toString());
+    // return signValue.equals(vnp_SecureHash);
+    // }
+
+    public boolean validateSignature(Map<String, String> fields) throws UnsupportedEncodingException {
         String vnp_SecureHash = fields.get("vnp_SecureHash");
-        fields.remove("vnp_SecureHashType");
+
         fields.remove("vnp_SecureHash");
+        fields.remove("vnp_SecureHashType");
 
         List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
-        StringBuilder hashData = new StringBuilder();
 
+        StringBuilder hashData = new StringBuilder();
         for (int i = 0; i < fieldNames.size(); i++) {
             String fieldName = fieldNames.get(i);
             String fieldValue = fields.get(fieldName);
             if (fieldValue != null && fieldValue.length() > 0) {
-                hashData.append(fieldName).append('=').append(fieldValue);
+                // IMPORTANT: phải URLEncode giống lúc tạo URL
+                String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString());
+                // VNPay trước kia dùng URLEncoder -> giữ nguyên kết quả đó
+                hashData.append(fieldName).append('=').append(encodedValue);
                 if (i < fieldNames.size() - 1) {
                     hashData.append('&');
                 }
             }
         }
 
-        String signValue = hmacSHA512(vnp_HashSecret, hashData.toString());
-        return signValue.equals(vnp_SecureHash);
+        // Trim secret key (loại space thừa nếu có)
+        String secret = (vnp_HashSecret == null) ? "" : vnp_HashSecret.trim();
+
+        String signValue = hmacSHA512(secret, hashData.toString());
+
+        System.out.println("== VNPAY validateSignature debug ==");
+        System.out.println("Provided vnp_SecureHash: " + vnp_SecureHash);
+        System.out.println("Computed signValue     : " + signValue);
+        System.out.println("HashData used          : " + hashData.toString());
+
+        // So sánh ignoring case cho an toàn
+        return signValue != null && vnp_SecureHash != null && signValue.equalsIgnoreCase(vnp_SecureHash);
     }
 
     private boolean isValidIP(String ip) {
@@ -334,12 +368,35 @@ public class VNPayService {
         return ipAddress;
     }
 
+    // private String hmacSHA512(String key, String data) {
+    // try {
+    // System.out.println("=== HMAC Calculation Debug ===");
+    // System.out.println("Key length: " + key.length());
+    // System.out.println("Data to hash: " + data);
+
+    // Mac hmac512 = Mac.getInstance("HmacSHA512");
+    // SecretKeySpec secretKeySpec = new
+    // SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
+    // hmac512.init(secretKeySpec);
+    // byte[] bytes = hmac512.doFinal(data.getBytes(StandardCharsets.UTF_8));
+    // StringBuilder hash = new StringBuilder();
+    // for (byte b : bytes) {
+    // hash.append(String.format("%02x", b));
+    // }
+
+    // System.out.println("Generated hash: " + hash.toString());
+    // System.out.println("Hash length: " + hash.toString().length());
+
+    // return hash.toString();
+    // } catch (Exception e) {
+    // System.err.println("HMAC calculation error: " + e.getMessage());
+    // e.printStackTrace();
+    // return "";
+    // }
+    // }
+
     private String hmacSHA512(String key, String data) {
         try {
-            System.out.println("=== HMAC Calculation Debug ===");
-            System.out.println("Key length: " + key.length());
-            System.out.println("Data to hash: " + data);
-
             Mac hmac512 = Mac.getInstance("HmacSHA512");
             SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
             hmac512.init(secretKeySpec);
@@ -348,15 +405,11 @@ public class VNPayService {
             for (byte b : bytes) {
                 hash.append(String.format("%02x", b));
             }
-
-            System.out.println("Generated hash: " + hash.toString());
-            System.out.println("Hash length: " + hash.toString().length());
-
             return hash.toString();
         } catch (Exception e) {
             System.err.println("HMAC calculation error: " + e.getMessage());
             e.printStackTrace();
-            return "";
+            return null;
         }
     }
 

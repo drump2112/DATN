@@ -1,7 +1,97 @@
 Dropzone.autoDiscover = false;
 var avatarDropzone = null;
 
+// Global variables to track current state
+var currentPage = 0;
+var currentKeyword = '';
+var currentStatus = '';
+
+// Define searchBrand function in multiple ways to ensure it's accessible
+function searchBrand(page) {
+  // Update current page
+  currentPage = page;
+
+  var data = {
+    page: page,
+    size: 5,
+  };
+
+  // Get current filter values from DOM elements (with null checks)
+  var searchInput = document.getElementById("searchInput");
+  var statusFilter = document.getElementById("statusFilter");
+
+  var keyword = searchInput ? searchInput.value.trim() : '';
+  var status = statusFilter ? statusFilter.value : '';
+
+  // Use current filter values
+  if (keyword && keyword.length > 0) {
+    data.keyword = keyword;
+    currentKeyword = keyword;
+  }
+  if (status !== null && status !== undefined && status !== "") {
+    data.isActive = status;
+    currentStatus = status;
+  }
+
+  // Use vanilla JavaScript for AJAX to avoid jQuery dependency issues
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/admin/brand/search?' + new URLSearchParams(data).toString(), true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        var container = document.getElementById("brandTableContainer");
+        if (container) {
+          container.innerHTML = xhr.responseText;
+        }
+      } else {
+        console.error("Không thể tải dữ liệu thương hiệu");
+      }
+    }
+  };
+  xhr.send();
+}
+
+// Expose to window object immediately
+window.searchBrand = searchBrand;
+
+// Debug: Log to console to verify function is loaded
+console.log("searchBrand function loaded:", typeof window.searchBrand);
+
+// Also expose through direct assignment (backup method)
+if (typeof window !== 'undefined') {
+  window['searchBrand'] = searchBrand;
+  window['triggerSearch'] = triggerSearch;
+}
+
+// Alternative global assignment
+var globalSearchBrand = searchBrand;
+var globalTriggerSearch = triggerSearch;
+
+// Function to manually trigger search (for search button)
+function triggerSearch() {
+  var searchInput = document.getElementById("searchInput");
+  var statusFilter = document.getElementById("statusFilter");
+
+  currentKeyword = searchInput ? searchInput.value.trim() : '';
+  currentStatus = statusFilter ? statusFilter.value : '';
+
+  searchBrand(0); // Reset to first page when searching
+}
+
+// Expose to window object
+window.triggerSearch = triggerSearch;
+
+// Double-check function exposure when DOM is ready
 $(document).ready(function () {
+  console.log("DOM ready - searchBrand type:", typeof window.searchBrand);
+  console.log("DOM ready - searchBrand exists:", 'searchBrand' in window);
+
+  // Force re-assignment in case of any issues
+  window.searchBrand = searchBrand;
+  window.triggerSearch = triggerSearch;
+
+  console.log("After re-assignment - searchBrand type:", typeof window.searchBrand);
+
   $("#brandForm").validate({
     ignore: [],
     rules: {
@@ -19,6 +109,40 @@ $(document).ready(function () {
       error.insertAfter(element); // lỗi hiển thị dưới input
     },
   });
+
+  // Add event listener for status filter change
+  $("#statusFilter").change(function() {
+    currentStatus = $(this).val();
+    searchBrand(0); // Reset to page 0 when filter changes
+  });
+
+  // Add event listener for search input (optional: search on enter)
+  $("#searchInput").keypress(function(e) {
+    if (e.which === 13) { // Enter key
+      currentKeyword = $(this).val().trim();
+      searchBrand(0);
+    }
+  });
+
+  // Reset filter button
+  $("#resetFilterBtn").click(function() {
+    $("#searchInput").val('');
+    $("#statusFilter").val('');
+    currentKeyword = '';
+    currentStatus = '';
+    currentPage = 0;
+    searchBrand(0);
+  });
+
+  // Initialize filters from current page values if any
+  function initializeFilters() {
+    currentKeyword = $("#searchInput").val() || '';
+    currentStatus = $("#statusFilter").val() || '';
+    currentPage = 0;
+  }
+
+  // Initialize on page load
+  initializeFilters();
 
   if (!avatarDropzone) {
     avatarDropzone = new Dropzone("#avatarDropzone", {
@@ -175,20 +299,23 @@ $(document).ready(function () {
               avatarDropzone.removeAllFiles(true);
             }
 
-            $.get("/admin/brand/count").done(function (totalItems) {
+            // Stay on current page or go to last page if added
+            $.get("/admin/brand/counts").done(function (totalItems) {
               const pageSize = 5;
               const lastPage = Math.max(
                 0,
                 Math.ceil(totalItems / pageSize) - 1,
               );
+              currentPage = lastPage;
               searchBrand(lastPage);
             });
           },
           error: function (xhr) {
-            SwalUtils.error(
-              "Lỗi!",
-              xhr.responseJSON?.message || "Thêm thất bại"
-            );
+            let errorMessage = "Thêm thất bại";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+              errorMessage = xhr.responseJSON.message;
+            }
+            SwalUtils.error("Lỗi!", errorMessage);
           },
         });
       }
@@ -232,12 +359,15 @@ $(document).ready(function () {
 
             $("#myModal").modal("hide");
 
-            const currentPage = $("#productForm").data("current-page") || 0;
-
+            // Stay on current page after update
             searchBrand(currentPage);
           },
           error: function (xhr) {
-            toastr.error("Cập nhật thất bại: " + xhr.responseText);
+            let errorMessage = "Cập nhật thất bại";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+              errorMessage = xhr.responseJSON.message;
+            }
+            SwalUtils.error("Lỗi!", errorMessage);
           },
         });
       }
@@ -266,10 +396,7 @@ $(document).ready(function () {
           type: "PUT",
           success: function (data) {
             SwalUtils.success("Thành công", data.message);
-            const currentPage =
-              parseInt(
-                $("#paginationContainer .paginate_button.active a").text(),
-              ) - 1 || 0;
+            // Stay on current page after status toggle
             searchBrand(currentPage);
           },
           error: function (xhr) {
@@ -283,35 +410,6 @@ $(document).ready(function () {
     });
   };
 
-  function searchBrand(page) {
-    let data = {
-      page: page,
-      size: 5,
-    };
-
-    let keyword = $("#searchInput").val().trim();
-    let isActive = $("#statusFilter").val();
-
-    if (keyword && keyword.length > 0) {
-      data.keyword = keyword;
-    }
-    if (isActive !== null && isActive !== undefined && isActive !== "") {
-      data.isActive = isActive;
-    }
-
-    $.ajax({
-      url: "/admin/brand/search",
-      type: "GET",
-      data: data,
-      success: function (response) {
-        $("#brandTableContainer").html(response);
-      },
-      error: function () {
-        toastr.error("Không thể tải dữ liệu thương hiệu");
-      },
-    });
-  }
-
-  window.searchBrand = searchBrand;
+  // Expose functions to global scope
   window.openAddModal = openAddModal;
 });

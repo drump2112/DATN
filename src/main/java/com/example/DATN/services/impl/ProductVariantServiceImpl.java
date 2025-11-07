@@ -23,6 +23,7 @@ import com.example.DATN.request.ProductVariantRequest;
 import com.example.DATN.request.ProductVariantUpdateRequest;
 import com.example.DATN.services.ImageService;
 import com.example.DATN.services.ProductVariantService;
+import com.example.DATN.services.StockMovementService;
 import com.example.DATN.specifications.ProductVariantSpecification;
 
 import org.modelmapper.ModelMapper;
@@ -57,6 +58,9 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 	@Autowired
 	private ProductVariantImageRepository variantImageRepository;
+
+	@Autowired
+	private StockMovementService stockMovementService;
 
 	@Override
 	public Page<ProductVariantDTO> getAllProducts(int page, int size) {
@@ -362,7 +366,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 	public List<ProductVariantDTO> getVariantsByProductId(Integer productId) {
 		List<ProductVariant> variants = productVariantRepository.findByProductId(productId);
 		return variants.stream()
-				.map(variant -> modelMapper.map(variant, ProductVariantDTO.class))
+				.map(this::mapToProductVariantDTO)
 				.collect(Collectors.toList());
 	}
 
@@ -379,11 +383,29 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		ProductVariant variant = productVariantRepository.findById(id)
 				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
 
+		// Lưu số lượng cũ để ghi stock movement
+		Integer oldQuantity = variant.getQuantity();
+
 		if (request.getPrice() != null) {
 			variant.setPrice(BigDecimal.valueOf(request.getPrice()));
 		}
 
+		if (request.getQuantity() != null) {
+			variant.setQuantity(request.getQuantity());
+		}
+
 		productVariantRepository.save(variant);
+
+		// Ghi lại stock movement nếu số lượng thay đổi
+		if (request.getQuantity() != null && !request.getQuantity().equals(oldQuantity)) {
+			stockMovementService.processManualUpdate(
+				variant.getId(),
+				oldQuantity,
+				request.getQuantity(),
+				"Cập nhật số lượng thủ công từ admin",
+				"admin"
+			);
+		}
 
 		if (request.getImages() != null && !request.getImages().isEmpty()) {
 			List<ProductVariantImage> oldImages = variantImageRepository.findByProductIdAndColorIdOrderBySortOrder(

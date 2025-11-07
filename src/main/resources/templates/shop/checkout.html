@@ -63,40 +63,142 @@
             <div class="section-header">
               <div class="header-content">
                 <h3 class="section-title">
-                  <i class="fa fa-credit-card text-success"></i>
-                  Phương Thức Thanh Toán
+                  <i class="fa fa-map-marker text-danger"></i>
+                  Địa Chỉ Giao Hàng
                 </h3>
-                <small class="section-subtitle">Chọn cách thức thanh toán phù hợp</small>
+                <small class="section-subtitle">Thông tin giao hàng</small>
               </div>
             </div>
-            <div class="payment-methods-container">
-              <div class="payment-options">
-                <div class="payment-option">
-                  <label class="payment-radio-label">
-                    <input type="radio" id="cod" value="CASH" name="paymentMethod" checked="">
-                    <span class="radio-custom"></span>
-                    <div class="payment-content">
-                      <i class="fa fa-money text-warning"></i>
-                      <div class="payment-text">
-                        <span class="payment-title">Thanh Toán Khi Nhận Hàng</span>
-                        <small class="payment-desc">Thanh toán bằng tiền mặt khi nhận hàng</small>
+            <div class="address-section-container">
+              <div id="currentAddressView" class="current-address-display">
+                <div class="address-info-card">
+                  <div class="address-header">
+                    <i class="fa fa-home text-primary"></i>
+                    <span class="address-label">Địa chỉ nhận hàng</span>
+                    <button type="button" class="btn-edit-address" onclick="toggleAddressEdit()"
+                      title="Thay đổi địa chỉ">
+                      <i class="fa fa-edit"></i>
+                    </button>
+                  </div>
+                  <div class="address-content" style="font-size: 14px; color: #555;">
+                    <p id="currentFullAddress" class="current-address-text"
+                      th:text="${user.address != null and user.address.fullAddress != null ? user.address.fullAddress : 'Chưa có địa chỉ'}"
+                      th:data-province-code="${user.address != null and user.address.province != null ? user.address.province.provinceCode : ''}"
+                      th:data-commune-code="${user.address != null and user.address.commune != null ? user.address.commune.communeCode : ''}">
+                      Chưa có địa chỉ
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form chỉnh sửa địa chỉ (ẩn ban đầu) -->
+              <div id="addressEditForm" class="address-edit-form" style="display: none;">
+                <div class="address-form-container">
+                  <!-- Header form -->
+                  <div class="form-header">
+                    <h6><i class="fa fa-location-arrow text-info"></i> Cập nhật địa chỉ giao hàng</h6>
+                  </div>
+
+                  <form id="shippingAddressForm">
+                    <!-- Radio buttons để chọn địa chỉ -->
+                    <div class="address-options">
+                      <div class="address-option">
+                        <label class="address-radio-label">
+                          <input type="radio" name="addressType" value="current" checked>
+                          <span class="radio-custom"></span>
+                          <div class="radio-content">
+                            <i class="fa fa-bookmark text-success"></i>
+                            <div class="address-text-content">
+                              <span class="address-option-title">Sử dụng địa chỉ hiện tại</span>
+                              <small class="current-address-preview"
+                                th:text="${user.address != null and user.address.fullAddress != null ? user.address.fullAddress : 'Chưa có địa chỉ'}">
+                                Chưa có địa chỉ
+                              </small>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      <div class="address-option">
+                        <label class="address-radio-label">
+                          <input type="radio" name="addressType" value="new">
+                          <span class="radio-custom"></span>
+                          <div class="radio-content">
+                            <i class="fa fa-plus-circle text-info"></i>
+                            <span>Giao hàng đến địa chỉ khác</span>
+                          </div>
+                        </label>
                       </div>
                     </div>
-                  </label>
-                </div>
-                <div class="payment-option">
-                  <label class="payment-radio-label">
-                    <input type="radio" id="vnpay" value="VNPAY" name="paymentMethod">
-                    <span class="radio-custom"></span>
-                    <div class="payment-content">
-                      <i class="fa fa-credit-card text-success"></i>
-                      <div class="payment-text">
-                        <span class="payment-title">VNPay</span>
-                        <small class="payment-desc">Thanh toán trực tuyến qua VNPay (Visa, Mastercard, ATM...)</small>
+
+                    <!-- Form nhập địa chỉ mới -->
+                    <div id="newAddressFields" class="new-address-fields" style="display: none;">
+                      <div class="address-form-row">
+                        <div class="form-field">
+                          <label class="field-label">
+                            <i class="fa fa-map text-primary"></i>
+                            Tỉnh/Thành phố *
+                          </label>
+                          <select class="form-select-modern" id="shippingProvince" name="provinceCode">
+                            <option value="">🏙️ Chọn Tỉnh/Thành phố</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="address-form-row">
+                        <div class="form-field">
+                          <label class="field-label">
+                            <i class="fa fa-building text-success"></i>
+                            Phường/Xã *
+                          </label>
+                          <select class="form-select-modern" id="shippingCommune" name="communeCode" disabled>
+                            <option value="">🏘️ Chọn Phường/Xã</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="address-form-row">
+                        <div class="form-field">
+                          <label class="field-label">
+                            <i class="fa fa-road text-warning"></i>
+                            Địa chỉ cụ thể *
+                          </label>
+                          <input type="text" class="form-input-modern" id="shippingSpecificAddress"
+                            name="specificAddress" placeholder="🏠 Số nhà, tên đường, tòa nhà..." maxlength="500">
+                        </div>
+                      </div>
+
+                      <!-- Shipping fee display -->
+                      <div class="shipping-fee-preview" id="shippingFeePreview" style="display: none;">
+                        <div class="fee-info">
+                          <i class="fa fa-truck text-info"></i>
+                          <span class="fee-label">Phí giao hàng dự kiến:</span>
+                          <span class="fee-amount" id="previewFeeAmount">0 VNĐ</span>
+                        </div>
                       </div>
                     </div>
-                  </label>
+
+                    <!-- Action buttons -->
+                    <div class="form-actions">
+                      <button type="button" class="btn-save-address" onclick="saveShippingAddress()">
+                        <i class="fa fa-check-circle"></i>
+                        <span>Lưu địa chỉ</span>
+                      </button>
+                      <button type="button" class="btn-cancel-address" onclick="cancelAddressEdit()">
+                        <i class="fa fa-times-circle"></i>
+                        <span>Hủy bỏ</span>
+                      </button>
+                    </div>
+                  </form>
                 </div>
+              </div>
+
+              <div class="map-container">
+                <div class="map-header">
+                  <i class="fa fa-map text-success"></i>
+                  <span>Vị trí giao hàng</span>
+                </div>
+                <iframe id="deliveryMap" class="modern-map" aria-hidden="true" frameborder="0" tabindex="-1"
+                  src="https://www.google.com/maps?q=Hanoi, Vietnam&output=embed"></iframe>
               </div>
             </div>
             <div class="section-divider"></div>
@@ -123,6 +225,35 @@
                           <div class="col-xs-8 text-right text-center">
                             <button id="openVoucherModal" type="button" class="btn btn-w-m btn-info m-t-md"><b>Chọn
                                 Mã Giảm Giá</b></button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xs-2"></div>
+                    </div>
+
+                    <!-- Voucher Suggestion Section -->
+                    <div class="row m-t-md">
+                      <div class="col-xs-2"></div>
+                      <div class="col-xs-8">
+                        <div id="voucherSuggestion" class="voucher-suggestion-card" style="display: none;">
+                          <div class="suggestion-header">
+                            <i class="fa fa-lightbulb-o text-warning"></i>
+                            <span class="suggestion-title">Gợi ý voucher tốt nhất cho bạn</span>
+                          </div>
+                          <div class="suggested-voucher-content">
+                            <div class="voucher-info-detail">
+                              <div class="voucher-code-display">
+                                <i class="fa fa-ticket text-success"></i>
+                                <strong id="suggestedVoucherCode" class="voucher-code"></strong>
+                              </div>
+                              <div class="voucher-description">
+                                <small id="suggestedVoucherDesc" class="voucher-desc"></small>
+                              </div>
+                            </div>
+                            <button id="applySuggestedVoucher" class="btn-apply-suggestion">
+                              <i class="fa fa-check-circle"></i>
+                              <span>Áp dụng ngay</span>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -206,6 +337,143 @@
                         border-radius: 6px;
                       }
 
+                      /* ===== VOUCHER SUGGESTION STYLING ===== */
+                      .voucher-suggestion-card {
+                        background: linear-gradient(135deg, #e8f5e8, #f0fff0);
+                        border: 2px solid #28a745;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin: 15px 0;
+                        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
+                        transition: all 0.3s ease;
+                        animation: fadeInUp 0.5s ease;
+                      }
+
+                      .voucher-suggestion-card:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.25);
+                      }
+
+                      .suggestion-header {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 15px;
+                        padding-bottom: 10px;
+                        border-bottom: 1px solid rgba(40, 167, 69, 0.2);
+                      }
+
+                      .suggestion-header i {
+                        font-size: 18px;
+                        margin-right: 8px;
+                      }
+
+                      .suggestion-title {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        font-size: 16px;
+                      }
+
+                      .suggested-voucher-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                      }
+
+                      .voucher-info-detail {
+                        flex: 1;
+                      }
+
+                      .voucher-code-display {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 8px;
+                      }
+
+                      .voucher-code-display i {
+                        font-size: 16px;
+                        margin-right: 8px;
+                      }
+
+                      .voucher-code {
+                        font-size: 18px;
+                        color: #28a745;
+                        font-weight: 700;
+                        background: white;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                        border: 1px solid #28a745;
+                      }
+
+                      .voucher-description {
+                        margin-left: 24px;
+                      }
+
+                      .voucher-desc {
+                        color: #6c757d;
+                        font-size: 14px;
+                        line-height: 1.4;
+                      }
+
+                      .btn-apply-suggestion {
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 15px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        white-space: nowrap;
+                        font-size: 14px;
+                        width: 100%;
+                        margin-top: 10px;
+                      }
+
+                      .btn-apply-suggestion:hover {
+                        background: linear-gradient(135deg, #218838, #17a2b8);
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+                      }
+
+                      .btn-apply-suggestion i {
+                        font-size: 16px;
+                      }
+
+                      @media (max-width: 768px) {
+                        .suggested-voucher-content {
+                          gap: 15px;
+                        }
+
+                        .btn-apply-suggestion {
+                          justify-content: center;
+                          width: 100%;
+                        }
+
+                        .voucher-suggestion-card {
+                          padding: 15px;
+                        }
+
+                        .suggestion-title {
+                          font-size: 14px;
+                        }
+
+                        .voucher-code {
+                          font-size: 16px;
+                        }
+                      }
+
+                      /* Applied voucher area styling */
+                      #appliedVoucherArea {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                      }
+
                       /* Styling cho address form */
                       #addressEditForm {
                         background: #f8f9fa;
@@ -278,7 +546,7 @@
                         font-weight: 600;
                         color: #2c3e50;
                         margin-left: 8px;
-                        font-size: 14px;
+                        font-size: 20px;
                       }
 
                       .btn-edit-address {
@@ -300,11 +568,12 @@
                       }
 
                       .current-address-text {
-                        color: #34495e;
-                        font-size: 14px;
+                        color: #1a1a1a;
+                        font-size: 16px;
                         line-height: 1.5;
                         margin: 0;
-                        font-weight: 500;
+                        font-weight: 600;
+                        text-align: center;
                       }
 
                       /* ===== ADDRESS EDIT FORM STYLING ===== */
@@ -357,12 +626,13 @@
 
                       .address-radio-label {
                         display: flex;
-                        align-items: center;
+                        align-items: flex-start;
                         padding: 14px 16px;
                         cursor: pointer;
                         margin: 0;
                         font-weight: 500;
                         transition: all 0.3s ease;
+                        min-height: 50px;
                       }
 
                       .address-radio-label input[type="radio"] {
@@ -375,6 +645,7 @@
                         border: 2px solid #ddd;
                         border-radius: 50%;
                         margin-right: 12px;
+                        margin-top: 2px;
                         position: relative;
                         transition: all 0.3s ease;
                         flex-shrink: 0;
@@ -401,11 +672,38 @@
                         display: flex;
                         align-items: center;
                         color: #2c3e50;
+                        width: 100%;
                       }
 
                       .radio-content i {
                         margin-right: 8px;
                         font-size: 16px;
+                        flex-shrink: 0;
+                      }
+
+                      .address-text-content {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        flex: 1;
+                      }
+
+                      .address-option-title {
+                        font-weight: 600;
+                        margin-bottom: 3px;
+                        display: block;
+                      }
+
+                      .current-address-preview {
+                        color: #2c3e50;
+                        font-size: 14px;
+                        font-weight: 600;
+                        line-height: 1.4;
+                        display: block;
+                        max-width: 100%;
+                        word-wrap: break-word;
+                        font-style: normal;
+                        text-align: center;
                       }
 
                       .address-radio-label input[type="radio"]:checked~.radio-content {
@@ -824,6 +1122,8 @@
                         padding: 15px 20px;
                         background: white;
                         transition: all 0.3s ease;
+                        font-size: 15px;
+                        font-weight: 500;
                       }
 
                       .list-group-item:last-child {
@@ -831,6 +1131,7 @@
                         background: linear-gradient(135deg, #f8f9ff, #ffffff);
                         font-weight: 600;
                         color: #2c3e50;
+                        font-size: 16px;
                       }
 
                       .list-group-item:hover {
@@ -965,18 +1266,36 @@
                       #btnConfirmOrder {
                         background: linear-gradient(135deg, #1ab394, #20c997) !important;
                         border: none !important;
-                        padding: 15px 15px !important;
+                        padding: 15px 25px !important;
                         font-weight: 600 !important;
                         font-size: 16px !important;
                         border-radius: 15px !important;
                         box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
                         transition: all 0.3s ease !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        gap: 8px !important;
+                        min-height: 50px !important;
+                        white-space: nowrap !important;
+                        color: white !important;
                       }
 
                       #btnConfirmOrder:hover {
                         transform: translateY(-2px) !important;
                         box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4) !important;
                         background: linear-gradient(135deg, #218838, #17a2b8) !important;
+                        color: white !important;
+                      }
+
+                      #btnConfirmOrder i {
+                        font-size: 16px !important;
+                        line-height: 1 !important;
+                      }
+
+                      #btnConfirmOrder span {
+                        line-height: 1 !important;
+                        font-size: 16px !important;
                       }
 
                       /* ===== RESPONSIVE ===== */
@@ -1019,6 +1338,11 @@
                           margin-bottom: 10px;
                           margin-right: 0;
                         }
+
+                        #currentFullAddress {
+                          font-size: 16px;
+                          color: #2c3e50;
+                        }
                       }
                     </style>
                   </div>
@@ -1033,9 +1357,14 @@
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                       <b>Giảm giá :</b>
                       <div class="pull-right">
-                        <span id="discountValue" class="me-2">0 VNĐ</span>
-                        <button id="clearVoucherInline" class="btn btn-xs btn-warning"
-                          style="display:none;">Hủy</button>
+                        <!-- Applied voucher area -->
+                        <div id="appliedVoucherArea" style="display: none;">
+                          <span id="discountValue" class="me-2">0 VNĐ</span>
+                          <button id="clearVoucherInline" class="btn btn-xs btn-warning">Hủy</button>
+                        </div>
+
+                        <!-- Default state -->
+                        <span id="defaultDiscountText">0 VNĐ</span>
                       </div>
                     </li>
 
@@ -1047,14 +1376,15 @@
                   </ul>
                   <li class="list-group-item">
                     <span class="pull-right" id="totalPayment"
-                      th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                      th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 3, 'POINT')} + ' VNĐ'">0 VNĐ</span>
                     <b> Tổng Thanh Toán :</b>
                   </li>
                 </div>
                 <div class="pull-right m-t-sm" style="margin-top: 40px;">
-                  <button class="btn btn-outline btn-primary dim" id="btnConfirmOrder" type="button"
-                    style="height: 45px; padding: 10px 25px;"><i class="fa fa-shopping-cart"></i> <span
-                      id="btnOrderText">Đặt Hàng</span></button>
+                  <button class="btn btn-outline btn-primary dim" id="btnConfirmOrder" type="button">
+                    <i class="fa fa-shopping-cart"></i>
+                    <span id="btnOrderText">Đặt Hàng</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1109,134 +1439,41 @@
             </div>
           </div>
         </div>
-        <div class="ibox float-e-margins delivery-address-card">
+        <div class="ibox float-e-margins payment-method-card">
           <div class="ibox-title modern-card-title">
-            <h5><i class="fa fa-map-marker text-danger"></i> Địa Chỉ Giao Hàng</h5>
+            <h5><i class="fa fa-credit-card text-success"></i> Phương Thức Thanh Toán</h5>
           </div>
           <div class="ibox-content">
-            <!-- Hiển thị địa chỉ hiện tại -->
-            <div id="currentAddressView" class="current-address-display">
-              <div class="address-info-card">
-                <div class="address-header">
-                  <i class="fa fa-home text-primary"></i>
-                  <span class="address-label">Địa chỉ nhận hàng</span>
-                  <button type="button" class="btn-edit-address" onclick="toggleAddressEdit()" title="Thay đổi địa chỉ">
-                    <i class="fa fa-edit"></i>
-                  </button>
+            <small class="section-subtitle text-muted mb-3 d-block">Chọn cách thức thanh toán phù hợp</small>
+            <div class="payment-methods-container">
+              <div class="payment-options">
+                <div class="payment-option">
+                  <label class="payment-radio-label">
+                    <input type="radio" id="cod" value="CASH" name="paymentMethod" checked="">
+                    <span class="radio-custom"></span>
+                    <div class="payment-content">
+                      <i class="fa fa-money text-warning"></i>
+                      <div class="payment-text">
+                        <span class="payment-title">Thanh Toán Khi Nhận Hàng</span>
+                        <small class="payment-desc">Thanh toán bằng tiền mặt khi nhận hàng</small>
+                      </div>
+                    </div>
+                  </label>
                 </div>
-                <div class="address-content">
-                  <p id="currentFullAddress" class="current-address-text"
-                    th:text="${user.address != null and user.address.fullAddress != null ? user.address.fullAddress : 'Chưa có địa chỉ'}"
-                    th:data-province-code="${user.address != null and user.address.province != null ? user.address.province.provinceCode : ''}"
-                    th:data-commune-code="${user.address != null and user.address.commune != null ? user.address.commune.communeCode : ''}">
-                    Chưa có địa chỉ
-                  </p>
+                <div class="payment-option">
+                  <label class="payment-radio-label">
+                    <input type="radio" id="vnpay" value="VNPAY" name="paymentMethod">
+                    <span class="radio-custom"></span>
+                    <div class="payment-content">
+                      <i class="fa fa-credit-card text-success"></i>
+                      <div class="payment-text">
+                        <span class="payment-title">VNPay</span>
+                        <small class="payment-desc">Thanh toán trực tuyến qua VNPay (Visa, Mastercard, ATM...)</small>
+                      </div>
+                    </div>
+                  </label>
                 </div>
               </div>
-            </div>
-
-            <!-- Form chỉnh sửa địa chỉ (ẩn ban đầu) -->
-            <div id="addressEditForm" class="address-edit-form" style="display: none;">
-              <div class="address-form-container">
-                <!-- Header form -->
-                <div class="form-header">
-                  <h6><i class="fa fa-location-arrow text-info"></i> Cập nhật địa chỉ giao hàng</h6>
-                </div>
-
-                <form id="shippingAddressForm">
-                  <!-- Radio buttons để chọn địa chỉ -->
-                  <div class="address-options">
-                    <div class="address-option">
-                      <label class="address-radio-label">
-                        <input type="radio" name="addressType" value="current" checked>
-                        <span class="radio-custom"></span>
-                        <div class="radio-content">
-                          <i class="fa fa-bookmark text-success"></i>
-                          <span>Sử dụng địa chỉ hiện tại</span>
-                        </div>
-                      </label>
-                    </div>
-
-                    <div class="address-option">
-                      <label class="address-radio-label">
-                        <input type="radio" name="addressType" value="new">
-                        <span class="radio-custom"></span>
-                        <div class="radio-content">
-                          <i class="fa fa-plus-circle text-info"></i>
-                          <span>Giao hàng đến địa chỉ khác</span>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- Form nhập địa chỉ mới -->
-                  <div id="newAddressFields" class="new-address-fields" style="display: none;">
-                    <div class="address-form-row">
-                      <div class="form-field">
-                        <label class="field-label">
-                          <i class="fa fa-map text-primary"></i>
-                          Tỉnh/Thành phố *
-                        </label>
-                        <select class="form-select-modern" id="shippingProvince" name="provinceCode">
-                          <option value="">🏙️ Chọn Tỉnh/Thành phố</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="address-form-row">
-                      <div class="form-field">
-                        <label class="field-label">
-                          <i class="fa fa-building text-success"></i>
-                          Phường/Xã *
-                        </label>
-                        <select class="form-select-modern" id="shippingCommune" name="communeCode" disabled>
-                          <option value="">🏘️ Chọn Phường/Xã</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="address-form-row">
-                      <div class="form-field">
-                        <label class="field-label">
-                          <i class="fa fa-road text-warning"></i>
-                          Địa chỉ cụ thể *
-                        </label>
-                        <input type="text" class="form-input-modern" id="shippingSpecificAddress" name="specificAddress"
-                          placeholder="🏠 Số nhà, tên đường, tòa nhà..." maxlength="500">
-                      </div>
-                    </div>
-
-                    <!-- Shipping fee display -->
-                    <div class="shipping-fee-preview" id="shippingFeePreview" style="display: none;">
-                      <div class="fee-info">
-                        <i class="fa fa-truck text-info"></i>
-                        <span class="fee-label">Phí giao hàng dự kiến:</span>
-                        <span class="fee-amount" id="previewFeeAmount">0 VNĐ</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Action buttons -->
-                  <div class="form-actions">
-                    <button type="button" class="btn-save-address" onclick="saveShippingAddress()">
-                      <i class="fa fa-check-circle"></i>
-                      <span>Lưu địa chỉ</span>
-                    </button>
-                    <button type="button" class="btn-cancel-address" onclick="cancelAddressEdit()">
-                      <i class="fa fa-times-circle"></i>
-                      <span>Hủy bỏ</span>
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-            <div class="map-container">
-              <div class="map-header">
-                <i class="fa fa-map text-success"></i>
-                <span>Vị trí giao hàng</span>
-              </div>
-              <iframe class="modern-map" aria-hidden="true" frameborder="0" tabindex="-1"
-                src="https://www.google.com/maps?q=Hanoi, Vietnam&output=embed"></iframe>
             </div>
           </div>
         </div>
@@ -1326,7 +1563,6 @@
       font-style: italic;
     }
 
-    /* ===== RESPONSIVE DESIGN ===== */
     @media (max-width: 768px) {
       .page-title {
         font-size: 24px;

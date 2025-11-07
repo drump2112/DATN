@@ -3,8 +3,6 @@ package com.example.DATN.services.impl;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.example.DATN.dtos.ProductDTO;
@@ -25,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public boolean toggleStatus(Integer id) {
 		Product product = productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
 		product.setIsActive(!product.getIsActive());
 		productRepository.save(product);
 		return product.getIsActive();
@@ -78,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ProductDTO getProductDTOById(Integer id) {
 		Product product = productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
 
 		ProductDTO dto = modelMapper.map(product, ProductDTO.class);
 
@@ -117,6 +115,10 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public boolean addProduct(ProductRequest productRequest) {
+		// Trim dữ liệu input
+		productRequest.setName(productRequest.getName() != null ? productRequest.getName().trim() : null);
+		productRequest.setDescription(productRequest.getDescription() != null ? productRequest.getDescription().trim() : null);
+
 		Product product = fromProductRequest(productRequest);
 
 		if (productRepository.existsByName(productRequest.getName())) {
@@ -131,19 +133,31 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public boolean updateProduct(Integer id, ProductRequest productRequest) {
 		try {
+			// Trim dữ liệu input
+			productRequest.setName(productRequest.getName() != null ? productRequest.getName().trim() : null);
+			productRequest.setDescription(productRequest.getDescription() != null ? productRequest.getDescription().trim() : null);
+
 			// Tìm sản phẩm theo ID
 			Product existingProduct = productRepository.findById(id)
-					.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+					.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
+
+			// Kiểm tra trùng tên (loại trừ chính sản phẩm hiện tại)
+			if (!existingProduct.getName().equals(productRequest.getName())) {
+				List<Product> duplicateProducts = productRepository.findByNameContainingIgnoreCase(productRequest.getName());
+				boolean isDuplicate = duplicateProducts.stream()
+					.anyMatch(p -> p.getName().equals(productRequest.getName()) && !p.getId().equals(id));
+				if (isDuplicate) {
+					throw new BusinessException("Tên sản phẩm đã tồn tại");
+				}
+			}
 
 			// Lấy brand mới
 			Brand brand = brandRepository.findById(productRequest.getBrandId())
-					.orElseThrow(() -> new RuntimeException(
-							"Không tìm thấy thương hiệu với ID: " + productRequest.getBrandId()));
+					.orElseThrow(() -> new BusinessException("Không tìm thấy thương hiệu"));
 
 			// Lấy category mới
 			Category category = categoryRepository.findById(productRequest.getCategoryId())
-					.orElseThrow(() -> new RuntimeException(
-							"Không tìm thấy danh mục với ID: " + productRequest.getCategoryId()));
+					.orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
 
 			// Xử lý thumbnail
 			String thumbnailPath = handleUploadThumbnail(productRequest.getThumbnail(), existingProduct.getThumbnail());
@@ -160,8 +174,10 @@ public class ProductServiceImpl implements ProductService {
 			// Lưu sản phẩm
 			productRepository.save(updatedProduct);
 			return true;
+		} catch (BusinessException e) {
+			throw e; // Ném lại BusinessException để giữ nguyên message
 		} catch (Exception e) {
-			throw new RuntimeException("Lỗi cập nhật sản phẩm: " + e.getMessage(), e);
+			throw new BusinessException("Cập nhật sản phẩm thất bại");
 		}
 	}
 
@@ -174,19 +190,23 @@ public class ProductServiceImpl implements ProductService {
 				.isActive(true); // default
 
 		Brand brand = brandRepository.findById(req.getBrandId())
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu với id: " + req.getBrandId()));
+				.orElseThrow(() -> new BusinessException("Không tìm thấy thương hiệu"));
 		productBuilder.brand(brand);
 
 		Category category = categoryRepository.findById(req.getCategoryId())
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục với id: " + req.getCategoryId()));
+				.orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
 		productBuilder.category(category);
 
 		String productCode = generateProductCode();
 		productBuilder.productCode(productCode);
 
-		if (req.getThumbnail() != null && !req.getThumbnail().isEmpty()) {
-			String thumbnailPath = uploadThumbnail(req.getThumbnail());
-			productBuilder.thumbnail(thumbnailPath);
+		try {
+			if (req.getThumbnail() != null && !req.getThumbnail().isEmpty()) {
+				String thumbnailPath = uploadThumbnail(req.getThumbnail());
+				productBuilder.thumbnail(thumbnailPath);
+			}
+		} catch (Exception e) {
+			throw new BusinessException("Lỗi khi xử lý ảnh sản phẩm");
 		}
 
 		return productBuilder.build();
@@ -275,7 +295,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ProductDTO getById(Integer id) {
 		Product product = productRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
+				.orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
 		return modelMapper.map(product, ProductDTO.class);
 	}
 
@@ -288,7 +308,7 @@ public class ProductServiceImpl implements ProductService {
 		try {
 			return imageService.saveImage(thumbnail, "product");
 		} catch (IOException e) {
-			throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+			throw new BusinessException("Lỗi khi lưu ảnh sản phẩm");
 		}
 	}
 
@@ -300,7 +320,7 @@ public class ProductServiceImpl implements ProductService {
 				}
 				return imageService.saveImage(thumbnail, "product");
 			} catch (IOException e) {
-				throw new RuntimeException("Lỗi khi lưu ảnh: " + e.getMessage(), e);
+				throw new BusinessException("Lỗi khi xử lý ảnh sản phẩm");
 			}
 		}
 		return currentThumbnailPath;

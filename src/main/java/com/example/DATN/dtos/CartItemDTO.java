@@ -24,4 +24,6 @@ public class CartItemDTO {
     private String image;
 
     private Integer quantity;
+
+    private Integer maxQuantity;
 }

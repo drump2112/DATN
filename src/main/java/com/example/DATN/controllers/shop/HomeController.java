@@ -54,7 +54,6 @@ public class HomeController {
 			log.info(variant.toString());
 		}
 		model.addAttribute("product", product);
-		model.addAttribute("showSlide", false);
 		try {
 			String variantsJson = new ObjectMapper().writeValueAsString(variants);
 			model.addAttribute("variants", variantsJson);

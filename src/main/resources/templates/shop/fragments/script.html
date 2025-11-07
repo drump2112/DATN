@@ -11,14 +11,37 @@
     <script th:src="@{/assets/js/plugins/dropzone/dropzone.js}"></script>
     <!-- Select2 JS -->
     <script th:src="@{/assets/js/plugins/select2/select2.full.min.js}"></script>
-    <script th:src="'https://cdn.jsdelivr.net/npm/sweetalert2@11'"></script>
-    <!-- SweetAlert Config - phải load sau SweetAlert2 -->
-    <script th:src="@{/js/sweetalert-config.js}"></script>
+    <!-- SweetAlert2 và config đã được loại bỏ, chỉ sử dụng toastr -->
     <script th:src="@{/assets/js/plugins/toastr/toastr.min.js}"></script>
+    <script th:src="'https://cdn.jsdelivr.net/npm/sweetalert2@11'"></script>
+    <script th:src="@{/js/sweetalert-config.js}"></script>
+
+    <!-- Toastr Configuration -->
+    <script>
+        // Cấu hình toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": false,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "3000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+    </script>
+
     <script th:src="@{/js/shop/cart-icon.js}"></script>
     <script th:src="@{/js/shop/product-detail.js}"></script>
     <script th:src="@{/js/shop/cart.js}"></script>
-    <script th:src="@{/js/shop/add-to-cart.js}"></script>
+    <!-- <script th:src="@{/js/shop/add-to-cart.js}"></script> Disabled to avoid conflict with product-detail.js -->
     <script th:src="@{/js/shop/cart-page.js}"></script>
     <script th:src="@{/js/shop/register.js}"></script>
     <script th:src="@{/js/shop/checkout.js}"></script>

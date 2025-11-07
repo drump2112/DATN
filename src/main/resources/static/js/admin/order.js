@@ -1,43 +1,92 @@
 $(document).ready(function () {
 
-  function formatState(state) {
-    if (!state.id) return state.text; // placeholder
-    let colorClass = '';
-    switch (state.id) {
-      case 'PENDING': colorClass = 'badge badge-primary'; break;
-      case 'PROCESSING': colorClass = 'badge badge-warning'; break;
-      case 'COMPLETED': colorClass = 'badge badge-success'; break;
-      case 'CANCELLED': colorClass = 'badge badge-danger'; break;
-    }
-    return $('<span class="' + colorClass + '">' + state.text + '</span>');
-  }
+  // Cấu hình toastr
+  toastr.options = {
+    "closeButton": true,
+    "debug": false,
+    "newestOnTop": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "preventDuplicates": false,
+    "onclick": null,
+    "showDuration": "300",
+    "hideDuration": "1000",
+    "timeOut": "3000",
+    "extendedTimeOut": "1000",
+    "showEasing": "swing",
+    "hideEasing": "linear",
+    "showMethod": "fadeIn",
+    "hideMethod": "fadeOut"
+  };
 
-  // Initialize select2 on page load
-  initializeSelect2();
+  // Removed select2 dropdown functionality since we're using static badges now
 
-  function initializeSelect2() {
-    $('.status-dropdown').select2({
-      templateResult: formatState,
-      templateSelection: formatState,
-      width: '100%',
-      minimumResultsForSearch: -1
-    });
-  }
-
-  window.initializeSelect2 = initializeSelect2;
-
+  // Tìm kiếm đơn hàng với phân trang
   function searchOrder(page) {
-    var keyword = $("#orderInput").val().trim();
-    var orderType = $("#orderTypeTilter").val();
-    var paymentMethod = $("#orderPaymentFilter").val();
-    var dateStart = $("#dateStartFilter").val();
-    var dateEnd = $("#dateEndFilter").val();
+    if (page === undefined || page === null) {
+      page = 0;
+    }
+
+    console.log("🔍 Searching orders - page:", page);
+
+    var keyword = $("#orderInput").val() ? $("#orderInput").val().trim() : "";
+    var paymentMethod = $("#orderPaymentFilter").val() || "";
+    var dateStart = $("#dateStartFilter").val() || "";
+    var dateEnd = $("#dateEndFilter").val() || "";
+
+    // Validate ngày tháng
+    if (dateStart && dateEnd) {
+      var startDate = new Date(dateStart);
+      var endDate = new Date(dateEnd);
+
+      if (startDate > endDate) {
+        toastr.error("Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
+        return;
+      }
+
+      // Kiểm tra khoảng cách không quá 1 năm
+      var daysDiff = (endDate - startDate) / (1000 * 60 * 60 * 24);
+      if (daysDiff > 365) {
+        toastr.warning("Khoảng thời gian tìm kiếm không nên quá 1 năm!");
+      }
+    }
+
+    // Hiển thị loading
+    SwalUtils.loading("Đang tìm kiếm...", "Vui lòng chờ trong giây lát");
+
+    // Xác định orderType dựa trên URL hiện tại và dropdown selection
+    var currentPath = window.location.pathname;
+    var orderType = "";
+
+    if (currentPath.includes('/completed/')) {
+      // Đối với trang completed, sử dụng giá trị từ dropdown
+      var selectedFilter = $("#orderTypeTilter").val();
+      if (selectedFilter && selectedFilter !== "") {
+        orderType = selectedFilter; // "Online" hoặc "Offline"
+      }
+      // Nếu không chọn gì (selectedFilter = "" hoặc null), để orderType = "" để controller hiểu là tìm completed orders
+    } else if (currentPath.includes('/offline/')) {
+      orderType = "Offline";
+    } else if (currentPath.includes('/Online/')) {
+      orderType = "Online";
+    }
+
+    console.log("Searching orders:", {
+      page: page,
+      keyword: keyword,
+      orderType: orderType,
+      paymentMethod: paymentMethod,
+      dateStart: dateStart,
+      dateEnd: dateEnd,
+      currentPath: currentPath,
+      selectedFilter: $("#orderTypeTilter").val()
+    });
 
     $.ajax({
       url: "/admin/order/search",
       type: "GET",
       data: {
-        page: page,
+        page: page || 0,
         keyword: keyword,
         orderType: orderType,
         paymentMethod: paymentMethod,
@@ -45,17 +94,44 @@ $(document).ready(function () {
         dateEnd: dateEnd
       },
       success: function (response) {
+        console.log("✅ Search successful, response length:", response.length);
+        console.log("Response preview:", response.substring(0, 200) + "...");
+
+        // Đóng loading
+        SwalUtils.close();
+
         $("#productTableContainer").html(response);
-        // Khởi tạo lại select2 sau khi cập nhật
-        initializeSelect2();
+
+        // Kiểm tra xem có phân trang được render không
+        var paginationCount = $(".pagination li").length;
+        console.log("Pagination items found:", paginationCount);
+
+        // Thông báo thành công
+        toastr.success('Tìm kiếm thành công!');
       },
-      error: function () {
-        alert("Đã xảy ra lỗi khi tìm kiếm!");
-      },
+      error: function (xhr, status, error) {
+        console.error("❌ Search failed:", {
+          status: status,
+          error: error,
+          responseText: xhr.responseText
+        });
+
+        // Đóng loading
+        SwalUtils.close();
+
+        // Hiển thị lỗi
+        toastr.error("Đã xảy ra lỗi khi tìm kiếm đơn hàng. Vui lòng thử lại!");
+      }
     });
   }
 
   window.searchOrder = searchOrder;
+
+  // Backup function để đảm bảo phân trang hoạt động
+  window.goToPage = function(page) {
+    console.log("goToPage called with:", page);
+    searchOrder(page);
+  };
 
   function toggleOrderItems(button) {
     var $btn = $(button);
@@ -63,7 +139,7 @@ $(document).ready(function () {
     if (!orderId) return;
 
     var $row = $('#order-items-' + orderId);
-    var $container = $row.find('.order-items-container');
+    var $container = $row.find('#order-items-content');
 
     // Toggle icon
     var $icon = $btn.find('i');
@@ -111,44 +187,145 @@ $(document).ready(function () {
 
   window.toggleOrderItems = toggleOrderItems;
 
-  function updateOrderStatus(selectElement) {
-    var $select = $(selectElement);
-    var orderId = $select.data('id');
-    var newStatus = $select.val();
+  // updateOrderStatus function removed - now using action buttons in detail area instead
 
-    if (!orderId || !newStatus) return;
+  // Validate ngày khi thay đổi
+  function validateDateRange() {
+    var dateStart = $("#dateStartFilter").val();
+    var dateEnd = $("#dateEndFilter").val();
 
-    SwalUtils.showWarningConfirmDialog(
-      'Xác nhận thay đổi trạng thái?',
-      'Xác nhận',
-      'Hủy',
-      'Bạn có chắc muốn thay đổi trạng thái đơn hàng này?'
-    ).then((result) => {
-      if (result.isConfirmed) {
-        $.ajax({
-          url: '/admin/order/' + orderId + '/status',
-          type: 'PUT',
-          data: {
-            status: newStatus
-          },
-          success: function(response) {
-            SwalUtils.showSuccessToast(response.message);
-          },
-          error: function(xhr) {
-            SwalUtils.showErrorAlert(
-              'Lỗi!',
-              xhr.responseJSON?.message || 'Có lỗi xảy ra khi cập nhật trạng thái'
-            );
-            // Reset lại giá trị cũ nếu lỗi
-            location.reload();
-          }
-        });
+    if (dateStart && dateEnd) {
+      var startDate = new Date(dateStart);
+      var endDate = new Date(dateEnd);
+
+      if (startDate > endDate) {
+        $("#dateEndFilter").addClass("error-input");
+        toastr.error("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!");
+        return false;
       } else {
-        // Reset lại giá trị cũ nếu hủy
-        location.reload();
+        $("#dateStartFilter, #dateEndFilter").removeClass("error-input");
+      }
+    }
+    return true;
+  }
+
+  // Event listeners
+  $("#orderTypeTilter, #orderTypeFilter, #orderPaymentFilter").on('change', function() {
+    searchOrder(0);
+  });
+
+  $("#dateStartFilter, #dateEndFilter").on('change', function() {
+    if (validateDateRange()) {
+      searchOrder(0);
+    }
+  });
+
+  $("#orderInput").on('keyup', function(e) {
+    if (e.keyCode === 13) { // Enter key
+      searchOrder(0);
+    }
+  });
+
+  // Clear date filters
+  function clearDateFilters() {
+    $("#dateStartFilter").val('').removeClass('error-input');
+    $("#dateEndFilter").val('').removeClass('error-input');
+    searchOrder(0);
+    toastr.info("Đã xóa bộ lọc ngày tháng");
+  }
+
+  // Handle admin order actions (Xác nhận/Hủy cho PENDING orders)
+  function handleAdminOrderAction(button) {
+    if (button.disabled) return;
+
+    const orderId = button.getAttribute('data-order-id');
+    const action = button.getAttribute('data-action');
+
+    let confirmConfig = {};
+
+    switch(action) {
+      case 'confirm':
+        confirmConfig = {
+          title: 'Xác nhận đơn hàng',
+          text: 'Bạn có chắc muốn xác nhận đơn hàng này?',
+          icon: 'question',
+          confirmButtonText: 'Xác nhận'
+        };
+        break;
+      case 'cancel':
+        confirmConfig = {
+          title: 'Hủy đơn hàng',
+          text: 'Bạn có chắc muốn hủy đơn hàng này? Hành động này không thể hoàn tác.',
+          icon: 'warning',
+          confirmButtonText: 'Hủy đơn hàng'
+        };
+        break;
+    }
+
+    // Show confirmation dialog
+    Swal.fire({
+      title: confirmConfig.title,
+      text: confirmConfig.text,
+      icon: confirmConfig.icon,
+      showCancelButton: true,
+      confirmButtonColor: action === 'confirm' ? '#1ab394' : '#ed5565',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: confirmConfig.confirmButtonText,
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        performAdminOrderAction(orderId, action, button);
       }
     });
   }
 
-  window.updateOrderStatus = updateOrderStatus
+  function performAdminOrderAction(orderId, action, button) {
+    // Disable button during request
+    button.disabled = true;
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang xử lý...';
+
+    let endpoint = `/admin/order/${orderId}/${action}`;
+
+    fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Show success message
+        Swal.fire({
+          title: 'Thành công!',
+          text: data.message || 'Đã cập nhật trạng thái đơn hàng',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+
+        // Reload current page
+        searchOrder(0);
+      } else {
+        throw new Error(data.message || 'Có lỗi xảy ra');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      Swal.fire({
+        title: 'Lỗi!',
+        text: error.message || 'Có lỗi xảy ra khi xử lý đơn hàng',
+        icon: 'error'
+      });
+    })
+    .finally(() => {
+      // Restore button
+      button.disabled = false;
+      button.innerHTML = originalHTML;
+    });
+  }
+
+  window.clearDateFilters = clearDateFilters;
+  window.handleAdminOrderAction = handleAdminOrderAction;
 })

@@ -74,9 +74,9 @@ public class BrandController {
         try {
             boolean result = brandService.updateBrand(id, brandRequest);
             if (result) {
-                return ResponseEntity.ok(Map.of("message", "Update Thành Công"));
+                return ResponseEntity.ok(Map.of("message", "Cập nhật Thành Công"));
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Thêm thất bại"));
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Cập nhật thất bại"));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -116,7 +116,7 @@ public class BrandController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Lỗi server: " + e.getMessage()));
+                    .body(Map.of("message",  e.getMessage()));
         }
     }
 

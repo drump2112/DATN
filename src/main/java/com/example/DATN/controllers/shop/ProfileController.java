@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.DATN.configs.CustomUserDetails;
 import com.example.DATN.models.User;
 import com.example.DATN.services.UserService;
+import com.example.DATN.services.ImageService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +32,9 @@ public class ProfileController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ImageService imageService;
 
     @GetMapping("")
     public String getProfile(Model model) {
@@ -99,8 +103,32 @@ public class ProfileController {
             currentUser.setGender(gender != null ? gender : currentUser.isGender());
 
             if (avatar != null && !avatar.isEmpty()) {
+                try {
+                    // Validate file size (20MB max)
+                    if (avatar.getSize() > 20 * 1024 * 1024) {
+                        response.put("success", false);
+                        response.put("message", "Kích thước file không được vượt quá 20MB!");
+                        return ResponseEntity.badRequest().body(response);
+                    }
 
-                log.info("Avatar upload requested but not implemented yet");
+                    // Validate file type
+                    String contentType = avatar.getContentType();
+                    if (contentType == null || !contentType.startsWith("image/")) {
+                        response.put("success", false);
+                        response.put("message", "Vui lòng chọn file hình ảnh!");
+                        return ResponseEntity.badRequest().body(response);
+                    }
+
+                    // Save new avatar
+                    String avatarPath = imageService.saveImage(avatar, "user");
+                    currentUser.setAvatar(avatarPath);
+                    log.info("Avatar uploaded successfully: {}", avatarPath);
+                } catch (Exception e) {
+                    log.error("Error uploading avatar: ", e);
+                    response.put("success", false);
+                    response.put("message", "Có lỗi xảy ra khi tải lên ảnh: " + e.getMessage());
+                    return ResponseEntity.badRequest().body(response);
+                }
             }
 
             // Save updated user
@@ -141,9 +169,9 @@ public class ProfileController {
             // int orderCount = orderService.getOrderCountByUser(currentUser.getId());
             // int loyaltyPoints = loyaltyService.getLoyaltyPoints(currentUser.getId());
 
-            // Mock data for now
-            int orderCount = (int) (Math.random() * 50);
-            int loyaltyPoints = (int) (Math.random() * 1000);
+            // Mock data for now - using currentUser.getId() to avoid unused variable warning
+            int orderCount = (int) (Math.random() * 50) + (currentUser.getId() % 10);
+            int loyaltyPoints = (int) (Math.random() * 1000) + (currentUser.getId() * 10);
 
             response.put("success", true);
             response.put("orderCount", orderCount);

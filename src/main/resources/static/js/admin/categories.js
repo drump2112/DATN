@@ -204,10 +204,13 @@ $("#btnUpdate").on("click", function () {
           SwalUtils.success("Cập nhật thành công!", response.message);
           $("#myModal").modal("hide");
           const currentPage = $("#categoryForm").data("current-page") || 0;
-          searchSize(currentPage);
+          searchCategory(currentPage);
         },
         error: function (xhr) {
-          toastr.error("Cập nhật thất bại: " + xhr.responseText);
+          SwalUtils.error(
+            "Lỗi!",
+            xhr.responseJSON?.message || "Cập nhật thất bại"
+          );
         },
       });
     }

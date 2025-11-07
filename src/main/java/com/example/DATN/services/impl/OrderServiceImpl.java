@@ -22,6 +22,7 @@ import com.example.DATN.request.CounterOrderRequest;
 import com.example.DATN.request.OrderRequest;
 import com.example.DATN.services.OrderService;
 import com.example.DATN.services.RedisOtpService;
+import com.example.DATN.services.StockMovementService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -52,6 +53,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StockMovementService stockMovementService;
 
     @Autowired
     private VoucherRepository voucherRepository;
@@ -114,9 +118,6 @@ public class OrderServiceImpl implements OrderService {
 
             totalAmount = totalAmount.add(dto.getUnitPrice().multiply(new BigDecimal(dto.getQuantity())));
 
-            pv.setQuantity(pv.getQuantity() - dto.getQuantity());
-            productVariantRepository.save(pv);
-
             items.add(item);
         }
 
@@ -134,7 +135,13 @@ public class OrderServiceImpl implements OrderService {
         order.setItems(items);
         order.setTotalAmount(totalAmount);
         order.setFinalAmount(totalAmount.subtract(discountAmount)); // chưa tính giảm giá
-        return orderRepository.save(order);
+
+        Order savedOrder = orderRepository.save(order);
+
+        // Ghi lại stock movement cho đơn hàng tại quầy
+        processOrderItems(savedOrder);
+
+        return savedOrder;
     }
 
     @Override
@@ -216,6 +223,7 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Đơn hàng không ở trạng thái chờ OTP");
         }
 
+        // Kiểm tra tồn kho trước khi trừ
         for (OrderItem item : order.getItems()) {
             ProductVariant variant = productVariantRepository.findByIdForUpdate(item.getProductVariant().getId());
 
@@ -223,17 +231,16 @@ public class OrderServiceImpl implements OrderService {
                 throw new RuntimeException("Không tìm thấy biến thể sản phẩm");
             }
 
-            int remain = variant.getQuantity() - item.getQuantity();
-            if (remain < 0) {
+            if (variant.getQuantity() < item.getQuantity()) {
                 throw new RuntimeException("Biến thể " + variant.getVariantCode() + " không đủ hàng");
             }
-
-            variant.setQuantity(remain);
-            productVariantRepository.save(variant);
         }
 
         order.setStatus("PENDING");
         orderRepository.save(order);
+
+        // Ghi lại stock movement cho đơn hàng online sau khi confirm OTP
+        processOrderItems(order);
 
         emailService.sendOrderConfirmation(order);
 
@@ -295,14 +302,14 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> getOnlineOrders(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Order> orders = orderRepository.findByOrderType("ONLINE", pageable);
-        return orders.map(order -> modelMapper.map(order, OrderDTO.class));
+        return orders.map(this::mapToOrderDTO);
     }
 
     @Override
     public Page<OrderDTO> getOfflineOrders(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Order> orders = orderRepository.findByOrderType("COUNTER", pageable);
-        return orders.map(order -> modelMapper.map(order, OrderDTO.class));
+        return orders.map(this::mapToOrderDTO);
     }
 
     @Override
@@ -317,6 +324,7 @@ public class OrderServiceImpl implements OrderService {
         dto.setId(order.getId());
         dto.setOrderCode(order.getOrderCode());
         dto.setCustomerName(order.getCustomerName());
+        dto.setUserCode(order.getUser() != null ? order.getUser().getUserCode() : "");
         dto.setShippingPhone(order.getShippingPhone());
         dto.setShippingAddress(order.getShippingAddress());
         dto.setOrderDate(order.getOrderDate());
@@ -346,7 +354,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
-        if (!status.matches("PENDING|PROCESSING|COMPLETED|CANCELLED")) {
+        if (!status.matches("PENDING|PROCESSING|SHIPPING|COMPLETED|CANCELLED|RETURN")) {
             throw new RuntimeException("Trạng thái không hợp lệ");
         }
 
@@ -363,10 +371,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void updatePaymentStatus(Order order, String status, String transactionNo) {
+        String oldStatus = order.getStatus();
         order.setStatus(status);
         order.setPaymentStatus("PAID");
         order.setTransactionNo(transactionNo);
         orderRepository.save(order);
+
+        // Nếu đơn hàng chuyển từ PENDING sang COMPLETED và chưa trừ kho, thì trừ kho
+        if ("PENDING".equals(oldStatus) && "COMPLETED".equals(status)) {
+            processOrderItems(order);
+        }
     }
 
     @Override
@@ -376,30 +390,119 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItem item : order.getItems()) {
             ProductVariant variant = item.getProductVariant();
-            Integer currentQuantity = variant.getQuantity();
             Integer orderQuantity = item.getQuantity();
 
             System.out.println("📦 Product: " + variant.getProduct().getName() +
                               ", Size: " + variant.getSize().getName() +
                               ", Color: " + variant.getColor().getName() +
-                              ", Current Stock: " + currentQuantity +
+                              ", Current Stock: " + variant.getQuantity() +
                               ", Order Quantity: " + orderQuantity);
 
-            if (currentQuantity >= orderQuantity) {
-                // Trừ số lượng trong kho
-                variant.setQuantity(currentQuantity - orderQuantity);
-                productVariantRepository.save(variant);
+            try {
+                String createdBy = "SYSTEM";
+                stockMovementService.processSale(variant.getId(), orderQuantity, order.getOrderCode(), createdBy);
 
-                System.out.println("✅ Updated stock: " + (currentQuantity - orderQuantity));
-            } else {
-                System.err.println("WARNING: Insufficient stock for " +
-                                   variant.getProduct().getName() +
-                                   " - Available: " + currentQuantity +
-                                   ", Required: " + orderQuantity);
+                System.out.println(" Stock updated and movement recorded for variant: " + variant.getId());
+            } catch (Exception e) {
+                System.err.println(" Error processing stock for variant " + variant.getId() + ": " + e.getMessage());
+                throw new RuntimeException("Lỗi xử lý kho: " + e.getMessage());
             }
         }
 
         System.out.println("✅ Order items processing completed for order: " + order.getId());
+    }
+
+    @Override
+    public Page<OrderDTO> searchOnlineOrders(String keyword, String paymentMethod,
+                                           LocalDate dateStart, LocalDate dateEnd,
+                                           int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        System.out.println("🌐 Searching ONLINE orders - This should NOT be called for completed page!");
+
+        // Convert LocalDate to LocalDateTime for database query
+        LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
+        LocalDateTime dateTimeEnd = dateEnd != null ? dateEnd.plusDays(1).atStartOfDay() : null;
+
+        Page<Order> orders = orderRepository.searchOnlineOrders(keyword, paymentMethod, dateTimeStart, dateTimeEnd, pageable);
+        return orders.map(this::mapToOrderDTO);
+    }
+
+    @Override
+    public Page<OrderDTO> searchOfflineOrders(String keyword, String paymentMethod,
+                                            LocalDate dateStart, LocalDate dateEnd,
+                                            int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        System.out.println("🏪 Searching OFFLINE orders - This should NOT be called for completed page!");
+
+        // Convert LocalDate to LocalDateTime for database query
+        LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
+        LocalDateTime dateTimeEnd = dateEnd != null ? dateEnd.plusDays(1).atStartOfDay() : null;
+
+        Page<Order> orders = orderRepository.searchOfflineOrders(keyword, paymentMethod, dateTimeStart, dateTimeEnd, pageable);
+        return orders.map(this::mapToOrderDTO);
+    }
+
+    @Override
+    public Page<OrderDTO> getCompletedOrders(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        System.out.println("🔍 Getting completed orders - page: " + page + ", size: " + size);
+        Page<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc("COMPLETED", pageable);
+        System.out.println("📊 Found " + orders.getTotalElements() + " completed orders");
+        // Debug: in ra một số order đầu tiên
+        orders.getContent().forEach(o ->
+            System.out.println("   Order: " + o.getOrderCode() + " - Status: " + o.getStatus() + " - Type: " + o.getOrderType())
+        );
+        return orders.map(this::mapToOrderDTO);
+    }
+
+    @Override
+    public Page<OrderDTO> searchCompletedOrders(String keyword, String paymentMethod,
+                                              LocalDate dateStart, LocalDate dateEnd,
+                                              int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        System.out.println("🔍 Searching completed orders with keyword: " + keyword + ", paymentMethod: " + paymentMethod);
+
+        // Convert LocalDate to LocalDateTime for database query
+        LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
+        LocalDateTime dateTimeEnd = dateEnd != null ? dateEnd.plusDays(1).atStartOfDay() : null;
+
+        Page<Order> orders = orderRepository.searchCompletedOrders(keyword, paymentMethod, dateTimeStart, dateTimeEnd, pageable);
+        System.out.println("📊 Found " + orders.getTotalElements() + " completed orders from search");
+        // Debug: in ra một số order đầu tiên
+        orders.getContent().forEach(o ->
+            System.out.println("   Order: " + o.getOrderCode() + " - Status: " + o.getStatus() + " - Type: " + o.getOrderType())
+        );
+        return orders.map(this::mapToOrderDTO);
+    }
+
+    @Override
+    public Page<OrderDTO> searchCompletedOrdersWithTypeFilter(String keyword, String paymentMethod, String orderTypeFilter,
+                                                             LocalDate dateStart, LocalDate dateEnd,
+                                                             int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        System.out.println("🔍 Searching completed orders with type filter: " + orderTypeFilter);
+
+        // Convert LocalDate to LocalDateTime for database query
+        LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
+        LocalDateTime dateTimeEnd = dateEnd != null ? dateEnd.plusDays(1).atStartOfDay() : null;
+
+        // Convert orderTypeFilter to actual orderType for database
+        String dbOrderType = null;
+        if ("Online".equals(orderTypeFilter)) {
+            dbOrderType = "ONLINE";
+        } else if ("Offline".equals(orderTypeFilter)) {
+            dbOrderType = "COUNTER";
+        }
+        // If orderTypeFilter is empty or null, dbOrderType remains null (search all)
+
+        Page<Order> orders = orderRepository.searchCompletedOrdersWithTypeFilter(keyword, paymentMethod, dbOrderType, dateTimeStart, dateTimeEnd, pageable);
+        System.out.println("📊 Found " + orders.getTotalElements() + " completed orders with type filter: " + orderTypeFilter);
+        return orders.map(this::mapToOrderDTO);
+    }
+
+    @Override
+    public Order findByOrderCode(String orderCode) {
+        return orderRepository.findByOrderCode(orderCode).orElse(null);
     }
 }
 

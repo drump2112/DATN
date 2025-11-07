@@ -1,4 +1,7 @@
 $(document).ready(function () {
+  // Biến lưu trang hiện tại
+  let currentProductVariantPage = 0;
+
   // Khởi tạo jQuery Steps
   initFilter();
 
@@ -13,15 +16,12 @@ $(document).ready(function () {
       onStepChanging: function (event, currentIndex, newIndex) {
         var form = $(this);
 
-        // Cho phép quay lại mà không cần validate
         if (currentIndex > newIndex) {
           return true;
         }
 
-        // Lấy fieldset hiện tại
         var currentFieldset = form.find("fieldset").eq(currentIndex);
 
-        // Cấu hình validate để bỏ qua các trường ẩn, trừ Select2
         form.validate().settings.ignore =
           ":hidden:not(.select2-hidden-accessible)";
 
@@ -33,7 +33,6 @@ $(document).ready(function () {
           }
         });
 
-        // Debug
         console.log("Current Index:", currentIndex, "New Index:", newIndex);
         console.log("Fieldset valid:", isValid);
         if (!isValid) {
@@ -43,7 +42,6 @@ $(document).ready(function () {
           });
         }
 
-        // Xóa class error nếu hợp lệ
         if (isValid) {
           $(form)
             .parent()
@@ -353,48 +351,8 @@ $(document).ready(function () {
   // ==============================
 
   function initSelect2sUpdateModal() {
-    $("#color")
-      .select2({
-        dropdownParent: $("#updateModal"),
-        placeholder: "Chọn Màu Sắc",
-        allowClear: true,
-        ajax: {
-          url: "/admin/color/select2",
-          dataType: "json",
-          delay: 50,
-          data: (params) => ({ q: params.term }),
-          processResults: (data) => ({ results: data }),
-          cache: true,
-        },
-      })
-      .val(null)
-      .trigger("change.select2");
-
-    $("#size")
-      .select2({
-        dropdownParent: "#updateModal",
-        placeholder: "Chọn Kích Thước",
-        allowClear: true,
-        ajax: {
-          url: "/admin/size/select2",
-          dataType: "json",
-          delay: 50,
-          data: (params) => ({ q: params.term }),
-          processResults: (data) => ({ results: data }),
-          cache: true,
-        },
-      })
-      .val(null)
-      .trigger("change.select2");
-
-    $("#status")
-      .select2({
-        dropdownParent: "#myModal",
-        placeholder: "Chọn Trạng Thái",
-        allowClear: true,
-      })
-      .val(null)
-      .trigger("change.select2");
+    // Không cần khởi tạo Select2 cho size và color vì chúng giờ là readonly text inputs
+    // Chỉ cần khởi tạo cho danh mục và thương hiệu nếu cần
   }
 
   window.handleDetailClick = function (button) {
@@ -436,17 +394,9 @@ $(document).ready(function () {
           $("#updateProductForm #thuongHieu").append(option).trigger("change");
         }
 
-        // select2: size
-        if (res.sizeId) {
-          const option = new Option(res.sizeName, res.sizeId, true, true);
-          $("#updateProductForm #size").append(option).trigger("change");
-        }
-
-        // select2: color
-        if (res.colorId) {
-          const option = new Option(res.colorName, res.colorId, true, true);
-          $("#updateProductForm #color").append(option).trigger("change");
-        }
+        // Hiển thị kích thước và màu sắc (readonly)
+        $("#updateProductForm #size").val(res.sizeName);
+        $("#updateProductForm #color").val(res.colorName);
 
         // clear ảnh cũ và load ảnh mới vào Dropzone update
         if (avatarDropzoneUpdate) {
@@ -491,6 +441,9 @@ $(document).ready(function () {
     // Lấy giá
     formData.append("price", $("#updateProductForm #price").val());
 
+    // Lấy số lượng
+    formData.append("quantity", $("#updateProductForm #quantity").val());
+
     // Lấy ảnh (Dropzone hoặc input file)
     if (typeof avatarDropzoneUpdate !== "undefined") {
       avatarDropzoneUpdate.getAcceptedFiles().forEach((file, index) => {
@@ -504,7 +457,7 @@ $(document).ready(function () {
 
     SwalUtils.confirm(
       "Xác nhận cập nhật",
-      "Bạn có chắc chắn muốn cập nhật giá và ảnh sản phẩm?",
+      "Bạn có chắc chắn muốn cập nhật giá, số lượng và ảnh sản phẩm?",
       "Xác nhận",
       "Hủy"
     ).then((result) => {
@@ -516,13 +469,13 @@ $(document).ready(function () {
           processData: false,
           contentType: false,
           success: function (res) {
-            SwalUtils.toast("success", res.message);
+            SwalUtils.success("Thành công!", res.message);
             $("#updateModal").modal("hide");
             $("#updateProductForm")[0].reset();
             if (typeof avatarDropzoneUpdate !== "undefined") {
               avatarDropzoneUpdate.removeAllFiles(true);
             }
-            searchProductVariants(0);
+            searchProductVariants(currentProductVariantPage); // Giữ lại trang hiện tại
           },
           error: function (xhr) {
             SwalUtils.error(
@@ -718,7 +671,7 @@ $(document).ready(function () {
         contentType: false,
         data: formData,
         success: function (res) {
-          SwalUtils.toast("success", res.message);
+          SwalUtils.success("Thành công!", res.message);
           resolve(res); // Hoàn tất thành công
         },
         error: function (xhr) {
@@ -748,12 +701,8 @@ $(document).ready(function () {
           url: `/admin/productVariant/${productVariantId}/toggle-status`,
           type: "PUT",
           success: function (data) {
-            SwalUtils.toast("success", data.message);
-            const currentPage =
-              parseInt(
-                $("#paginationContainer .paginate_button.active a").text(),
-              ) - 1 || 0;
-            searchProductVariants(currentPage);
+            SwalUtils.success("Thành công!", data.message);
+            searchProductVariants(currentProductVariantPage); // Sử dụng biến global
           },
           error: function (xhr) {
             SwalUtils.error(
@@ -767,6 +716,9 @@ $(document).ready(function () {
   };
 
   function searchProductVariants(page) {
+    // Cập nhật trang hiện tại
+    currentProductVariantPage = page;
+
     const keyword = $("#searchInput").val().trim();
     const colorId = $("#colorFilter").val();
     const sizeId = $("#sizeFilter").val();
@@ -790,7 +742,7 @@ $(document).ready(function () {
         $("#productTableContainer").html(response);
       },
       error: function () {
-        toastr.error("Không thể tải danh sách sản phẩm!");
+        SwalUtils.error("Lỗi!", "Không thể tải danh sách sản phẩm!");
       },
     });
   }
@@ -822,7 +774,7 @@ $(document).ready(function () {
           contentType: false,
           data: formData,
           success: function (response) {
-            toastr.success("Thêm màu sắc thành công !");
+            SwalUtils.success("Thành công!", "Thêm màu sắc thành công!");
 
             $("#mauSac")
               .select2({
@@ -843,7 +795,7 @@ $(document).ready(function () {
             $("#fastAddColorModal").modal("hide");
           },
           error: function (xhr) {
-            toastr.error(xhr.responseJSON?.message || "Thêm màu sắc thất bại");
+            SwalUtils.error("Lỗi!", xhr.responseJSON?.message || "Thêm màu sắc thất bại");
           },
         });
       }
@@ -874,7 +826,7 @@ $(document).ready(function () {
           contentType: false,
           data: formData,
           success: function (response) {
-            toastr.success("Thêm kích thước thành công !");
+            SwalUtils.success("Thành công!", "Thêm kích thước thành công!");
 
             $("#kichCo")
               .select2({
@@ -895,9 +847,7 @@ $(document).ready(function () {
             $("#fastAddSizeModal").modal("hide");
           },
           error: function (xhr) {
-            toastr.error(
-              xhr.responseJSON?.message || "Thêm kích thước thất bại",
-            );
+            SwalUtils.error("Lỗi!", xhr.responseJSON?.message || "Thêm kích thước thất bại");
           },
         });
       }
@@ -909,6 +859,9 @@ $(document).ready(function () {
     $("#sizeFilter").val(null).trigger("change");
     $("#cateFilter").val(null).trigger("change");
     $("#statusFilter").val(null).trigger("change");
+
+    // Reset về trang 0
+    currentProductVariantPage = 0;
 
     $.ajax({
       url: "/admin/productVariant/table",
@@ -922,7 +875,7 @@ $(document).ready(function () {
         $("#productTableContainer").html(response);
       },
       error: function () {
-        toastr.error("Không thể tải lại bảng");
+        SwalUtils.error("Lỗi!", "Không thể tải lại bảng");
       },
     });
     $("#searchInput").val("");
@@ -940,11 +893,21 @@ $(document).ready(function () {
         required: true,
         min: 1000,
       },
+      quantity: {
+        required: true,
+        min: 0,
+        digits: true,
+      },
     },
     messages: {
       price: {
         required: "Vui lòng nhập giá",
         min: "Giá phải lớn hơn hoặc bằng 1000",
+      },
+      quantity: {
+        required: "Vui lòng nhập số lượng",
+        min: "Số lượng phải lớn hơn hoặc bằng 0",
+        digits: "Số lượng phải là số nguyên",
       },
     },
     errorPlacement: function (error, element) {
@@ -990,5 +953,22 @@ $(document).ready(function () {
     }
   });
 
+  // Thêm event listener cho search input
+  $(document).on("keypress", "#searchInput", function(e) {
+    if (e.which === 13) { // Enter key
+      currentProductVariantPage = 0; // Reset về trang 0 khi search mới
+      searchProductVariants(0);
+    }
+  });
+
+  // Thêm event listener cho filter changes
+  $(document).on("change", "#statusFilter, #colorFilter, #sizeFilter, #brandFilter, #cateFilter", function() {
+    currentProductVariantPage = 0; // Reset về trang 0 khi filter
+    searchProductVariants(0);
+  });
+
+  // Expose functions và biến cần thiết
   window.searchProductVariants = searchProductVariants;
+  window.currentProductVariantPage = function() { return currentProductVariantPage; };
+  window.setCurrentProductVariantPage = function(page) { currentProductVariantPage = page; };
 });

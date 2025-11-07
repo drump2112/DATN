@@ -177,6 +177,32 @@ const SweetAlertUtils = {
       title: message,
       ...options
     });
+  },
+
+  showConfirmDialog: function(title, confirmText = 'Xác nhận', cancelText = 'Hủy', options = {}) {
+    return this.confirm(title, '', confirmText, cancelText, options);
+  },
+
+  showWarningConfirmDialog: function(title, confirmText = 'Xác nhận', cancelText = 'Hủy', options = {}) {
+    return Swal.fire({
+      title: title,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: SwalConfig.colors.warning,
+      cancelButtonColor: SwalConfig.colors.secondary,
+      confirmButtonText: `<i class="fa fa-check"></i> ${confirmText}`,
+      cancelButtonText: `<i class="fa fa-times"></i> ${cancelText}`,
+      reverseButtons: true,
+      ...options
+    });
+  },
+
+  showSuccessToast: function(message, options = {}) {
+    return this.toast('success', message, options);
+  },
+
+  showErrorAlert: function(title, text = '', options = {}) {
+    return this.error(title, text, options);
   }
 };
 

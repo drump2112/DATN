@@ -70,7 +70,7 @@
             </tbody>
         </table>
     </div>
-    <div class="text-center" th:if="${totalPages > 1}">
+    <div class="text-center" th:if="${totalPages > 1}" id="paginationContainer" th:attr="data-current-page=${currentPage}">
         <ul class="pagination">
             <li th:class="${currentPage == 0} ? 'disabled' : ''">
                 <a th:if="${currentPage > 0}" href="#" th:onclick="'searchSize(' + (${currentPage - 1}) + ')'">
