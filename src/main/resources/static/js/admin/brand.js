@@ -216,7 +216,7 @@ $(document).ready(function () {
             avatarDropzone.emit("addedfile", mockFile);
             avatarDropzone.emit("complete", mockFile);
 
-            // Gán ảnh thật vào thumbnail
+            // Gán ảnh thật vào thumbnail với CSS rõ nét
             $(mockFile.previewElement)
               .find("img[data-dz-thumbnail]")
               .attr("src", url)
@@ -225,7 +225,17 @@ $(document).ready(function () {
                 height: "120px",
                 objectFit: "cover",
                 objectPosition: "center",
+                opacity: "1", // Đảm bảo không bị mờ
+                filter: "none", // Loại bỏ filter mờ
+                border: "2px solid #ddd",
+                borderRadius: "8px"
               });
+
+            // Xóa class dz-image-preview nếu có (thường làm mờ ảnh)
+            $(mockFile.previewElement).removeClass("dz-image-preview");
+            
+            // Thêm class để ảnh hiển thị rõ nét
+            $(mockFile.previewElement).addClass("dz-success dz-complete");
 
             avatarDropzone.files.push(mockFile);
 
@@ -412,4 +422,25 @@ $(document).ready(function () {
 
   // Expose functions to global scope
   window.openAddModal = openAddModal;
+
+  // Add CSS override to fix Dropzone blur effect on hover
+  const style = document.createElement('style');
+  style.textContent = `
+    /* Override Dropzone hover blur effect */
+    .dropzone .dz-preview:hover .dz-image img {
+      -webkit-filter: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+      -webkit-transform: none !important;
+      transform: none !important;
+    }
+    
+    /* Ensure detail modal images are always clear */
+    #myModal .dropzone .dz-preview .dz-image img {
+      -webkit-filter: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+    }
+  `;
+  document.head.appendChild(style);
 });

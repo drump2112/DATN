@@ -131,12 +131,11 @@ public class ProfileController {
                 }
             }
 
-            // Save updated user
             User updatedUser = userService.updateUser(currentUser);
 
             response.put("success", true);
             response.put("message", "Thông tin đã được cập nhật thành công!");
-            response.put("user", updatedUser);
+            response.put("userId", updatedUser.getId());
 
             return ResponseEntity.ok(response);
 

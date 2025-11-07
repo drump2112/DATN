@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
       updateUserStats();
     }
 
-    // Setup avatar click handler
     setupAvatarClickHandler();
 
     console.log('Profile page loaded successfully');
@@ -288,22 +287,94 @@ function saveProfile() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // Try to parse JSON response
+    // Try to parse JSON response with better error handling
     const contentType = response.headers.get('content-type');
+    console.log('Content-Type:', contentType);
+
     if (contentType && contentType.includes('application/json')) {
-      return response.json();
+      return response.text().then(text => {
+        console.log('Raw response text:', text);
+        try {
+          const data = JSON.parse(text);
+          console.log('Parsed JSON data:', data);
+          return data;
+        } catch (jsonError) {
+          console.error('JSON parsing error:', jsonError);
+          console.error('Invalid JSON text:', text);
+
+          // If response status was ok but JSON is invalid, assume success
+          if (response.ok) {
+            console.log('Response was OK but JSON invalid, assuming success');
+            return { success: true, message: 'Cập nhật thành công!' };
+          } else {
+            throw new Error('Invalid JSON response from server');
+          }
+        }
+      });
     } else {
-      // If not JSON, treat as success (some endpoints just return status)
-      return { success: true, message: 'Cập nhật thành công!' };
+      // If not JSON, get text and assume success if status is ok
+      return response.text().then(text => {
+        console.log('Non-JSON response:', text);
+        if (response.ok) {
+          return { success: true, message: 'Cập nhật thành công!' };
+        } else {
+          throw new Error('Server returned error with non-JSON response');
+        }
+      });
     }
   })
   .then(data => {
-    console.log('Response data:', data);
+    console.log('Final response data:', data);
     handleSaveSuccess(data, saveBtn, originalText);
   })
   .catch(error => {
-    console.error('Error details:', error);
-    handleSaveError(error, formData, saveBtn, originalText);
+    console.error('Fetch error details:', error);
+
+    // Check if this is a JSON parsing error specifically
+    if (error.message && error.message.includes('JSON')) {
+      console.log('JSON parsing error detected, showing specific message');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Có thể đã cập nhật thành công!',
+        html: `Server trả về dữ liệu không đúng định dạng, nhưng có thể thông tin đã được cập nhật.<br><br>Vui lòng tải lại trang để kiểm tra.`,
+        confirmButtonColor: '#1ab394',
+        confirmButtonText: '<i class="fa fa-refresh"></i> Tải lại trang',
+        showCancelButton: true,
+        cancelButtonColor: '#6c757d',
+        cancelButtonText: 'Đóng',
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.reload();
+        } else {
+          // Close modal and reset button
+          closeEditModal();
+          saveBtn.innerHTML = originalText;
+          saveBtn.disabled = false;
+        }
+      });
+    } else {
+      // Other errors - try alternative endpoints
+      if (error.message && (error.message.includes('404') || error.message.includes('500') || error.message.includes('fetch'))) {
+        console.log('Server error detected, trying alternative endpoints');
+        tryAlternativeEndpoints(formData, saveBtn, originalText);
+      } else {
+        console.log('General error, showing connection error');
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi kết nối!',
+          html: `Không thể kết nối đến server để cập nhật thông tin.<br><br><small>Chi tiết lỗi: ${error.message}</small><br><br>Vui lòng thử lại sau hoặc liên hệ admin.`,
+          confirmButtonColor: '#1ab394',
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        });
+
+        // Reset button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+      }
+    }
   });
 }
 
@@ -372,7 +443,17 @@ function validateProfileForm(formData) {
 
 // Handle successful save response
 function handleSaveSuccess(data, saveBtn, originalText) {
-  if (data.success) {
+  console.log('handleSaveSuccess called with:', data);
+
+  // Handle various response formats
+  if (!data) {
+    console.log('No data received, assuming success');
+    data = { success: true, message: 'Cập nhật thành công!' };
+  }
+
+  // Check if response indicates success
+  if (data.success === true || data.success === undefined) {
+    console.log('Showing success message');
     Swal.fire({
       icon: 'success',
       title: 'Thành công!',
@@ -389,6 +470,7 @@ function handleSaveSuccess(data, saveBtn, originalText) {
       window.location.reload();
     });
   } else {
+    console.log('Response indicates failure:', data);
     Swal.fire({
       icon: 'error',
       title: 'Lỗi!',
