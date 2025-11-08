@@ -67,6 +67,8 @@ public class AuthCustomerController {
 			model.addAttribute("errorMsg", "Tài khoản của bạn chưa được kích hoạt.");
 		} else if ("bad".equals(error)) {
 			model.addAttribute("errorMsg", "Sai tên đăng nhập hoặc mật khẩu.");
+		} else if ("unknown".equals(error)) {
+			model.addAttribute("errorMsg", "Đã có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.");
 		}
 
 		return "shop/auth/signin";

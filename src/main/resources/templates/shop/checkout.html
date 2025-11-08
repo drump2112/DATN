@@ -202,18 +202,19 @@
               </div>
             </div>
             <div class="section-divider"></div>
+            <!-- Header chung cho Chi Tiết Thanh Toán -->
+            <div class="section-header">
+              <div class="header-content">
+                <h3 class="section-title">
+                  <i class="fa fa-calculator text-info"></i>
+                  Chi Tiết Thanh Toán
+                </h3>
+                <small class="section-subtitle">Mã giảm giá, ưu đãi và tổng kết đơn hàng</small>
+              </div>
+            </div>
             <div class="m-t-md">
               <div class="row">
                 <div class="col-sm-6">
-                  <div class="section-header">
-                    <div class="header-content">
-                      <h3 class="section-title">
-                        <i class="fa fa-calculator text-info"></i>
-                        Chi Tiết Thanh Toán
-                      </h3>
-                      <small class="section-subtitle">Mã giảm giá và ưu đãi</small>
-                    </div>
-                  </div>
                   <div class="m-t md">
                     <div class="row">
                       <div class="col-xs-2"></div>
@@ -474,6 +475,10 @@
                         gap: 8px;
                       }
 
+                      #defaultDiscountText {
+                        display: inline;
+                      }
+
                       /* Styling cho address form */
                       #addressEditForm {
                         background: #f8f9fa;
@@ -711,6 +716,16 @@
                         font-weight: 600;
                       }
 
+                      .address-radio-label input[type="radio"]:checked~.radio-content .address-option-title {
+                        font-weight: 700;
+                        color: #1ab394;
+                      }
+
+                      .address-radio-label input[type="radio"]:checked~.radio-content .current-address-preview {
+                        font-weight: 700;
+                        color: #1ab394;
+                      }
+
                       .address-option:has(input:checked) {
                         border-color: #1ab394;
                         background: linear-gradient(135deg, #f0fdf4, #ffffff);
@@ -809,11 +824,11 @@
                       }
 
                       .btn-save-address {
-                        background: linear-gradient(135deg, #28a745, #20c997);
+                        background: linear-gradient(135deg, #1ab394, #20c997);
                         color: white;
                         border: none;
                         padding: 12px 24px;
-                        border-radius: 25px;
+                        border-radius: 15px;
                         font-weight: 600;
                         cursor: pointer;
                         transition: all 0.3s ease;
@@ -835,7 +850,7 @@
                         color: white;
                         border: none;
                         padding: 12px 24px;
-                        border-radius: 25px;
+                        border-radius: 15px;
                         font-weight: 600;
                         cursor: pointer;
                         transition: all 0.3s ease;
@@ -1298,6 +1313,189 @@
                         font-size: 16px !important;
                       }
 
+                      /* ===== OTP WAITING AREA STYLING ===== */
+                      .otp-card {
+                        margin-top: 15px;
+                        animation: fadeInUp 0.5s ease;
+                      }
+
+                      .otp-waiting-container {
+                        padding: 0;
+                      }
+
+                      .otp-status-card {
+                        background: linear-gradient(135deg, #fff3cd, #fff);
+                        border: 2px solid #ffc107;
+                        border-radius: 12px;
+                        padding: 20px;
+                        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1);
+                        width: 100%;
+                        margin: 0;
+                      }
+
+                      .otp-header {
+                        display: none;
+                        /* Ẩn vì đã có title trong ibox-title */
+                      }
+
+                      .otp-title {
+                        font-weight: 600;
+                        color: #856404;
+                        font-size: 18px;
+                        text-align: center;
+                      }
+
+                      .otp-content {
+                        margin-bottom: 20px;
+                      }
+
+                      .otp-message {
+                        color: #6c757d;
+                        font-size: 14px;
+                        line-height: 1.6;
+                        margin-bottom: 20px;
+                        text-align: center;
+                      }
+
+                      .otp-timer-display {
+                        background: white;
+                        border: 2px solid #ffc107;
+                        border-radius: 8px;
+                        padding: 12px 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                        box-shadow: 0 1px 3px rgba(255, 193, 7, 0.1);
+                        margin-bottom: 20px;
+                      }
+
+                      .timer-label {
+                        font-weight: 600;
+                        color: #495057;
+                        font-size: 14px;
+                      }
+
+                      .timer-value {
+                        font-weight: 700;
+                        color: #dc3545;
+                        font-size: 16px;
+                        font-family: 'Courier New', monospace;
+                      }
+
+                      .otp-actions {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 12px;
+                        margin-top: 0;
+                      }
+
+                      .btn-enter-otp,
+                      .btn-resend-otp {
+                        background: linear-gradient(135deg, #ffc107, #e0a800);
+                        color: #212529;
+                        border: none;
+                        padding: 10px 16px;
+                        border-radius: 20px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        font-size: 13px;
+                        text-decoration: none;
+                        min-height: 40px;
+                      }
+
+                      .btn-enter-otp:hover,
+                      .btn-resend-otp:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+                        background: linear-gradient(135deg, #e0a800, #d39e00);
+                        color: #212529;
+                        text-decoration: none;
+                      }
+
+                      .btn-enter-otp {
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+                      }
+
+                      .btn-enter-otp:hover {
+                        background: linear-gradient(135deg, #218838, #17a2b8);
+                        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+                        color: white;
+                      }
+
+                      .timer-value.urgent {
+                        color: #dc3545;
+                        animation: pulse 1s infinite;
+                      }
+
+                      @keyframes pulse {
+
+                        0%,
+                        100% {
+                          opacity: 1;
+                        }
+
+                        50% {
+                          opacity: 0.7;
+                        }
+                      }
+
+                      /* ===== RESPONSIVE ===== */
+                      @media (max-width: 768px) {
+                        .otp-status-card {
+                          padding: 16px;
+                          margin: 0;
+                        }
+
+                        .otp-actions {
+                          grid-template-columns: 1fr;
+                          gap: 10px;
+                        }
+
+                        .otp-timer-display {
+                          padding: 10px 14px;
+                        }
+
+                        .timer-value {
+                          font-size: 15px;
+                        }
+                      }
+
+                      @media (max-width: 480px) {
+                        .otp-status-card {
+                          padding: 12px;
+                        }
+
+                        .btn-enter-otp,
+                        .btn-resend-otp {
+                          padding: 8px 12px;
+                          font-size: 12px;
+                          min-height: 36px;
+                        }
+
+                        .otp-timer-display {
+                          padding: 8px 12px;
+                          flex-direction: column;
+                          gap: 4px;
+                        }
+
+                        .timer-label {
+                          font-size: 13px;
+                        }
+
+                        .timer-value {
+                          font-size: 14px;
+                        }
+                      }
+
                       /* ===== RESPONSIVE ===== */
                       @media (max-width: 768px) {
                         .address-options {
@@ -1347,44 +1545,55 @@
                     </style>
                   </div>
                 </div>
-                <div class="col-sm-6 m-t md">
-                  <ul class="list-group clear-list">
-                    <li class="list-group-item" style="border-top: none;">
-                      <span class="pull-right" id="totalAmount"
-                        th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
-                      <b> Tổng Tiền Hàng :</b>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                      <b>Giảm giá :</b>
-                      <div class="pull-right">
-                        <!-- Applied voucher area -->
-                        <div id="appliedVoucherArea" style="display: none;">
-                          <span id="discountValue" class="me-2">0 VNĐ</span>
-                          <button id="clearVoucherInline" class="btn btn-xs btn-warning">Hủy</button>
+
+                <!-- Phần tổng kết thanh toán cùng dòng -->
+                <div class="col-sm-6">
+                  <div class="payment-summary-section">
+                    <h4 class="summary-title">
+                      <i class="fa fa-calculator text-success"></i>
+                      Tổng Kết Thanh Toán
+                    </h4>
+                    <ul class="list-group clear-list modern-summary-list">
+                      <li class="list-group-item" style="border-top: none;">
+                        <span class="pull-right" id="totalAmount"
+                          th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                        <b> Tổng Tiền Hàng :</b>
+                      </li>
+                      <li class="list-group-item">
+                        <b>Giảm giá :</b>
+                        <div class="pull-right">
+                          <!-- Applied voucher area -->
+                          <div id="appliedVoucherArea" style="display: none;">
+                            <span id="discountValue" class="me-2">0 VNĐ</span>
+                            <button id="clearVoucherInline" class="btn btn-xs btn-warning">Hủy</button>
+                          </div>
+
+                          <!-- Default state -->
+                          <span id="defaultDiscountText">0 VNĐ</span>
                         </div>
+                      </li>
 
-                        <!-- Default state -->
-                        <span id="defaultDiscountText">0 VNĐ</span>
-                      </div>
-                    </li>
+                      <li class="list-group-item">
+                        <span class="pull-right" id="shippingValue"
+                          th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"> VNĐ</span>
+                        <b> Phí Vận Chuyển :</b>
+                      </li>
+                      <li class="list-group-item final-total">
+                        <span class="pull-right" id="totalPayment"
+                          th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 3, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                        <b> Tổng Thanh Toán :</b>
+                      </li>
+                    </ul>
 
-                    <li class="list-group-item">
-                      <span class="pull-right" id="shippingValue"
-                        th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"> VNĐ</span>
-                      <b> Phí Vận Chuyển :</b>
-                    </li>
-                  </ul>
-                  <li class="list-group-item">
-                    <span class="pull-right" id="totalPayment"
-                      th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 3, 'POINT')} + ' VNĐ'">0 VNĐ</span>
-                    <b> Tổng Thanh Toán :</b>
-                  </li>
-                </div>
-                <div class="pull-right m-t-sm" style="margin-top: 40px;">
-                  <button class="btn btn-outline btn-primary dim" id="btnConfirmOrder" type="button">
-                    <i class="fa fa-shopping-cart"></i>
-                    <span id="btnOrderText">Đặt Hàng</span>
-                  </button>
+                    <!-- Nút đặt hàng -->
+                    <div class="text-center" style="margin-top: 30px;">
+                      <button class="btn btn-outline btn-primary dim btn-place-order" id="btnConfirmOrder"
+                        type="button">
+                        <i class="fa fa-shopping-cart"></i>
+                        <span id="btnOrderText">Đặt Hàng</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1477,6 +1686,40 @@
             </div>
           </div>
         </div>
+
+        <!-- OTP waiting area (ẩn ban đầu) -->
+        <div id="otpWaitingArea" class="ibox float-e-margins otp-card" style="display: none;">
+          <div class="ibox-title modern-card-title">
+            <h5><i class="fa fa-clock-o text-warning"></i> Đang chờ xác nhận OTP</h5>
+          </div>
+          <div class="ibox-content">
+            <div class="otp-waiting-container">
+              <div class="otp-status-card">
+                <div class="otp-content">
+                  <p class="otp-message">
+                    Mã OTP đã được gửi đến email của bạn.<br>
+                    Vui lòng kiểm tra và nhập mã để hoàn tất đơn hàng.
+                  </p>
+                  <div class="otp-timer-display">
+                    <i class="fa fa-hourglass-half text-info"></i>
+                    <span class="timer-label">Thời gian còn lại:</span>
+                    <span id="otpTimeRemaining" class="timer-value">10:00</span>
+                  </div>
+                </div>
+                <div class="otp-actions">
+                  <button type="button" class="btn-enter-otp" id="btnReopenOtpModal">
+                    <i class="fa fa-keyboard-o"></i>
+                    <span>Nhập OTP</span>
+                  </button>
+                  <button type="button" class="btn-resend-otp" id="btnResendOtp">
+                    <i class="fa fa-refresh"></i>
+                    <span>Gửi lại OTP</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1484,11 +1727,14 @@
   <div class="modal fade" id="voucherModal" tabindex="-1" aria-labelledby="voucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-            <span aria-hidden="true">&times;</span>
+        <div class="modal-header voucher-modal-header">
+          <h5 class="modal-title voucher-modal-title" id="voucherModalLabel">
+            <i class="fa fa-ticket text-warning"></i>
+            Chọn Mã Giảm Giá
+          </h5>
+          <button type="button" class="close voucher-close-btn" data-dismiss="modal" aria-label="Đóng">
+            <i class="fa fa-times"></i>
           </button>
-          <h5 class="modal-title" id="voucherModalLabel">Chọn Mã Giảm Giá</h5>
         </div>
         <div class="modal-body">
           <div id="voucherGrid" class="voucher-grid"></div>
@@ -1502,23 +1748,56 @@
     </div>
   </div>
   <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
-            <span aria-hidden="true">&times;</span>
+    <div class="modal-dialog modal-dialog-centered modern-modal">
+      <div class="modal-content modern-modal-content">
+        <div class="modal-header modern-modal-header">
+          <h5 class="modal-title modern-modal-title" id="otpModalLabel">
+            <i class="fa fa-shield text-success"></i>
+            Xác nhận OTP
+          </h5>
+          <button type="button" class="close modern-close-btn" data-dismiss="modal" aria-label="Đóng">
+            <i class="fa fa-times"></i>
           </button>
-          <h5 class="modal-title" id="otpModalLabel">Xác nhận OTP</h5>
         </div>
-        <div class="modal-body text-center">
-          <p>Vui lòng nhập mã OTP được gửi đến email của bạn.</p>
-          <input type="hidden" id="otpOrderId">
-          <input type="hidden" id="otpEmail">
-          <input type="text" id="otpCode" class="form-control text-center" maxlength="6" placeholder="Nhập mã OTP" />
+        <div class="modal-body modern-modal-body">
+          <div class="otp-input-container">
+            <div class="otp-message-card">
+              <div class="otp-icon">
+                <i class="fa fa-envelope-o text-primary"></i>
+              </div>
+              <div class="otp-message-content">
+                <h6>Mã OTP đã được gửi!</h6>
+                <p>Vui lòng kiểm tra email của bạn và nhập mã OTP gồm 6 số để hoàn tất thanh toán.</p>
+              </div>
+            </div>
+
+            <div class="otp-input-section">
+              <label class="otp-label">
+                <i class="fa fa-keyboard-o text-info"></i>
+                Nhập mã OTP
+              </label>
+              <input type="hidden" id="otpOrderId">
+              <input type="hidden" id="otpEmail">
+              <input type="text" id="otpCode" class="form-control modern-otp-input" maxlength="6"
+                placeholder="Nhập 6 số OTP" autocomplete="off" />
+              <div class="input-helper">
+                <small class="text-muted">
+                  <i class="fa fa-info-circle"></i>
+                  Mã OTP có hiệu lực trong 10 phút
+                </small>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" id="btnVerifyOtp" class="btn btn-success">Xác nhận</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+        <div class="modal-footer modern-modal-footer">
+          <button type="button" class="btn btn-secondary modern-btn-secondary" data-dismiss="modal">
+            <i class="fa fa-times-circle"></i>
+            Hủy bỏ
+          </button>
+          <button type="button" id="btnVerifyOtp" class="btn btn-success modern-btn-primary">
+            <i class="fa fa-check-circle"></i>
+            Xác nhận OTP
+          </button>
         </div>
       </div>
     </div>
@@ -1583,6 +1862,88 @@
       }
     }
 
+    /* ===== PAYMENT SUMMARY STYLING ===== */
+    .payment-summary-section {
+      background: #ffffff;
+      border: 1px solid #e6e9ef;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-top: 10px;
+    }
+
+    .summary-title {
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-weight: 600;
+      border-bottom: 2px solid #f1f1f1;
+      padding-bottom: 10px;
+    }
+
+    .summary-title i {
+      margin-right: 8px;
+    }
+
+    .modern-summary-list .list-group-item {
+      border: none;
+      border-bottom: 1px solid #f1f1f1;
+      padding: 12px 15px;
+      background: transparent;
+    }
+
+    .modern-summary-list .list-group-item:last-child {
+      border-bottom: none;
+    }
+
+    .modern-summary-list .final-total {
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .btn-place-order {
+      background: linear-gradient(135deg, #1ab394, #18a085);
+      border: none;
+      color: white;
+      padding: 12px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(26, 179, 148, 0.3);
+    }
+
+    .btn-place-order:hover {
+      background: linear-gradient(135deg, #18a085, #149a80);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 179, 148, 0.4);
+      color: white;
+    }
+
+    .btn-place-order:active {
+      transform: translateY(0);
+    }
+
+    /* ===== RESPONSIVE FOR PAYMENT SUMMARY ===== */
+    @media (max-width: 768px) {
+      .payment-summary-section {
+        padding: 20px;
+        margin: 15px 0;
+      }
+
+      .summary-title {
+        font-size: 16px;
+      }
+
+      .btn-place-order {
+        width: 100%;
+        padding: 15px;
+      }
+    }
+
     @media (max-width: 480px) {
       .page-title {
         font-size: 20px;
@@ -1594,6 +1955,369 @@
 
       .modern-page-header {
         margin: 20px 0;
+      }
+
+      .payment-summary-section {
+        padding: 15px;
+        margin: 10px 0;
+      }
+
+      .summary-title {
+        font-size: 14px;
+        margin-bottom: 15px;
+      }
+
+      .modern-summary-list .list-group-item {
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+
+      .btn-place-order {
+        font-size: 14px;
+        padding: 12px;
+      }
+    }
+
+    /* ===== MODERN OTP MODAL STYLING ===== */
+    .modern-modal .modal-content {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .modern-modal-content {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .modern-modal-header {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-bottom: none;
+      padding: 15px 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .modern-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      text-align: left;
+    }
+
+    .modern-modal-title i {
+      font-size: 18px;
+    }
+
+    .modern-close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.3s ease;
+      opacity: 1;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .modern-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+      color: white;
+    }
+
+    /* ===== VOUCHER MODAL HEADER STYLING ===== */
+    .voucher-modal-header {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-bottom: none;
+      padding: 15px 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .voucher-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      text-align: left;
+    }
+
+    .voucher-modal-title i {
+      font-size: 18px;
+    }
+
+    .voucher-close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.3s ease;
+      opacity: 1;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .voucher-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+      color: white;
+    }
+
+    .modern-modal-body {
+      padding: 30px;
+      background: white;
+    }
+
+    .otp-input-container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .otp-message-card {
+      background: linear-gradient(135deg, #e8f5e8, #f0fff0);
+      border: 2px solid #28a745;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .otp-icon {
+      width: 50px;
+      height: 50px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .otp-icon i {
+      font-size: 20px;
+    }
+
+    .otp-message-content h6 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 16px;
+    }
+
+    .otp-message-content p {
+      margin: 0;
+      color: #6c757d;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .otp-input-section {
+      margin-bottom: 20px;
+    }
+
+    .otp-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .modern-otp-input {
+      width: 100%;
+      padding: 15px 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 3px;
+      font-family: 'Courier New', monospace;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .modern-otp-input:focus {
+      outline: none;
+      border-color: #1ab394;
+      box-shadow: 0 0 0 4px rgba(26, 179, 148, 0.1);
+      background: white;
+      transform: scale(1.02);
+    }
+
+    .modern-otp-input::placeholder {
+      color: #adb5bd;
+      font-weight: 400;
+      letter-spacing: 2px;
+    }
+
+    .input-helper {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .input-helper i {
+      margin-right: 5px;
+    }
+
+    .modern-modal-footer {
+      background: #f8f9fa;
+      border-top: 1px solid #e9ecef;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .modern-btn-secondary {
+      background: linear-gradient(135deg, #6c757d, #5a6268);
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .modern-btn-secondary:hover {
+      background: linear-gradient(135deg, #5a6268, #495057);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+      color: white;
+    }
+
+    .modern-btn-primary {
+      background: linear-gradient(135deg, #28a745, #20c997) !important;
+      border: none !important;
+      color: white !important;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .modern-btn-primary:hover {
+      background: linear-gradient(135deg, #218838, #17a2b8) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      color: white !important;
+    }
+
+    /* ===== RESPONSIVE FOR OTP MODAL ===== */
+    @media (max-width: 768px) {
+      .modern-modal-header,
+      .voucher-modal-header {
+        padding: 12px 15px;
+      }
+
+      .modern-modal-title,
+      .voucher-modal-title {
+        font-size: 16px;
+      }
+
+      .modern-modal-title i,
+      .voucher-modal-title i {
+        font-size: 16px;
+      }
+
+      .modern-modal-body {
+        padding: 20px;
+      }
+
+      .modern-modal-footer {
+        padding: 15px 20px;
+        flex-direction: column;
+      }
+
+      .modern-btn-secondary,
+      .modern-btn-primary {
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      .otp-message-card {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .otp-icon {
+        margin: 0 auto;
+      }
+
+      .modern-modal-title {
+        font-size: 18px;
+      }
+
+      .modal-subtitle {
+        margin-left: 0;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modern-otp-input {
+        font-size: 16px;
+        padding: 12px 15px;
+        letter-spacing: 2px;
+      }
+
+      .otp-message-card {
+        margin-bottom: 20px;
+      }
+
+      .modern-modal-title {
+        font-size: 16px;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .modern-modal-title i {
+        font-size: 20px;
       }
     }
   </style>

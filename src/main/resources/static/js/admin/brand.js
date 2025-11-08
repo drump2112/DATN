@@ -233,7 +233,7 @@ $(document).ready(function () {
 
             // Xóa class dz-image-preview nếu có (thường làm mờ ảnh)
             $(mockFile.previewElement).removeClass("dz-image-preview");
-            
+
             // Thêm class để ảnh hiển thị rõ nét
             $(mockFile.previewElement).addClass("dz-success dz-complete");
 
@@ -406,7 +406,6 @@ $(document).ready(function () {
           type: "PUT",
           success: function (data) {
             SwalUtils.success("Thành công", data.message);
-            // Stay on current page after status toggle
             searchBrand(currentPage);
           },
           error: function (xhr) {
@@ -420,10 +419,8 @@ $(document).ready(function () {
     });
   };
 
-  // Expose functions to global scope
   window.openAddModal = openAddModal;
 
-  // Add CSS override to fix Dropzone blur effect on hover
   const style = document.createElement('style');
   style.textContent = `
     /* Override Dropzone hover blur effect */
@@ -434,7 +431,7 @@ $(document).ready(function () {
       -webkit-transform: none !important;
       transform: none !important;
     }
-    
+
     /* Ensure detail modal images are always clear */
     #myModal .dropzone .dz-preview .dz-image img {
       -webkit-filter: none !important;

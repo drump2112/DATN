@@ -5,8 +5,17 @@ $(document).ready(function () {
     }
 
     // Load giỏ hàng
-
     let cartItems = [];
+
+    // OTP state management
+    let otpState = {
+        isWaiting: false,
+        orderId: null,
+        email: null,
+        startTime: null,
+        duration: 10 * 60 * 1000, // 10 minutes in milliseconds
+        timer: null
+    };
 
     function loadCheckoutItems() {
 
@@ -15,10 +24,24 @@ $(document).ready(function () {
                 cartItems = cart;
                 renderCheckoutItems(cart);
                 calculateTotals(cart);
+
+                // Thiết lập trạng thái ban đầu cho voucher area
+                initializeVoucherState();
             })
             .fail(function (xhr) {
                 console.error("Error loading cart:", xhr);
             });
+    }
+
+    // Thiết lập trạng thái ban đầu cho voucher area
+    function initializeVoucherState() {
+        if (!appliedVoucher) {
+            $("#appliedVoucherArea").hide();
+            $("#defaultDiscountText").show();
+        } else {
+            $("#appliedVoucherArea").show();
+            $("#defaultDiscountText").hide();
+        }
     }
 
     // Hiển thị sản phẩm trong giỏ hàng
@@ -183,16 +206,20 @@ $(document).ready(function () {
         // Áp dụng voucher trực tiếp giống logic trong modal
         const discountAmount = suggestedVoucher.discountAmount || calculateDiscountAmount(suggestedVoucher);
 
-        // Ẩn gợi ý và hiển thị voucher đã áp dụng
-        hideVoucherSuggestion();
-        showAppliedVoucher(discountAmount, suggestedVoucher.code);
-
-        // Cập nhật appliedVoucher global
+        // Cập nhật appliedVoucher global trước
         appliedVoucher = {
             id: suggestedVoucher.id,
             code: suggestedVoucher.code,
             discount: discountAmount
         };
+
+        // Ẩn gợi ý và hiển thị voucher đã áp dụng
+        hideVoucherSuggestion();
+
+        // Hiển thị voucher đã áp dụng với format chuẩn
+        $("#discountValue").text(discountAmount.toLocaleString() + " VNĐ");
+        $("#appliedVoucherArea").show();
+        $("#defaultDiscountText").hide();
 
         // Cập nhật lại totals
         $.get('/cart/items').done(function (cart) {
@@ -240,7 +267,7 @@ $(document).ready(function () {
         // Hiển thị voucher đã áp dụng với format chuẩn
         $("#discountValue").text(discountAmount.toLocaleString() + " VNĐ");
         $("#appliedVoucherArea").show();
-        $("#clearVoucherInline").show();
+        $("#defaultDiscountText").hide();
     }
 
     // Hàm cập nhật tổng đơn hàng khi áp dụng voucher
@@ -404,8 +431,8 @@ $(document).ready(function () {
     function clearSelectedVoucher() {
         appliedVoucher = null;
         $('#discountValue').text('0 VNĐ');
-        $('#clearVoucherInline').hide();
         $('#appliedVoucherArea').hide();
+        $('#defaultDiscountText').show();
         $('#voucherList li').removeClass('active');
         $('.voucher-card').removeClass('active selected');
         $('#suggestionText').text('Không có mã phù hợp');
@@ -609,6 +636,7 @@ $(document).ready(function () {
                                 "OTP đã được gửi!",
                                 "Vui lòng kiểm tra email của bạn để lấy mã OTP."
                             ).then(() => {
+                                startOtpWaiting(res.orderId, res.email);
                                 $("#otpOrderId").val(res.orderId);
                                 $("#otpEmail").val(res.email);
                                 $("#otpCode").val("");
@@ -674,6 +702,143 @@ $(document).ready(function () {
         });
     }
 
+    // === OTP Management Functions ===
+    function startOtpWaiting(orderId, email) {
+        otpState.isWaiting = true;
+        otpState.orderId = orderId;
+        otpState.email = email;
+        otpState.startTime = Date.now();
+
+        // Ẩn nút đặt hàng và hiện khu vực chờ OTP
+        $("#btnConfirmOrder").fadeOut(300, function() {
+            $("#otpWaitingArea").fadeIn(400);
+            startOtpTimer();
+        });
+    }
+
+    function stopOtpWaiting() {
+        otpState.isWaiting = false;
+        otpState.orderId = null;
+        otpState.email = null;
+        otpState.startTime = null;
+
+        if (otpState.timer) {
+            clearInterval(otpState.timer);
+            otpState.timer = null;
+        }
+
+        // Ẩn khu vực chờ OTP và hiện lại nút đặt hàng
+        $("#otpWaitingArea").fadeOut(300, function() {
+            $("#btnConfirmOrder").fadeIn(400);
+        });
+    }
+
+    function startOtpTimer() {
+        if (otpState.timer) {
+            clearInterval(otpState.timer);
+        }
+
+        updateTimerDisplay();
+
+        otpState.timer = setInterval(function() {
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        if (!otpState.isWaiting || !otpState.startTime) {
+            return;
+        }
+
+        const elapsed = Date.now() - otpState.startTime;
+        const remaining = Math.max(0, otpState.duration - elapsed);
+
+        if (remaining <= 0) {
+            // Hết thời gian
+            clearInterval(otpState.timer);
+            otpState.timer = null;
+            $("#otpTimeRemaining").text("Hết hạn").addClass("urgent");
+            $("#btnResendOtp").prop("disabled", false).text("Gửi lại OTP");
+            SwalUtils.warning("Hết thời gian", "Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.");
+            return;
+        }
+
+        const minutes = Math.floor(remaining / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        const $timerElement = $("#otpTimeRemaining");
+        $timerElement.text(timeString);
+
+        // Thêm hiệu ứng urgent khi còn ít hơn 2 phút
+        if (remaining < 2 * 60 * 1000) {
+            $timerElement.addClass("urgent");
+        } else {
+            $timerElement.removeClass("urgent");
+        }
+    }
+
+    function reopenOtpModal() {
+        if (!otpState.isWaiting || !otpState.orderId) {
+            SwalUtils.error("Lỗi", "Không có phiên OTP nào đang chờ xử lý.");
+            return;
+        }
+
+        // Kiểm tra thời gian còn lại
+        const elapsed = Date.now() - otpState.startTime;
+        const remaining = Math.max(0, otpState.duration - elapsed);
+
+        if (remaining <= 0) {
+            SwalUtils.warning("Hết thời gian", "Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.");
+            return;
+        }
+
+        // Điền thông tin và mở modal
+        $("#otpOrderId").val(otpState.orderId);
+        $("#otpEmail").val(otpState.email);
+        $("#otpCode").val("");
+        $("#otpModal").modal("show");
+    }
+
+    function resendOtp() {
+        if (!otpState.orderId) {
+            SwalUtils.error("Lỗi", "Không tìm thấy thông tin đơn hàng.");
+            return;
+        }
+
+        // Disable nút để tránh spam
+        $("#btnResendOtp").prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Đang gửi...');
+
+        $.ajax({
+            url: "/api/orders/resend-otp",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                orderId: otpState.orderId,
+                email: otpState.email
+            }),
+            success: function(res) {
+                if (res.success) {
+                    // Reset timer
+                    otpState.startTime = Date.now();
+                    startOtpTimer();
+                    $("#otpTimeRemaining").removeClass("urgent");
+
+                    SwalUtils.success("Thành công", "Mã OTP mới đã được gửi đến email của bạn.");
+                } else {
+                    SwalUtils.error("Lỗi", res.message || "Không thể gửi lại OTP.");
+                }
+            },
+            error: function(err) {
+                console.error("Resend OTP error:", err);
+                SwalUtils.error("Lỗi", "Không thể gửi lại OTP. Vui lòng thử lại.");
+            },
+            complete: function() {
+                $("#btnResendOtp").prop("disabled", false).html('<i class="fa fa-refresh"></i> <span>Gửi lại OTP</span>');
+            }
+        });
+    }
+
     $("#btnVerifyOtp").on("click", function () {
         const orderId = $("#otpOrderId").val();
         const email = $("#otpEmail").val();
@@ -692,6 +857,7 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.success) {
                     $("#otpModal").modal("hide");
+                    stopOtpWaiting(); // Dọn dẹp trạng thái OTP
                     clearCartAndRedirect(orderId, "Đơn hàng của bạn đã được xác nhận thành công.");
                 } else {
                     SwalUtils.error(
@@ -708,6 +874,27 @@ $(document).ready(function () {
         });
     });
 
+    // === Event Listeners cho OTP ===
+    $("#btnReopenOtpModal").on("click", function() {
+        reopenOtpModal();
+    });
+
+    $("#btnResendOtp").on("click", function() {
+        resendOtp();
+    });
+
+    // Xử lý khi modal OTP đóng để không mất trạng thái
+    $("#otpModal").on('hidden.bs.modal', function () {
+        // Không làm gì cả - giữ trạng thái OTP để có thể mở lại
+        // Modal chỉ được clear khi OTP thành công hoặc hết hạn
+    });
+
+    // Cleanup khi rời khỏi trang
+    $(window).on('beforeunload', function() {
+        if (otpState.timer) {
+            clearInterval(otpState.timer);
+        }
+    });
 
     window.enableTextareaEdit = enableTextareaEdit;
     window.enableEdit = enableEdit;

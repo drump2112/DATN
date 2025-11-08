@@ -179,17 +179,15 @@
                 <p class="result-message">Không thể tìm thấy đơn hàng tương ứng với giao dịch này.</p>
             </div>
 
-            <!-- Action Buttons -->
             <div class="mt-4">
-                <a href="/shop" class="btn-home">
+                <a th:href="@{/}" class="btn-home">
                     <i class="fas fa-home"></i> Về trang chủ
                 </a>
-                <a href="/shop/orders" class="btn-orders" th:if="${paymentStatus == 'SUCCESS'}">
+                <a th:href="@{/orders}" class="btn-orders" th:if="${paymentStatus == 'SUCCESS'}">
                     <i class="fas fa-list"></i> Xem đơn hàng
                 </a>
             </div>
 
-            <!-- Debug Info (only show in development) -->
             <div th:if="${isValidSignature != null}" class="mt-4 pt-3" style="border-top: 1px solid #eee; font-size: 0.8rem; color: #999;">
                 <div>Signature Valid: <span th:text="${isValidSignature}"></span></div>
                 <div>Response Code: <span th:text="${responseCode}"></span></div>

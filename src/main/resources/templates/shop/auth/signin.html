@@ -102,6 +102,11 @@
       </div>
     </div>
 
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <!-- Animate.css for animations -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
   <!-- Modern Login Styling -->
   <style>
     /* ===== MODERN PAGE HEADER ===== */
@@ -374,6 +379,60 @@
       }
     }
   </style>
+
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- SweetAlert Config -->
+  <script th:src="@{/js/sweetalert-config.js}"></script>
+
+  <!-- Error Handling Script -->
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check for error message
+      const errorMsg = /*[[${errorMsg}]]*/ null;
+
+      if (errorMsg) {
+        if (errorMsg.includes('chưa được kích hoạt')) {
+          SweetAlertUtils.warning(
+            'Tài khoản chưa kích hoạt',
+            'Tài khoản của bạn chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt tài khoản.',
+            {
+              confirmButtonText: '<i class="fa fa-check"></i> Đã hiểu'
+            }
+          );
+        } else if (errorMsg.includes('Sai tên đăng nhập') || errorMsg.includes('mật khẩu')) {
+          SweetAlertUtils.error(
+            'Đăng nhập thất bại',
+            'Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng thử lại.',
+            {
+              confirmButtonText: '<i class="fa fa-check"></i> Thử lại'
+            }
+          );
+        } else {
+          // For any other error messages
+          SweetAlertUtils.error(
+            'Đăng nhập thất bại',
+            errorMsg,
+            {
+              confirmButtonText: '<i class="fa fa-check"></i> OK'
+            }
+          );
+        }
+      }
+
+      // Check for success message (verified account)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('verified') === 'true') {
+        SweetAlertUtils.success(
+          'Xác thực thành công!',
+          'Tài khoản của bạn đã được kích hoạt. Bạn có thể đăng nhập ngay bây giờ.',
+          {
+            confirmButtonText: '<i class="fa fa-check"></i> Đăng nhập'
+          }
+        );
+      }
+    });
+  </script>
 </section>
 
 </html>
