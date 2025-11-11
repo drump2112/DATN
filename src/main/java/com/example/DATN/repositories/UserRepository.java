@@ -62,4 +62,8 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 
 
 	boolean existsByEmail(String email);
+
+	// Dashboard statistics query
+	@Query("SELECT COUNT(u) FROM User u WHERE u.role.nameRole = :roleName")
+	long countByRole(@Param("roleName") String roleName);
 }

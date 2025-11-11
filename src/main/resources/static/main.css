@@ -14,6 +14,127 @@
   margin-top: 4px;
 }
 
+/* ========== DASHBOARD STYLES ========== */
+.dashboard .ibox {
+  transition: all 0.3s ease;
+}
+
+.dashboard .ibox:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.dashboard .ibox-content h1 {
+  margin: 10px 0;
+  font-weight: 700;
+}
+
+.dashboard .stat-percent {
+  margin-top: 8px;
+}
+
+.dashboard .flot-chart {
+  height: 300px;
+}
+
+.dashboard .stat-list {
+  padding: 0;
+  margin: 20px 0;
+}
+
+.dashboard .stat-list li {
+  list-style: none;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: #fafafa;
+  border-radius: 6px;
+  border-left: 4px solid #1ab394;
+}
+
+.dashboard .progress-mini {
+  height: 3px;
+  margin-top: 8px;
+}
+
+.dashboard .social-feed-box {
+  padding: 12px 0;
+  border-bottom: 1px solid #e7eaec;
+  display: flex;
+  align-items: center;
+}
+
+.dashboard .social-feed-box:last-child {
+  border-bottom: none;
+}
+
+.dashboard .social-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1ab394;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.dashboard .social-body {
+  flex: 1;
+}
+
+.dashboard .social-body strong {
+  font-size: 14px;
+  color: #2f4050;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.dashboard .social-body small {
+  color: #676a6c;
+  font-size: 12px;
+}
+
+/* Chart responsive */
+.dashboard .flot-chart-content {
+  width: 100%;
+  height: 100%;
+}
+
+/* Stats boxes animations */
+.dashboard .ibox-title .label {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Order status chart container */
+#orderStatusChart {
+  max-height: 200px !important;
+}
+
+/* Dashboard responsive */
+@media (max-width: 768px) {
+  .dashboard .stat-list li {
+    margin-bottom: 15px;
+    padding: 12px;
+  }
+
+  .dashboard .flot-chart {
+    height: 250px;
+  }
+
+  .dashboard .ibox-content h1 {
+    font-size: 24px;
+  }
+}
+
 /* Giữ vùng input-group làm vị trí tham chiếu */
 .buyatthecounter .input-group {
   position: relative;

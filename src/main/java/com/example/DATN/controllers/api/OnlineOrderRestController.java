@@ -39,7 +39,6 @@ public class OnlineOrderRestController {
                 ));
             } else if ("VNPAY".equalsIgnoreCase(orderRequest.getPaymentMethod())) {
                 try {
-                    // Validate order before creating VNPay URL
                     System.out.println("=== ORDER VALIDATION BEFORE VNPAY ===");
                     System.out.println("Order ID: " + order.getId());
                     System.out.println("Order Code: " + order.getOrderCode());

@@ -56,4 +56,6 @@ public interface OrderService {
                                                      int page, int size);
 
   Order findByOrderCode(String orderCode);
+
+  Order findByOrderCodeWithItems(String orderCode);
 }

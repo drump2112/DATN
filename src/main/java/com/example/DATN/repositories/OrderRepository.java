@@ -1,5 +1,6 @@
 package com.example.DATN.repositories;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -113,4 +114,72 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
                                                   @Param("dateStart") LocalDateTime dateStart,
                                                   @Param("dateEnd") LocalDateTime dateEnd,
                                                   Pageable pageable);
+
+  // Dashboard statistics queries
+  @Query("SELECT COALESCE(SUM(o.finalAmount), 0) FROM Order o WHERE o.status = 'COMPLETED'")
+  BigDecimal findTotalRevenue();
+
+  @Query(value = "SELECT COALESCE(SUM(ord.finalAmount), 0) FROM Orders ord WHERE ord.Status = 'COMPLETED' " +
+         "AND MONTH(ord.OrderDate) = MONTH(GETDATE()) AND YEAR(ord.OrderDate) = YEAR(GETDATE())", nativeQuery = true)
+  BigDecimal findCurrentMonthRevenue();
+
+  long countByStatus(String status);
+
+  @Query(value = "SELECT MONTH(ord.OrderDate) as month, COALESCE(SUM(ord.finalAmount), 0) as revenue, COUNT(*) as orderCount " +
+         "FROM Orders ord WHERE YEAR(ord.OrderDate) = :year AND ord.Status = 'COMPLETED' " +
+         "GROUP BY MONTH(ord.OrderDate) ORDER BY MONTH(ord.OrderDate)", nativeQuery = true)
+  List<Object[]> findMonthlyRevenue(@Param("year") int year);
+
+  // Add method to get all monthly revenue without year filter to see what data exists
+  @Query(value = "SELECT YEAR(ord.OrderDate) as year, MONTH(ord.OrderDate) as month, COALESCE(SUM(ord.finalAmount), 0) as revenue, COUNT(*) as orderCount " +
+         "FROM Orders ord WHERE ord.Status = 'COMPLETED' " +
+         "GROUP BY YEAR(ord.OrderDate), MONTH(ord.OrderDate) ORDER BY YEAR(ord.OrderDate), MONTH(ord.OrderDate)", nativeQuery = true)
+  List<Object[]> findAllMonthlyRevenue();
+
+  // Method to check what years have completed orders
+  @Query(value = "SELECT DISTINCT YEAR(ord.OrderDate) as year FROM Orders ord WHERE ord.Status = 'COMPLETED' ORDER BY year DESC", nativeQuery = true)
+  List<Integer> findAvailableYears();
+
+  @Query(value = "SELECT TOP 10 p.id, p.Name, p.ProductCode, SUM(oi.quantity) as totalSold, " +
+         "c.Name as colorName, c.ColorCode, pvi.ImageUrl, p.thumbnail " +
+         "FROM OrderItems oi " +
+         "INNER JOIN ProductVariants pv ON oi.ProductVariantId = pv.id " +
+         "INNER JOIN Products p ON pv.ProductID = p.id " +
+         "INNER JOIN Colors c ON pv.ColorID = c.id " +
+         "LEFT JOIN ProductVariantImage pvi ON p.id = pvi.ProductId AND c.id = pvi.ColorId AND pvi.SortOrder = 1 " +
+         "INNER JOIN Orders ord ON oi.OrderId = ord.id " +
+         "WHERE ord.Status = 'COMPLETED' " +
+         "GROUP BY p.id, p.Name, p.ProductCode, c.Name, c.ColorCode, pvi.ImageUrl, p.thumbnail " +
+         "ORDER BY SUM(oi.quantity) DESC", nativeQuery = true)
+  List<Object[]> findTopProducts();
+
+  @Query("SELECT o.status, COUNT(o) FROM Order o GROUP BY o.status")
+  List<Object[]> findOrderStatusCounts();
+
+  // Payment method statistics - get all status types for now
+  @Query("SELECT o.paymentMethod, COUNT(o) FROM Order o WHERE o.paymentMethod IS NOT NULL GROUP BY o.paymentMethod")
+  List<Object[]> findPaymentMethodCounts();
+
+  @Query(value = "SELECT " +
+         "CASE " +
+         "  WHEN MONTH(ord.OrderDate) IN (1,2,3) THEN 1 " +
+         "  WHEN MONTH(ord.OrderDate) IN (4,5,6) THEN 2 " +
+         "  WHEN MONTH(ord.OrderDate) IN (7,8,9) THEN 3 " +
+         "  ELSE 4 " +
+         "END as quarter, " +
+         "p.Name, SUM(oi.quantity) as totalSold " +
+         "FROM OrderItems oi " +
+         "INNER JOIN ProductVariants pv ON oi.ProductVariantId = pv.id " +
+         "INNER JOIN Products p ON pv.ProductID = p.id " +
+         "INNER JOIN Orders ord ON oi.OrderId = ord.id " +
+         "WHERE YEAR(ord.OrderDate) = :year AND ord.Status = 'COMPLETED' " +
+         "GROUP BY " +
+         "CASE " +
+         "  WHEN MONTH(ord.OrderDate) IN (1,2,3) THEN 1 " +
+         "  WHEN MONTH(ord.OrderDate) IN (4,5,6) THEN 2 " +
+         "  WHEN MONTH(ord.OrderDate) IN (7,8,9) THEN 3 " +
+         "  ELSE 4 " +
+         "END, p.id, p.Name " +
+         "ORDER BY quarter, SUM(oi.quantity) DESC", nativeQuery = true)
+  List<Object[]> findQuarterlyProductSales(@Param("year") int year);
 }

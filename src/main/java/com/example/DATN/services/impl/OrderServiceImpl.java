@@ -388,6 +388,24 @@ public class OrderServiceImpl implements OrderService {
     public void processOrderItems(Order order) {
         System.out.println("🔄 Processing order items for order: " + order.getId());
 
+        // Xử lý voucher - trừ số lượng voucher nếu có
+        if (order.getVoucher() != null) {
+            Voucher voucher = order.getVoucher();
+            System.out.println("🎫 Processing voucher: " + voucher.getCode() + ", Current quantity: " + voucher.getQuantity());
+
+            if (voucher.getQuantity() != null && voucher.getQuantity() > 0) {
+                // Kiểm tra xem voucher đã được sử dụng chưa (tránh trừ 2 lần)
+                voucher.setQuantity(voucher.getQuantity() - 1);
+                voucherRepository.save(voucher);
+                System.out.println("✅ Voucher quantity decreased. New quantity: " + voucher.getQuantity());
+            } else if (voucher.getQuantity() != null && voucher.getQuantity() == 0) {
+                System.out.println("⚠️ Warning: Voucher quantity is already 0");
+            } else {
+                System.out.println("ℹ️ Info: Voucher has unlimited quantity (null)");
+            }
+        }
+
+        // Xử lý tồn kho sản phẩm
         for (OrderItem item : order.getItems()) {
             ProductVariant variant = item.getProductVariant();
             Integer orderQuantity = item.getQuantity();
@@ -402,9 +420,9 @@ public class OrderServiceImpl implements OrderService {
                 String createdBy = "SYSTEM";
                 stockMovementService.processSale(variant.getId(), orderQuantity, order.getOrderCode(), createdBy);
 
-                System.out.println(" Stock updated and movement recorded for variant: " + variant.getId());
+                System.out.println("✅ Stock updated and movement recorded for variant: " + variant.getId());
             } catch (Exception e) {
-                System.err.println(" Error processing stock for variant " + variant.getId() + ": " + e.getMessage());
+                System.err.println("❌ Error processing stock for variant " + variant.getId() + ": " + e.getMessage());
                 throw new RuntimeException("Lỗi xử lý kho: " + e.getMessage());
             }
         }
@@ -503,6 +521,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order findByOrderCode(String orderCode) {
         return orderRepository.findByOrderCode(orderCode).orElse(null);
+    }
+
+    @Override
+    public Order findByOrderCodeWithItems(String orderCode) {
+        return orderRepository.findByOrderCodeWithItems(orderCode).orElse(null);
     }
 }
 

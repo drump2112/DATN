@@ -38,18 +38,6 @@ $(document).ready(function() {
         chatBody.scrollTop(chatBody[0].scrollHeight);
     }
 
-    // Function to ensure welcome message is at bottom
-    function positionWelcomeMessage() {
-        const welcomeMessage = $('.welcome-message');
-        if (welcomeMessage.length > 0) {
-            const chatBodyHeight = chatBody.height();
-            const welcomeHeight = welcomeMessage.outerHeight();
-            if (welcomeHeight < chatBodyHeight) {
-                welcomeMessage.css('margin-top', chatBodyHeight - welcomeHeight);
-            }
-        }
-    }
-
     // Toggle chatbox
     chatboxToggle.click(function() {
         console.log('Chatbox toggle clicked');
@@ -59,12 +47,11 @@ $(document).ready(function() {
         } else {
             console.log('Showing chatbox');
             chatboxContainer.show();
-            // Position welcome message and scroll to bottom when opening
+            // Scroll to bottom immediately when opening
             setTimeout(function() {
-                positionWelcomeMessage();
                 scrollToBottom();
                 chatInput.focus();
-            }, 100);
+            }, 50); // Small delay to ensure chatbox is fully rendered
             chatNotification.hide();
         }
     });

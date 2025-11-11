@@ -4,11 +4,707 @@
   th:replace="admin/layout/base :: base"
 >
   <section th:fragment="content" class="dashboard">
-    <h2>Chào mừng bạn đến với trang quản trị!</h2>
+    <div class="row">
+      <!-- Thống kê tổng quan -->
+      <div class="col-lg-3">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <span class="label label-success pull-right">Hôm nay</span>
+            <h5>Tổng đơn hàng</h5>
+          </div>
+          <div class="ibox-content">
+            <h1 class="no-margins" id="totalOrders">0</h1>
+            <div class="stat-percent font-bold text-success">
+              <i class="fa fa-shopping-cart"></i> <span id="totalOrdersPercent">100%</span>
+            </div>
+            <small>Tổng số đơn hàng</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <span class="label label-info pull-right">Doanh thu</span>
+            <h5>Doanh thu tháng này</h5>
+          </div>
+          <div class="ibox-content">
+            <h1 class="no-margins" id="totalRevenue">0 VNĐ</h1>
+            <div class="stat-percent font-bold text-info">
+              <i class="fa fa-money"></i> <span id="revenuePercent">100%</span>
+            </div>
+            <small>Doanh thu các đơn đã hoàn thành trong tháng</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <span class="label label-primary pull-right">Sản phẩm</span>
+            <h5>Tổng sản phẩm</h5>
+          </div>
+          <div class="ibox-content">
+            <h1 class="no-margins" id="totalProducts">0</h1>
+            <div class="stat-percent font-bold text-primary">
+              <i class="fa fa-cube"></i> <span id="productsPercent">100%</span>
+            </div>
+            <small>Số lượng sản phẩm</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <span class="label label-warning pull-right">Thanh toán</span>
+            <h5>Phương thức thanh toán</h5>
+          </div>
+          <div class="ibox-content">
+            <div id="paymentMethodStats">
+              <div class="payment-method-item" style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; color: #7f8c8d;">
+                    <i class="fa fa-money" style="color: #27ae60; margin-right: 5px;"></i>Tiền mặt
+                  </span>
+                  <span id="cashPercent" style="font-weight: bold; color: #27ae60;">0%</span>
+                </div>
+                <div class="progress progress-mini" style="margin-bottom: 0;">
+                  <div style="width: 0%;" class="progress-bar progress-bar-success" id="cashProgressBar"></div>
+                </div>
+              </div>
+              <div class="payment-method-item" style="margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; color: #7f8c8d;">
+                    <i class="fa fa-bank" style="color: #3498db; margin-right: 5px;"></i>Chuyển khoản
+                  </span>
+                  <span id="transferPercent" style="font-weight: bold; color: #3498db;">0%</span>
+                </div>
+                <div class="progress progress-mini" style="margin-bottom: 0;">
+                  <div style="width: 0%;" class="progress-bar progress-bar-primary" id="transferProgressBar"></div>
+                </div>
+              </div>
+              <div class="payment-method-item">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; color: #7f8c8d;">
+                    <i class="fa fa-credit-card" style="color: #e74c3c; margin-right: 5px;"></i>VNPay
+                  </span>
+                  <span id="vnpayPercent" style="font-weight: bold; color: #e74c3c;">0%</span>
+                </div>
+                <div class="progress progress-mini" style="margin-bottom: 0;">
+                  <div style="width: 0%;" class="progress-bar progress-bar-danger" id="vnpayProgressBar"></div>
+                </div>
+              </div>
+            </div>
+            <small>Tỷ lệ phương thức thanh toán</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Biểu đồ doanh thu theo tháng -->
+      <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <h5>Doanh thu theo tháng <span id="currentYear"></span></h5>
+            <div class="pull-right">
+              <div class="btn-group">
+                <button type="button" class="btn btn-xs btn-white active">Doanh thu</button>
+                <button type="button" class="btn btn-xs btn-white">Số đơn</button>
+              </div>
+            </div>
+          </div>
+          <div class="ibox-content">
+            <div class="row">
+              <div class="col-lg-9">
+                <div class="flot-chart">
+                  <div class="flot-chart-content" id="flot-dashboard-chart"></div>
+                </div>
+              </div>
+              <div class="col-lg-3">
+                <ul class="stat-list">
+                  <li>
+                    <h2 class="no-margins" id="completionRate">0%</h2>
+                    <small>Tỷ lệ hoàn thành đơn</small>
+                    <div class="stat-percent">
+                      <span class="text-success" id="completionRateIcon"><i class="fa fa-check"></i></span>
+                    </div>
+                    <div class="progress progress-mini">
+                      <div style="width: 0%;" class="progress-bar" id="completionProgressBar"></div>
+                    </div>
+                  </li>
+                  <li>
+                    <h2 class="no-margins text-danger" id="cancellationRate">0%</h2>
+                    <small>Tỷ lệ hủy đơn</small>
+                    <div class="stat-percent">
+                      <span class="text-danger" id="cancellationRateIcon"><i class="fa fa-times"></i></span>
+                    </div>
+                    <div class="progress progress-mini">
+                      <div style="width: 0%;" class="progress-bar progress-bar-danger" id="cancellationProgressBar"></div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Sản phẩm bán chạy -->
+      <div class="col-lg-4">
+        <div class="ibox float-e-margins">
+          <div class="ibox-title">
+            <h5>Sản phẩm bán chạy</h5>
+            <div class="ibox-tools">
+              <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+              </a>
+            </div>
+          </div>
+          <div class="ibox-content">
+            <div id="topProductsList">
+              <!-- Danh sách sản phẩm bán chạy sẽ được load bằng JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thống kê trạng thái đơn hàng -->
+      <div class="col-lg-8">
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="ibox float-e-margins">
+              <div class="ibox-title">
+                <h5>Trạng thái đơn hàng</h5>
+              </div>
+              <div class="ibox-content">
+                <div>
+                  <canvas id="orderStatusChart" width="400" height="200"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="ibox float-e-margins">
+              <div class="ibox-title">
+                <h5>Sản phẩm bán chạy theo quý</h5>
+              </div>
+              <div class="ibox-content">
+                <div id="quarterlyProductChart" style="height: 200px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
+
   <th:block th:fragment="script">
+    <!-- Flot Charts -->
+    <script th:src="@{/assets/js/plugins/flot/jquery.flot.js}"></script>
+    <script th:src="@{/assets/js/plugins/flot/jquery.flot.tooltip.min.js}"></script>
+    <script th:src="@{/assets/js/plugins/flot/jquery.flot.spline.js}"></script>
+    <script th:src="@{/assets/js/plugins/flot/jquery.flot.resize.js}"></script>
+    <script th:src="@{/assets/js/plugins/flot/jquery.flot.pie.js}"></script>
+    <script th:src="@{/assets/js/plugins/flot/jquery.flot.time.js}"></script>
+
+    <!-- Chart.js -->
+    <script th:src="@{/assets/js/plugins/chartJs/Chart.min.js}"></script>
+
+    <!-- Peity -->
+    <script th:src="@{/assets/js/plugins/peity/jquery.peity.min.js}"></script>
+
     <script>
-      console.log("");
+      $(document).ready(function() {
+        // Set current year
+        $('#currentYear').text(new Date().getFullYear());
+
+        // Load ONLY real dashboard data - NO fake data
+        loadRealDashboardData();
+      });
+
+      function loadRealDashboardData() {
+        // Show loading state
+        showLoadingState();
+
+        console.log('Loading dashboard data...');
+
+        // Try to load from the main service first
+        $.ajax({
+          url: '/admin/api/dashboard/stats',
+          method: 'GET',
+          success: function(data) {
+            console.log('Dashboard data received:', data);
+            hideLoadingState();
+
+            try {
+              updateDashboardStats(data);
+              renderMonthlyRevenueChart(data.monthlyRevenue || []);
+              renderTopProducts(data.topProducts || []);
+              renderOrderStatusChart(data.orderStatusCounts || {});
+              renderQuarterlyChart(data.quarterlyProductSales || []);
+            } catch (renderError) {
+              console.error('Error rendering dashboard components:', renderError);
+              showErrorMessage('Lỗi hiển thị dữ liệu: ' + renderError.message);
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('Dashboard API failed:', {xhr, status, error});
+            console.warn('Main API failed, trying simple API for basic stats:', error);
+            hideLoadingState();
+            // Clear payment stats so spinner doesn't remain
+            try {
+              updatePaymentMethodStats({});
+            } catch (e) {
+              console.error('Failed to clear payment stats after API error:', e);
+            }
+            showErrorMessage('Không thể tải dữ liệu dashboard. Lỗi: ' + error);
+          }
+        });
+      }
+
+      function loadSimpleStatsOnly() {
+        // If complex API fails, load only basic stats from simple API
+        $.ajax({
+          url: '/admin/api/simple/stats',
+          method: 'GET',
+          success: function(data) {
+            hideLoadingState();
+            if (data.success) {
+              updateSimpleStats(data);
+              showErrorMessage('Chỉ có thể tải dữ liệu cơ bản. Vui lòng kiểm tra kết nối database.');
+            } else {
+              showErrorMessage('Không thể tải dữ liệu: ' + (data.error || 'Lỗi không xác định'));
+            }
+          },
+          error: function(xhr, status, error) {
+            hideLoadingState();
+            showErrorMessage('Không thể kết nối đến server. Vui lòng thử lại sau.');
+          }
+        });
+      }
+
+      function updateDashboardStats(data) {
+        console.log('updateDashboardStats called with data:', data);
+        // Update main stats
+        $('#totalOrders').text(formatNumber(data.totalOrders || 0));
+        $('#totalRevenue').text(formatCurrency(data.totalRevenue || 0));
+        $('#totalProducts').text(formatNumber(data.totalProducts || 0));
+
+        // Update payment method stats
+        console.log('About to call updatePaymentMethodStats with:', data.paymentMethodStats);
+        updatePaymentMethodStats(data.paymentMethodStats || {});
+
+        // Update completion and cancellation rates
+        $('#completionRate').text((data.completionRate || 0).toFixed(1) + '%');
+        $('#cancellationRate').text((data.cancellationRate || 0).toFixed(1) + '%');
+      }
+
+      function showErrorMessage(message) {
+        if (typeof toastr !== 'undefined') {
+          toastr.error(message, 'Lỗi dữ liệu');
+        } else {
+          alert(message);
+        }
+      }
+
+      function updateSimpleStats(data) {
+        // Update basic stats from simple endpoint
+        $('#totalOrders').text(formatNumber(data.totalOrders));
+        $('#totalProducts').text(formatNumber(data.totalProducts));
+        $('#totalCustomers').text(formatNumber(data.totalUsers));
+
+        // Calculate basic rates
+        let total = data.totalOrders;
+        let completed = data.completedOrders || 0;
+        let completionRate = total > 0 ? (completed / total * 100) : 0;
+
+        $('#totalRevenue').text('Đang tính...');
+        $('#completionRate').text(completionRate.toFixed(1) + '%');
+        $('#cancellationRate').text('0%'); // Will update with real data later
+
+        // Update progress bars
+        $('#completionProgressBar').css('width', completionRate + '%');
+        $('#cancellationProgressBar').css('width', '0%');
+      }
+
+      function showLoadingState() {
+        $('#totalOrders').html('<i class="fa fa-spinner fa-spin"></i>');
+        $('#totalRevenue').html('<i class="fa fa-spinner fa-spin"></i>');
+        $('#totalProducts').html('<i class="fa fa-spinner fa-spin"></i>');
+        $('#cashPercent').html('<i class="fa fa-spinner fa-spin"></i>');
+        $('#transferPercent').html('<i class="fa fa-spinner fa-spin"></i>');
+        $('#vnpayPercent').html('<i class="fa fa-spinner fa-spin"></i>');
+        $('#completionRate').html('<i class="fa fa-spinner fa-spin"></i>');
+        $('#cancellationRate').html('<i class="fa fa-spinner fa-spin"></i>');
+
+        $('#topProductsList').html(
+          '<div class="text-center" style="padding: 20px;">' +
+            '<i class="fa fa-spinner fa-spin fa-2x"></i><br>' +
+            '<small>Đang tải dữ liệu...</small>' +
+          '</div>'
+        );
+      }
+
+      function hideLoadingState() {
+        // Defensive: if any spinner icons remain, replace with defaults so UI doesn't show permanent spinners.
+        try {
+          // If payment percents still have spinner, set to 0%
+          if ($('#cashPercent').find('.fa-spinner').length > 0) $('#cashPercent').text('0%');
+          if ($('#transferPercent').find('.fa-spinner').length > 0) $('#transferPercent').text('0%');
+          if ($('#vnpayPercent').find('.fa-spinner').length > 0) $('#vnpayPercent').text('0%');
+
+          // If main stats still show spinner, replace with placeholders
+          if ($('#totalOrders').find('.fa-spinner').length > 0) $('#totalOrders').text('--');
+          if ($('#totalRevenue').find('.fa-spinner').length > 0) $('#totalRevenue').text('--');
+          if ($('#totalProducts').find('.fa-spinner').length > 0) $('#totalProducts').text('--');
+          if ($('#completionRate').find('.fa-spinner').length > 0) $('#completionRate').text('0%');
+          if ($('#cancellationRate').find('.fa-spinner').length > 0) $('#cancellationRate').text('0%');
+        } catch (e) {
+          console.error('hideLoadingState defensive cleanup failed:', e);
+        }
+      }
+
+      function showErrorState() {
+        $('#totalOrders').text('--');
+        $('#totalRevenue').text('--');
+        $('#totalProducts').text('--');
+        $('#totalCustomers').text('--');
+        $('#completionRate').text('--');
+        $('#cancellationRate').text('--');
+
+        $('#topProductsList').html(
+          '<div class="text-center" style="padding: 20px; color: #dc3545;">' +
+            '<i class="fa fa-exclamation-triangle fa-2x"></i><br>' +
+            '<small>Không thể tải dữ liệu</small>' +
+          '</div>'
+        );
+      }
+
+      function updateDashboardStats(data) {
+        // Update basic stats
+        $('#totalOrders').text(formatNumber(data.totalOrders));
+        $('#totalRevenue').text(formatCurrency(data.totalRevenue));
+        $('#totalProducts').text(formatNumber(data.totalProducts));
+        $('#totalCustomers').text(formatNumber(data.totalCustomers));
+
+        // Update rates
+        $('#completionRate').text(data.completionRate.toFixed(1) + '%');
+        $('#cancellationRate').text(data.cancellationRate.toFixed(1) + '%');
+
+        // Update progress bars
+        $('#completionProgressBar').css('width', data.completionRate + '%');
+        $('#cancellationProgressBar').css('width', data.cancellationRate + '%');
+      }
+
+      function updatePaymentMethodStats(paymentStats) {
+        console.log('Payment method stats received:', paymentStats);
+        // Calculate total orders for percentage calculation
+        var totalPayments = Object.values(paymentStats).reduce(function(sum, count) {
+          return sum + (count || 0);
+        }, 0);
+        console.log('Total payments calculated:', totalPayments);
+
+        if (totalPayments === 0) {
+          $('#cashPercent').text('0%');
+          $('#transferPercent').text('0%');
+          $('#vnpayPercent').text('0%');
+          $('#cashProgressBar').css('width', '0%');
+          $('#transferProgressBar').css('width', '0%');
+          $('#vnpayProgressBar').css('width', '0%');
+          return;
+        }
+
+        // Calculate percentages
+        var cashCount = paymentStats['Tiền mặt'] || 0;
+        var transferCount = paymentStats['Chuyển khoản'] || 0;
+        var vnpayCount = paymentStats['VNPay'] || 0;
+
+        var cashPercent = (cashCount / totalPayments * 100);
+        var transferPercent = (transferCount / totalPayments * 100);
+        var vnpayPercent = (vnpayCount / totalPayments * 100);
+
+        // Update display
+        $('#cashPercent').text(cashPercent.toFixed(1) + '%');
+        $('#transferPercent').text(transferPercent.toFixed(1) + '%');
+        $('#vnpayPercent').text(vnpayPercent.toFixed(1) + '%');
+
+        // Update progress bars
+        $('#cashProgressBar').css('width', cashPercent + '%');
+        $('#transferProgressBar').css('width', transferPercent + '%');
+        $('#vnpayProgressBar').css('width', vnpayPercent + '%');
+
+        console.log('Payment method stats updated:', {
+          cash: cashCount + ' (' + cashPercent.toFixed(1) + '%)',
+          transfer: transferCount + ' (' + transferPercent.toFixed(1) + '%)',
+          vnpay: vnpayCount + ' (' + vnpayPercent.toFixed(1) + '%)',
+          total: totalPayments
+        });
+      }
+
+      function renderMonthlyRevenueChart(monthlyData) {
+        var revenueData = [];
+        var orderCountData = [];
+
+        monthlyData.forEach(function(item, index) {
+          var timestamp = new Date(item.year, item.month - 1, 1).getTime();
+          revenueData.push([timestamp, parseFloat(item.revenue)]);
+          orderCountData.push([timestamp, item.orderCount]);
+        });
+
+        var dataset = [{
+          label: "Doanh thu (VNĐ)",
+          data: revenueData,
+          color: "#1ab394",
+          bars: {
+            show: true,
+            align: "center",
+            barWidth: 24 * 60 * 60 * 1000 * 20,
+            lineWidth: 0
+          }
+        }, {
+          label: "Số đơn hàng",
+          data: orderCountData,
+          yaxis: 2,
+          color: "#1C84C6",
+          lines: {
+            lineWidth: 1,
+            show: true,
+            fill: true,
+            fillColor: {
+              colors: [{
+                opacity: 0.2
+              }, {
+                opacity: 0.4
+              }]
+            }
+          }
+        }];
+
+        var options = {
+          xaxis: {
+            mode: "time",
+            tickSize: [1, "month"],
+            tickLength: 0,
+            axisLabel: "Tháng",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Arial',
+            axisLabelPadding: 10,
+            color: "#d5d5d5"
+          },
+          yaxes: [{
+            position: "left",
+            color: "#d5d5d5",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Arial',
+            axisLabelPadding: 3
+          }, {
+            position: "right",
+            color: "#d5d5d5",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Arial',
+            axisLabelPadding: 67
+          }],
+          legend: {
+            noColumns: 1,
+            labelBoxBorderColor: "#000000",
+            position: "nw"
+          },
+          grid: {
+            hoverable: true,
+            borderWidth: 0
+          },
+          tooltip: true,
+          tooltipOpts: {
+            content: function(label, x, y) {
+              var date = new Date(x);
+              var month = date.getMonth() + 1;
+              return label + " tháng " + month + ": " + (label.includes("Doanh thu") ? formatCurrency(y) : formatNumber(y));
+            }
+          }
+        };
+
+        $.plot($("#flot-dashboard-chart"), dataset, options);
+      }
+
+      function renderTopProducts(products) {
+        var html = '';
+        if (products.length === 0) {
+          html = '<div class="text-center" style="padding: 20px; color: #999;">' +
+                   '<i class="fa fa-cube" style="font-size: 48px; margin-bottom: 10px;"></i>' +
+                   '<p>Chưa có dữ liệu sản phẩm</p>' +
+                 '</div>';
+        } else {
+          products.slice(0, 5).forEach(function(product, index) {
+            var rank = index + 1;
+            var iconClass = rank === 1 ? 'text-warning' : rank === 2 ? 'text-muted' : rank === 3 ? 'text-danger' : 'text-navy';
+            var medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+
+            // Determine which image to use - priority: variantImageUrl > thumbnail > default
+            var imageUrl = product.variantImageUrl || product.thumbnail || '/assets/img/default-product.png';
+            var fullImageUrl = imageUrl.startsWith('/') ? imageUrl : '/uploads/product-variants/' + imageUrl;
+
+            // Color indicator
+            var colorIndicator = '';
+            if (product.colorCode) {
+              colorIndicator = '<div class="color-indicator" style="width: 12px; height: 12px; background-color: ' +
+                             product.colorCode + '; border-radius: 50%; display: inline-block; margin-right: 5px; border: 1px solid #ddd;"></div>';
+            }
+
+            html += '<div class="product-item" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s ease; border-left: 4px solid ' + (rank <= 3 ? '#f39c12' : '#3498db') + ';">' +
+                      '<div class="rank-badge" style="width: 30px; height: 30px; background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; font-size: 14px;">' +
+                        medal +
+                      '</div>' +
+                      '<div class="product-image" style="width: 50px; height: 50px; margin-right: 12px; border-radius: 6px; overflow: hidden; border: 1px solid #eee;">' +
+                        '<img src="' + fullImageUrl + '" alt="' + product.productName + '" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src=\'/assets/img/default-product.png\';">' +
+                      '</div>' +
+                      '<div class="product-info" style="flex: 1; min-width: 0;">' +
+                        '<div class="product-name" style="font-weight: bold; font-size: 14px; color: #2c3e50; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="' + product.productName + '">' +
+                          product.productName +
+                        '</div>' +
+                        '<div class="product-details" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">' +
+                          '<span class="product-code" style="font-size: 11px; color: #7f8c8d; background: #ecf0f1; padding: 2px 6px; border-radius: 4px;">' +
+                            product.productCode +
+                          '</span>' +
+                          (product.colorName ?
+                            '<span class="color-info" style="font-size: 11px; color: #7f8c8d; display: flex; align-items: center;">' +
+                              colorIndicator + product.colorName +
+                            '</span>' : ''
+                          ) +
+                        '</div>' +
+                        '<div class="sold-count" style="display: flex; align-items: center; gap: 4px;">' +
+                          '<i class="fa fa-shopping-cart" style="color: #27ae60; font-size: 12px;"></i>' +
+                          '<span style="font-weight: bold; color: #27ae60; font-size: 13px;">' + formatNumber(product.totalSold) + ' đã bán</span>' +
+                        '</div>' +
+                      '</div>' +
+                    '</div>';
+          });
+        }
+        $('#topProductsList').html(html);
+      }
+
+      function renderOrderStatusChart(statusCounts) {
+        var ctx = document.getElementById('orderStatusChart').getContext('2d');
+
+        var labels = [];
+        var data = [];
+        var colors = [];
+
+        var statusColors = {
+          'PENDING': '#f8ac59',
+          'CONFIRMED': '#1ab394',
+          'SHIPPING': '#23c6c8',
+          'COMPLETED': '#1c84c6',
+          'CANCELLED': '#ed5565'
+        };
+
+        var statusLabels = {
+          'PENDING': 'Chờ xử lý',
+          'CONFIRMED': 'Đã xác nhận',
+          'SHIPPING': 'Đang giao',
+          'COMPLETED': 'Hoàn thành',
+          'CANCELLED': 'Đã hủy'
+        };
+
+        Object.keys(statusCounts).forEach(function(status) {
+          labels.push(statusLabels[status] || status);
+          data.push(statusCounts[status]);
+          colors.push(statusColors[status] || '#888888');
+        });
+
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: colors,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+              position: 'bottom'
+            },
+            tooltips: {
+              callbacks: {
+                label: function(tooltipItem, data) {
+                  var label = data.labels[tooltipItem.index];
+                  var value = data.datasets[0].data[tooltipItem.index];
+                  return label + ': ' + formatNumber(value);
+                }
+              }
+            }
+          }
+        });
+      }
+
+      function renderQuarterlyChart(quarterlyData) {
+        var html = '';
+        if (quarterlyData.length === 0) {
+          html = '<div class="text-center" style="padding: 40px; color: #999;">' +
+                   '<i class="fa fa-bar-chart" style="font-size: 48px; margin-bottom: 10px;"></i>' +
+                   '<p>Chưa có dữ liệu theo quý</p>' +
+                 '</div>';
+        } else {
+          html = '<div class="table-responsive">' +
+                   '<table class="table table-striped table-hover">' +
+                     '<thead style="background: #f8f9fa;">' +
+                       '<tr>' +
+                         '<th style="border-top: none;"><i class="fa fa-calendar"></i> Quý</th>' +
+                         '<th style="border-top: none;"><i class="fa fa-cube"></i> Sản phẩm</th>' +
+                         '<th style="border-top: none; text-align: center;"><i class="fa fa-shopping-cart"></i> Số lượng</th>' +
+                       '</tr>' +
+                     '</thead>' +
+                     '<tbody>';
+
+          quarterlyData.slice(0, 8).forEach(function(item, index) {
+            var quarterName = 'Quý ' + (item.quarter || 'N/A') + '/' + (item.year || new Date().getFullYear());
+            var productName = item.productName || 'Sản phẩm không xác định';
+            var totalSold = item.totalSold || 0;
+            var bgClass = index % 2 === 0 ? '' : 'style="background: #fafafa;"';
+
+            html += '<tr ' + bgClass + '>' +
+                      '<td><strong>' + quarterName + '</strong></td>' +
+                      '<td>' +
+                        '<div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + productName + '">' +
+                          productName +
+                        '</div>' +
+                      '</td>' +
+                      '<td style="text-align: center;">' +
+                        '<span class="label label-primary" style="font-size: 12px; padding: 6px 12px;">' +
+                          formatNumber(totalSold) +
+                        '</span>' +
+                      '</td>' +
+                    '</tr>';
+          });
+
+          html += '</tbody></table></div>';
+        }
+
+        $('#quarterlyProductChart').html(html);
+      }
+
+      // Utility functions
+      function formatNumber(num) {
+        return new Intl.NumberFormat('vi-VN').format(num);
+      }
+
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', {
+          style: 'currency',
+          currency: 'VND'
+        }).format(amount);
+      }
     </script>
   </th:block>
 </html>
