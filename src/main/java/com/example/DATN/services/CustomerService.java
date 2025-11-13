@@ -11,5 +11,7 @@ public interface CustomerService {
 
   boolean addCustomer(CustomerRequest customerRequest);
 
+  boolean addQuickCustomer(String fullName, String phone);
+
    List<CustomerDTO> getCustomers(String keyword);
 }

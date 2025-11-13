@@ -97,8 +97,12 @@ $("#btnAddCategory").click(function () {
         success: function (response) {
           SwalUtils.success("Thành công!", response.message);
           $("#myModal").modal("hide");
-          const currentPage = getCurrentPage();
-          searchCategory(currentPage);
+          // Sau khi thêm, chuyển về trang cuối cùng
+          $.get("/admin/categories/counts").done(function (totalItems) {
+            const pageSize = 5;
+            const lastPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1);
+            searchCategory(lastPage);
+          });
         },
         error: function (xhr) {
           SwalUtils.error(
@@ -138,6 +142,52 @@ function searchCategory(page) {
   });
 }
 
+//cập nhật
+$("#btnUpdate").on("click", function () {
+  if (!validateCategoryName(false)) return;
+
+  SwalUtils.confirm(
+    "Xác nhận cập nhật danh mục?",
+    "",
+    "Cập nhật",
+    "Hủy"
+  ).then((result) => {
+    if (result.isConfirmed) {
+      const formData = new FormData();
+      formData.append("categoryCode", $("#code").val().trim());
+      formData.append("name", $("#name").val().trim());
+      const categoryId = $("#id").val();
+
+      $.ajax({
+        url: `/admin/categories/${categoryId}`,
+        type: "PUT",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          SwalUtils.success("Cập nhật thành công!", response.message);
+          $("#myModal").modal("hide");
+          // Lấy page hiện tại từ nút active trong phân trang
+          let currentPage = parseInt($(".pagination .active a").text()) - 1;
+          if (isNaN(currentPage) || currentPage < 0) {
+            currentPage = $("#categoryForm").data("current-page");
+          }
+          if (typeof currentPage === "undefined" || currentPage === null || isNaN(currentPage)) {
+            currentPage = getCurrentPage();
+          }
+          searchCategory(currentPage);
+        },
+        error: function (xhr) {
+          SwalUtils.error(
+            "Lỗi!",
+            xhr.responseJSON?.message || "Cập nhật thất bại"
+          );
+        },
+      });
+    }
+  });
+});
+
 // Chuyển đổi trạng thái
 window.toggleStatus = function (userId, isActive) {
   const title = isActive
@@ -163,7 +213,14 @@ window.toggleStatus = function (userId, isActive) {
         type: "PUT",
         success: function (data) {
           SwalUtils.success("Thành công", data.message);
-          const currentPage = getCurrentPage();
+          // Lấy page hiện tại từ nút active trong phân trang
+          let currentPage = parseInt($(".pagination .active a").text()) - 1;
+          if (isNaN(currentPage) || currentPage < 0) {
+            currentPage = $("#categoryForm").data("current-page");
+          }
+          if (typeof currentPage === "undefined" || currentPage === null || isNaN(currentPage)) {
+            currentPage = getCurrentPage();
+          }
           searchCategory(currentPage);
         },
         error: function (xhr) {
@@ -176,43 +233,3 @@ window.toggleStatus = function (userId, isActive) {
     }
   });
 };
-
-//cập nhật
-
-$("#btnUpdate").on("click", function () {
-  if (!validateCategoryName(false)) return;
-
-  SwalUtils.confirm(
-    "Xác nhận cập nhật danh mục?",
-    "",
-    "Cập nhật",
-    "Hủy"
-  ).then((result) => {
-    if (result.isConfirmed) {
-      const formData = new FormData();
-      formData.append("categoryCode", $("#code").val().trim());
-      formData.append("name", $("#name").val().trim());
-      const categoryId = $("#id").val();
-
-      $.ajax({
-        url: `/admin/categories/${categoryId}`,
-        type: "PUT",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-          SwalUtils.success("Cập nhật thành công!", response.message);
-          $("#myModal").modal("hide");
-          const currentPage = $("#categoryForm").data("current-page") || 0;
-          searchCategory(currentPage);
-        },
-        error: function (xhr) {
-          SwalUtils.error(
-            "Lỗi!",
-            xhr.responseJSON?.message || "Cập nhật thất bại"
-          );
-        },
-      });
-    }
-  });
-});

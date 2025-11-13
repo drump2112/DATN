@@ -30,8 +30,9 @@
             <span th:case="'SALE'" class="badge badge-primary">Bán hàng</span>
             <span th:case="'RETURN'" class="badge badge-info">Hoàn trả</span>
             <span th:case="'DAMAGE'" class="badge badge-danger">Hàng hỏng</span>
-            <span th:case="'MANUAL'" class="badge badge-default">Cập nhật thủ công</span>
-            <span th:case="*" th:text="${movement.movementTypeDisplay}"></span>
+            <span th:case="'MANUAL_IN'" class="badge badge-secondary">Cập nhật tăng</span>
+            <span th:case="'MANUAL_OUT'" class="badge badge-dark">Cập nhật giảm</span>
+            <span th:case="*" class="badge badge-light" th:text="${movement.movementTypeDisplay}"></span>
           </span>
         </td>
         <td>
@@ -49,7 +50,10 @@
         </td>
         <td th:text="${movement.note ?: 'Không có ghi chú'}"></td>
         <td th:text="${#temporals.format(movement.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-        <td th:text="${movement.createdBy}"></td>
+        <td>
+          <span th:if="${movement.createdBy == 'system'}" class="badge badge-warning">System</span>
+          <span th:if="${movement.createdBy != 'system'}" class="badge badge-info" th:text="${movement.createdBy}"></span>
+        </td>
       </tr>
       <tr th:if="${#lists.isEmpty(movements)}">
         <td colspan="10" class="text-center">

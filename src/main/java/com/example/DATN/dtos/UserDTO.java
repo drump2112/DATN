@@ -39,7 +39,11 @@ public class UserDTO {
 
 	private String provinceCode;
 
+	private String provinceName;
+
 	private String communeCode;
+
+	private String communeName;
 
 	private String phone;
 

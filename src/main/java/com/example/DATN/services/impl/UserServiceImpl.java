@@ -72,10 +72,32 @@ public class UserServiceImpl implements UserService {
 
 		return user.map(entity -> {
 			UserDTO dto = modelMapper.map(entity, UserDTO.class);
+
+			// Set address field to null để tránh conflict với Address entity
+			dto.setAddress(null);
+
 			if (entity.getRole() != null) {
 				dto.setRoleId(entity.getRole().getId());
 				dto.setRoleName(entity.getRole().getNameRole());
 			}
+
+			// Map thông tin địa chỉ chi tiết
+			if (entity.getAddress() != null) {
+				Address address = entity.getAddress();
+				dto.setSpecificAddress(address.getSpecificAddress());
+				dto.setFullAddress(address.getFullAddress());
+
+				if (address.getProvince() != null) {
+					dto.setProvinceCode(address.getProvince().getProvinceCode());
+					dto.setProvinceName(address.getProvince().getProvinceName());
+				}
+
+				if (address.getCommune() != null) {
+					dto.setCommuneCode(address.getCommune().getCommuneCode());
+					dto.setCommuneName(address.getCommune().getCommuneName());
+				}
+			}
+
 			return dto;
 		});
 	}

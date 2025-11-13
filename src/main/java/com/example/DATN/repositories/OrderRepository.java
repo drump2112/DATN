@@ -17,6 +17,10 @@ import com.example.DATN.models.Order;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
 
+  @EntityGraph(attributePaths = {"voucher", "items", "items.productVariant"})
+  @Query("SELECT o FROM Order o WHERE o.id = :id")
+  Optional<Order> findByIdWithVoucher(@Param("id") Integer id);
+
   Page<Order> findByOrderType(String orderType, Pageable pageable);
 
   long countByOrderDateBetween(LocalDateTime start, LocalDateTime end);

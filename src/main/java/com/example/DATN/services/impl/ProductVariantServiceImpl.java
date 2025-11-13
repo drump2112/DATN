@@ -25,6 +25,7 @@ import com.example.DATN.services.ImageService;
 import com.example.DATN.services.ProductVariantService;
 import com.example.DATN.services.StockMovementService;
 import com.example.DATN.specifications.ProductVariantSpecification;
+import com.example.DATN.utils.AuthUtils;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -398,12 +399,13 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
 		// Ghi lại stock movement nếu số lượng thay đổi
 		if (request.getQuantity() != null && !request.getQuantity().equals(oldQuantity)) {
+			String actor = AuthUtils.getCurrentFullName();
 			stockMovementService.processManualUpdate(
 				variant.getId(),
 				oldQuantity,
 				request.getQuantity(),
 				"Cập nhật số lượng thủ công từ admin",
-				"admin"
+				actor
 			);
 		}
 

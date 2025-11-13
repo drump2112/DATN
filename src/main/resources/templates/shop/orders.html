@@ -81,16 +81,26 @@
 
                       <div class="col-md-3 col-sm-6 col-xs-12 text-right" style="margin-bottom: 10px;">
                         <div style="font-size: 12px; color: #676a6c; margin-bottom: 3px;">
-                          Tổng: <span
+                          <span style="font-weight:600; color:#2c3e50;"></span>Tổng:</span>
+                          <span style="color:#1ab394; font-weight:600;"
                             th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">500,000
                             VNĐ</span>
                         </div>
                         <div style="font-size: 12px; color: #e74c3c;" th:if="${order.discountAmount > 0}">
-                          Giảm: <span
+                          <span style="font-weight:600; color:#e74c3c;">Giảm:</span>
+                          <span style="color:#e74c3c; font-weight:600;"
                             th:text="${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">50,000
                             VNĐ</span>
                         </div>
-                        <div style="font-size: 16px; font-weight: 600; color: #1ab394;">
+                        <div style="font-size: 12px; color: #138496; font-weight:600; margin-bottom: 3px;"
+                          th:if="${order.shippingFee != null}">
+                          <span style="font-weight:600; color:#138496;">Phí ship:</span>
+                          <span style="color:#138496; font-weight:600;"
+                            th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">20,000
+                            VNĐ</span>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 700; color: #ff9800; margin-top: 4px;">
+                          <span>Thành tiền:</span>
                           <span
                             th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">480,000
                             VNĐ</span>
@@ -104,41 +114,37 @@
                           <div class="status-actions-row">
                             <!-- Actions cho PENDING: Chỉ có Hủy -->
                             <button th:if="${order.status == 'PENDING'}"
-                                    class="btn btn-danger btn-sm customer-action-btn status-action"
-                                    th:attr="data-order-id=${order.id}, data-action='cancel'"
-                                    onclick="handleCustomerOrderAction(this)"
-                                    title="Hủy đơn hàng">
+                              class="btn btn-danger btn-sm customer-action-btn status-action"
+                              th:attr="data-order-id=${order.id}, data-action='cancel'"
+                              onclick="handleCustomerOrderAction(this)" title="Hủy đơn hàng">
                               <i class="fa fa-times"></i> Hủy đơn hàng
                             </button>
 
                             <!-- Actions cho SHIPPING: Đã nhận hàng -->
                             <button th:if="${order.status == 'SHIPPING'}"
-                                    class="btn btn-success btn-sm customer-action-btn status-action"
-                                    th:attr="data-order-id=${order.id}, data-action='confirm-received'"
-                                    onclick="handleCustomerOrderAction(this)"
-                                    title="Xác nhận đã nhận hàng">
+                              class="btn btn-success btn-sm customer-action-btn status-action"
+                              th:attr="data-order-id=${order.id}, data-action='confirm-received'"
+                              onclick="handleCustomerOrderAction(this)" title="Xác nhận đã nhận hàng">
                               <i class="fa fa-check-circle"></i> Đã nhận hàng
                             </button>
 
                             <!-- Actions cho COMPLETED: Mua lại hoặc Đổi/Trả -->
                             <div th:if="${order.status == 'COMPLETED'}" class="completed-actions">
                               <button class="btn btn-primary btn-sm customer-action-btn status-action"
-                                      th:attr="data-order-code=${order.orderCode}"
-                                      onclick="reorderItems(this)"
-                                      title="Mua lại đơn hàng này">
+                                th:attr="data-order-code=${order.orderCode}" onclick="reorderItems(this)"
+                                title="Mua lại đơn hàng này">
                                 <i class="fa fa-refresh"></i> Mua lại
                               </button>
                               <button class="btn btn-warning btn-sm customer-action-btn status-action"
-                                      th:attr="data-order-id=${order.id}, data-action='return'"
-                                      onclick="handleCustomerOrderAction(this)"
-                                      title="Yêu cầu đổi/trả hàng">
+                                th:attr="data-order-id=${order.id}, data-action='return'"
+                                onclick="handleCustomerOrderAction(this)" title="Yêu cầu đổi/trả hàng">
                                 <i class="fa fa-undo"></i> Đổi/Trả
                               </button>
                             </div>
 
                             <!-- Placeholder for inactive statuses -->
                             <div th:if="${order.status == 'PROCESSING' || order.status == 'CANCELLED'}"
-                                 class="status-placeholder">
+                              class="status-placeholder">
                               <span class="status-message" th:switch="${order.status}">
                                 <span th:case="'PROCESSING'" class="text-info">
                                   <i class="fa fa-cog fa-spin"></i> Đang xử lý
@@ -153,9 +159,8 @@
                           <!-- Common Actions Row -->
                           <div class="common-actions-row">
                             <button class="btn btn-info btn-sm toggle-details-btn-single"
-                                    th:attr="data-target='#order-details-' + ${order.id}"
-                                    onclick="toggleOrderDetails(this)"
-                                    title="Xem chi tiết đơn hàng">
+                              th:attr="data-target='#order-details-' + ${order.id}" onclick="toggleOrderDetails(this)"
+                              title="Xem chi tiết đơn hàng">
                               <i class="fa fa-chevron-down"></i> Chi tiết
                             </button>
                           </div>
@@ -195,8 +200,10 @@
                           </h4>
                           <div class="info-item">
                             <span class="info-label">Loại:</span>
-                            <span th:if="${order.orderType == 'ONLINE'}" class="modern-badge badge-primary">Online</span>
-                            <span th:if="${order.orderType == 'COUNTER'}" class="modern-badge badge-success">Tại quầy</span>
+                            <span th:if="${order.orderType == 'ONLINE'}"
+                              class="modern-badge badge-primary">Online</span>
+                            <span th:if="${order.orderType == 'COUNTER'}" class="modern-badge badge-success">Tại
+                              quầy</span>
                           </div>
                           <div class="info-item" th:if="${order.voucherCode != null}">
                             <span class="info-label">Mã giảm giá:</span>
@@ -540,11 +547,11 @@
       padding: 15px;
     }
 
-    .items-content .table > tbody > tr > td {
+    .items-content .table>tbody>tr>td {
       vertical-align: middle;
     }
 
-    .items-content .table-hover > tbody > tr:hover {
+    .items-content .table-hover>tbody>tr:hover {
       background-color: #f8f9fa;
     }
 
@@ -598,8 +605,8 @@
       font-weight: 500;
       padding: 6px 12px;
       border-radius: 20px;
-      background: rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.1);
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.1);
     }
 
     /* Common Actions Row - Always at bottom */
@@ -784,6 +791,7 @@
         opacity: 0;
         transform: translateY(-10px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -968,6 +976,7 @@
       from {
         transform: translateY(-50%) rotate(0turn);
       }
+
       to {
         transform: translateY(-50%) rotate(1turn);
       }
@@ -1035,55 +1044,55 @@
 
     // Define loadOrderItems function in global scope
     function loadOrderItems(container) {
-        // Check if already loaded
-        if (container.dataset.loaded === 'true') {
-          console.log('Items already loaded, skipping...');
-          return;
-        }
+      // Check if already loaded
+      if (container.dataset.loaded === 'true') {
+        console.log('Items already loaded, skipping...');
+        return;
+      }
 
-        // Mark as loading to prevent multiple calls
-        container.dataset.loaded = 'loading';
-        console.log('Loading items for order:', container.getAttribute('data-order-code'));
+      // Mark as loading to prevent multiple calls
+      container.dataset.loaded = 'loading';
+      console.log('Loading items for order:', container.getAttribute('data-order-code'));
 
-        const orderCode = container.getAttribute('data-order-code');
-        const loading = container.querySelector('.items-loading');
-        const content = container.querySelector('.items-content');
+      const orderCode = container.getAttribute('data-order-code');
+      const loading = container.querySelector('.items-loading');
+      const content = container.querySelector('.items-content');
 
-        console.log('Elements found:', {
-          container: !!container,
-          loading: !!loading,
-          content: !!content,
-          orderCode: orderCode
-        });
+      console.log('Elements found:', {
+        container: !!container,
+        loading: !!loading,
+        content: !!content,
+        orderCode: orderCode
+      });
 
-        // Reset states
-        if (loading) {
-          loading.style.display = 'block';
-          console.log('Loading shown');
-        }
-        if (content) {
-          content.style.display = 'none';
-          console.log('Content hidden');
-        }
+      // Reset states
+      if (loading) {
+        loading.style.display = 'block';
+        console.log('Loading shown');
+      }
+      if (content) {
+        content.style.display = 'none';
+        console.log('Content hidden');
+      }
 
-        // Call real API to get order items
-        fetch('/api/orders/detail/' + orderCode)
-          .then(response => response.json())
-          .then(data => {
-            if (data && data.items && data.items.length > 0) {
-              let html = '<div class="table-responsive">';
-              html += '<table class="table table-hover" style="margin-bottom: 0;">';
-              html += '<thead style="background: #f8f9fa;"><tr>';
-              html += '<th style="padding: 15px;">Sản phẩm</th>';
-              html += '<th class="text-center" style="padding: 15px;">Màu sắc</th>';
-              html += '<th class="text-center" style="padding: 15px;">Size</th>';
-              html += '<th class="text-center" style="padding: 15px;">Đơn giá</th>';
-              html += '<th class="text-center" style="padding: 15px;">Số lượng</th>';
-              html += '<th class="text-right" style="padding: 15px;">Thành tiền</th>';
-              html += '</tr></thead><tbody>';
+      // Call real API to get order items
+      fetch('/api/orders/detail/' + orderCode)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.items && data.items.length > 0) {
+            let html = '<div class="table-responsive">';
+            html += '<table class="table table-hover" style="margin-bottom: 0;">';
+            html += '<thead style="background: #f8f9fa;"><tr>';
+            html += '<th style="padding: 15px;">Sản phẩm</th>';
+            html += '<th class="text-center" style="padding: 15px;">Màu sắc</th>';
+            html += '<th class="text-center" style="padding: 15px;">Size</th>';
+            html += '<th class="text-center" style="padding: 15px;">Đơn giá</th>';
+            html += '<th class="text-center" style="padding: 15px;">Số lượng</th>';
+            html += '<th class="text-right" style="padding: 15px;">Thành tiền</th>';
+            html += '</tr></thead><tbody>';
 
-              data.items.forEach(item => {
-                html += `<tr>
+            data.items.forEach(item => {
+              html += `<tr>
                   <td style="padding: 15px;">
                     <strong>${item.productName}</strong><br />
                     <small class="text-muted">Mã: ${item.variantCode || 'N/A'}</small>
@@ -1104,42 +1113,42 @@
                     <strong class="text-success">${formatMoney(item.totalPrice)} VNĐ</strong>
                   </td>
                 </tr>`;
-              });
-              html += '</tbody></table></div>';
-              content.innerHTML = html;
-              content.style.display = 'block';
-            } else {
-              content.innerHTML = '<p class="text-center text-muted">Không có sản phẩm trong đơn hàng.</p>';
-              content.style.display = 'block';
-            }
-
-            if (loading) {
-              loading.style.display = 'none';
-            }
-            container.dataset.loaded = 'true';
-          })
-          .catch(error => {
-            console.error('Error loading order items:', error);
-            content.innerHTML = '<div class="alert alert-danger text-center">Không thể tải danh sách sản phẩm.</div>';
+            });
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
             content.style.display = 'block';
-            if (loading) {
-              loading.style.display = 'none';
-            }
-            container.dataset.loaded = 'true';
-          });
-
-        // Fallback: Force hide loading after 2 seconds
-        setTimeout(function() {
-          if (loading && loading.style.display !== 'none') {
-            loading.style.display = 'none';
-            console.log('Fallback: Force hidden loading spinner');
-
-            if (content && content.style.display === 'none') {
-              content.innerHTML = '<p class="text-center text-muted">Đã tải xong nhưng không có dữ liệu hiển thị.</p>';
-              content.style.display = 'block';
-            }
+          } else {
+            content.innerHTML = '<p class="text-center text-muted">Không có sản phẩm trong đơn hàng.</p>';
+            content.style.display = 'block';
           }
-        }, 2000);
+
+          if (loading) {
+            loading.style.display = 'none';
+          }
+          container.dataset.loaded = 'true';
+        })
+        .catch(error => {
+          console.error('Error loading order items:', error);
+          content.innerHTML = '<div class="alert alert-danger text-center">Không thể tải danh sách sản phẩm.</div>';
+          content.style.display = 'block';
+          if (loading) {
+            loading.style.display = 'none';
+          }
+          container.dataset.loaded = 'true';
+        });
+
+      // Fallback: Force hide loading after 2 seconds
+      setTimeout(function () {
+        if (loading && loading.style.display !== 'none') {
+          loading.style.display = 'none';
+          console.log('Fallback: Force hidden loading spinner');
+
+          if (content && content.style.display === 'none') {
+            content.innerHTML = '<p class="text-center text-muted">Đã tải xong nhưng không có dữ liệu hiển thị.</p>';
+            content.style.display = 'block';
+          }
+        }
+      }, 2000);
 
 
     }
@@ -1157,7 +1166,7 @@
 
       let confirmConfig = {};
 
-      switch(action) {
+      switch (action) {
         case 'cancel':
           confirmConfig = {
             title: 'Xác nhận hủy đơn hàng',
@@ -1217,7 +1226,7 @@
       let endpoint = '';
       let newStatus = '';
 
-      switch(action) {
+      switch (action) {
         case 'cancel':
           endpoint = '/customer/orders/' + orderId + '/cancel';
           newStatus = 'CANCELLED';
@@ -1238,40 +1247,40 @@
           'Content-Type': 'application/json',
         }
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Thành công!',
+              text: data.message || 'Đã cập nhật trạng thái đơn hàng thành công!',
+              timer: 2000,
+              showConfirmButton: false
+            }).then(() => {
+              // Reload page to reflect changes
+              window.location.reload();
+            });
+          } else {
+            throw new Error(data.message || 'Có lỗi xảy ra');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
           Swal.fire({
-            icon: 'success',
-            title: 'Thành công!',
-            text: data.message || 'Đã cập nhật trạng thái đơn hàng thành công!',
-            timer: 2000,
-            showConfirmButton: false
-          }).then(() => {
-            // Reload page to reflect changes
-            window.location.reload();
+            icon: 'error',
+            title: 'Lỗi!',
+            text: error.message || 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng.'
           });
-        } else {
-          throw new Error(data.message || 'Có lỗi xảy ra');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi!',
-          text: error.message || 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng.'
-        });
 
-        // Restore button
-        button.disabled = false;
-        button.innerHTML = originalText;
-      });
+          // Restore button
+          button.disabled = false;
+          button.innerHTML = originalText;
+        });
     }
 
     // Handle reorder functionality
@@ -1305,47 +1314,47 @@
           'Content-Type': 'application/json',
         }
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.success) {
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Thành công!',
+              text: data.message || 'Đã thêm sản phẩm vào giỏ hàng!',
+              showCancelButton: true,
+              confirmButtonColor: '#28a745',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Đi tới giỏ hàng',
+              cancelButtonText: 'Tiếp tục mua sắm'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = '/cart';
+              }
+            });
+          } else {
+            throw new Error(data.message || 'Có lỗi xảy ra');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
           Swal.fire({
-            icon: 'success',
-            title: 'Thành công!',
-            text: data.message || 'Đã thêm sản phẩm vào giỏ hàng!',
-            showCancelButton: true,
-            confirmButtonColor: '#28a745',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Đi tới giỏ hàng',
-            cancelButtonText: 'Tiếp tục mua sắm'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.location.href = '/cart';
-            }
+            icon: 'error',
+            title: 'Lỗi!',
+            text: error.message || 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.'
           });
-        } else {
-          throw new Error(data.message || 'Có lỗi xảy ra');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi!',
-          text: error.message || 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.'
+        })
+        .finally(() => {
+          button.disabled = false;
+          button.innerHTML = originalText;
         });
-      })
-      .finally(() => {
-        button.disabled = false;
-        button.innerHTML = originalText;
-      });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Page initialization code can go here if needed
     });
   </script>

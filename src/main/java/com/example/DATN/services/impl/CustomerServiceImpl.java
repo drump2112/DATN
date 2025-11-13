@@ -53,14 +53,17 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	public boolean addCustomer(CustomerRequest customerRequest) {
-		List<Integer> checkRoles = List.of(1, 2);
+		List<Integer> checkRoles = List.of(1, 2, 3);
 
 		if (userRepository.existsByEmailAndRoleIdIn(customerRequest.getEmail(), checkRoles)) {
 			throw new BusinessException("Email đã được sử dụng.");
 		}
 
 		if (userRepository.existsByPhoneAndRoleIdIn(customerRequest.getPhone(), checkRoles)) {
-			throw new BusinessException("Số điện thoại đã được sử dụng.");
+			User existingCustomer = userRepository.findByPhoneAndRoleIdIn(customerRequest.getPhone(), checkRoles).get(0);
+			updateCustomerFromRequest(existingCustomer, customerRequest);
+			userRepository.save(existingCustomer);
+			return true;
 		}
 
 		if (userRepository.existsByUserNameAndRoleIdIn(customerRequest.getUserName(), checkRoles)) {
@@ -83,6 +86,27 @@ public class CustomerServiceImpl implements CustomerService {
 
 		return true;
 	};
+
+	@Override
+	public boolean addQuickCustomer(String fullName, String phone) {
+		List<Integer> checkRoles = List.of(1, 2);
+
+		if (userRepository.existsByPhoneAndRoleIdIn(phone, checkRoles)) {
+			throw new BusinessException("Số điện thoại đã được sử dụng.");
+		}
+
+		User customer = User.builder()
+				.fullName(fullName)
+				.phone(phone)
+				.createAt(new Date())
+				.isActive(true) // Khách hàng thêm nhanh mặc định active
+				.role(roleRepository.findById(3).orElseThrow(() -> new RuntimeException("Không tìm thấy vai trò khách hàng")))
+				.userCode(generateUserCode(3))
+				.build();
+
+		userRepository.save(customer);
+		return true;
+	}
 
 	public User fromRequest(CustomerRequest req) {
 
@@ -114,6 +138,34 @@ public class CustomerServiceImpl implements CustomerService {
 		}
 
 		return userBuilder.build();
+	}
+
+	private void updateCustomerFromRequest(User existingCustomer, CustomerRequest req) {
+		existingCustomer.setUserName(req.getUserName());
+		existingCustomer.setEmail(req.getEmail());
+		if (req.getPassword() != null && !req.getPassword().isEmpty()) {
+			existingCustomer.setPassword(passwordEncoder.encode(req.getPassword()));
+		}
+		existingCustomer.setAddress(createAddressFromRequest(req));
+		existingCustomer.setGender(req.getGender());
+		existingCustomer.setDateOfBirth(req.getDateOfBirth());
+		existingCustomer.setIsActive(false); // Cần xác thực email
+
+		if (req.getAvatar() != null && !req.getAvatar().isEmpty()) {
+			String avatarPath = uploadAvatar(req.getAvatar());
+			existingCustomer.setAvatar(avatarPath);
+		}
+
+		// Tạo token xác thực email
+		String token = UUID.randomUUID().toString();
+		VerificationToken verificationToken = new VerificationToken();
+		verificationToken.setToken(token);
+		verificationToken.setUser(existingCustomer);
+		verificationToken.setExpiryDate(LocalDateTime.now().plusDays(1));
+
+		tokenRepository.save(verificationToken);
+
+		emailService.sendVerificationEmail(existingCustomer, token);
 	}
 
 	private Address createAddressFromRequest(CustomerRequest req) {

@@ -1,4 +1,4 @@
-package com.example.DATN.Util;
+package com.example.DATN.utils;
 
 import java.util.Random;
 

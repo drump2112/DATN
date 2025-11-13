@@ -819,6 +819,47 @@ $(document).ready(function () {
     $("#fastAddCustomerModal").modal("show");
   });
 
+  // Thêm khách hàng nhanh
+  $(document).on("click", "#addCustomer", function () {
+    const fullName = $("#fastAddCustomerModal input[name='fullName']").val().trim();
+    const phone = $("#fastAddCustomerModal input[name='phone']").val().trim();
+
+    if (!fullName) {
+      toastr.error("Vui lòng nhập tên khách hàng!");
+      return;
+    }
+
+    if (!phone) {
+      toastr.error("Vui lòng nhập số điện thoại!");
+      return;
+    }
+
+    // Validate phone number (Vietnam format)
+    const phoneRegex = /^0[3|5|7|8|9][0-9]{8}$|^0[2][0-9]{9}$/;
+    if (!phoneRegex.test(phone)) {
+      toastr.error("Số điện thoại không đúng định dạng!");
+      return;
+    }
+
+    $.ajax({
+      url: "/admin/customers/quick-add",
+      method: "POST",
+      data: { fullName: fullName, phone: phone },
+      success: function (response) {
+        toastr.success(response.message);
+        $("#fastAddCustomerModal").modal("hide");
+        $("#fastAddCustomerModal input").val(""); // Clear form
+
+        // Refresh customer list in select2
+        $("#customerFilter").val(null).trigger("change");
+      },
+      error: function (xhr) {
+        const errorMessage = xhr.responseJSON?.message || "Thêm khách hàng thất bại!";
+        toastr.error(errorMessage);
+      }
+    });
+  });
+
 
   $(document).on("click", "#printInvoice", function () {
 

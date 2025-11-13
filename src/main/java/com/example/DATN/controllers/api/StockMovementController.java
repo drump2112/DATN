@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.DATN.dtos.StockMovementDTO;
 import com.example.DATN.services.StockMovementService;
+import com.example.DATN.utils.AuthUtils;
 
 @RestController
 @RequestMapping("/api/stock-movements")
@@ -99,7 +100,9 @@ public class StockMovementController {
             Integer newQuantity = (Integer) request.get("newQuantity");
             String note = (String) request.get("note");
             String createdBy = (String) request.get("createdBy");
-
+            if (createdBy == null || createdBy.isEmpty()) {
+                createdBy = AuthUtils.getCurrentUsername();
+            }
             stockMovementService.updateStockWithMovement(variantId, newQuantity, "MANUAL", note, createdBy);
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Cập nhật kho thành công"));
@@ -119,7 +122,9 @@ public class StockMovementController {
             Integer quantity = (Integer) request.get("quantity");
             String note = (String) request.get("note");
             String createdBy = (String) request.get("createdBy");
-
+            if (createdBy == null || createdBy.isEmpty()) {
+                createdBy = AuthUtils.getCurrentUsername();
+            }
             stockMovementService.processStockIn(variantId, quantity, note, createdBy);
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Nhập kho thành công"));
@@ -139,7 +144,9 @@ public class StockMovementController {
             Integer quantity = (Integer) request.get("quantity");
             String note = (String) request.get("note");
             String createdBy = (String) request.get("createdBy");
-
+            if (createdBy == null || createdBy.isEmpty()) {
+                createdBy = AuthUtils.getCurrentUsername();
+            }
             stockMovementService.processStockOut(variantId, quantity, note, createdBy);
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Xuất kho thành công"));
@@ -159,7 +166,9 @@ public class StockMovementController {
             Integer quantity = (Integer) request.get("quantity");
             String note = (String) request.get("note");
             String createdBy = (String) request.get("createdBy");
-
+            if (createdBy == null || createdBy.isEmpty()) {
+                createdBy = AuthUtils.getCurrentUsername();
+            }
             stockMovementService.processDamage(variantId, quantity, note, createdBy);
 
             return ResponseEntity.ok(Map.of("success", true, "message", "Báo hàng hỏng thành công"));

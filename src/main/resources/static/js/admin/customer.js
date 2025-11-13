@@ -12,8 +12,11 @@ $(document).ready(function () {
 
        if (provinceCode) {
            console.log("Loading communes for province:", provinceCode);
-           loadCommunes(provinceCode);
-           $("#phuongXa").prop("disabled", false);
+           loadCommunes(provinceCode).then(() => {
+               $("#phuongXa").prop("disabled", false);
+           }).catch(error => {
+               $("#phuongXa").prop("disabled", true);
+           });
        } else {
            $("#phuongXa").prop("disabled", true);
        }
@@ -55,6 +58,14 @@ $(document).ready(function () {
        validator.resetForm();
        $("#customerForm .form-control").removeClass("error");
        $("#customerForm label.error").remove(); // <-- Xóa label error
+   });
+
+   // Reset form khi đóng modal update mật khẩu
+   $("#updateMatKhau").on("hidden.bs.modal", function () {
+       $("#updateMatKhauForm")[0].reset();
+       validatorPassword.resetForm();
+       $("#updateMatKhauForm .form-control").removeClass("error");
+       $("#updateMatKhauForm label.error").remove();
    });
 
 
@@ -157,7 +168,7 @@ $(document).ready(function () {
        // Reset địa chỉ
        $("#tinhThanh").val("").prop("disabled", false);
        $("#phuongXa").val("").prop("disabled", true);
-       $("#specificAddress").val("").prop("readonly", false);
+       $("#diaChiCuThe").val("").prop("readonly", false);
 
 
        if (avatarDropzone) avatarDropzone.removeAllFiles(true);
@@ -182,21 +193,35 @@ $(document).ready(function () {
        $("#dob").val(data.dateOfBirth).prop("readonly", !isEditable);
 
        // Xử lý địa chỉ có cấu trúc
+       console.log("Processing address data:", {
+           provinceCode: data.provinceCode,
+           communeCode: data.communeCode,
+           specificAddress: data.specificAddress,
+           address: data.address
+       });
+
        if (data.provinceCode && data.communeCode) {
            // Nếu có dữ liệu địa chỉ cấu trúc mới
+           console.log("Setting structured address data");
            $("#tinhThanh").val(data.provinceCode).prop("disabled", !isEditable);
-           $("#phuongXa").val(data.communeCode).prop("disabled", !isEditable);
-           $("#specificAddress").val(data.specificAddress).prop("readonly", !isEditable);
+           $("#diaChiCuThe").val(data.specificAddress || "").prop("readonly", !isEditable);
 
-           // Load communes cho province được chọn nếu đang ở chế độ edit
-           if (isEditable) {
-               loadCommunes(data.provinceCode);
+           // Load communes cho province được chọn và set giá trị
+           if (data.provinceCode) {
+               loadCommunes(data.provinceCode).then(() => {
+                   $("#phuongXa").val(data.communeCode).prop("disabled", !isEditable);
+               });
            }
-       } else if (data.address) {
-           // Dữ liệu địa chỉ cũ (chuỗi đơn), gán vào địa chỉ cụ thể
-           $("#specificAddress").val(data.address).prop("readonly", !isEditable);
+       } else {
+           // Trường hợp không có dữ liệu địa chỉ cấu trúc
+           console.log("Setting fallback address data");
            $("#tinhThanh").val("").prop("disabled", !isEditable);
            $("#phuongXa").val("").prop("disabled", true);
+
+           // Ưu tiên hiển thị specificAddress, nếu không có thì hiển thị address
+           const addressToShow = data.specificAddress || data.address || "";
+           console.log("Address to show:", addressToShow);
+           $("#diaChiCuThe").val(addressToShow).prop("readonly", !isEditable);
        }
 
 
@@ -246,20 +271,15 @@ $(document).ready(function () {
    }
 
 
-   var validator = $("#updateMatKhauForm").validate({
+   var validatorPassword = $("#updateMatKhauForm").validate({
+       rules: {
+           password: {required: true, maxlength: 16, minlength: 8},
+       },
        messages: {
-           rules: {
-               password: {required: true, maxlength: 16, minlength: 8},
-
-
-           },
-
-
            password: {
                required: "Mật Khẩu không được để trống",
                maxlength: "Mật Khẩu không quá 16 kí tự",
                minlength: "Mật Khẩu không ít hơn 8 kí tự",
-               pattern: "Mật Khẩu không hợp lệ",
            },
        },
        errorPlacement: function (error, element) {
@@ -288,7 +308,7 @@ $(document).ready(function () {
            gender: $(button).data("gender"),
            dateOfBirth: $(button).data("dob"),
        };
-       console.log(user);
+       console.log("User data for edit:", user);
        const currentPage =
            parseInt($("#paginationContainer .paginate_button.active a").text()) -
            1 || 0;
@@ -503,8 +523,8 @@ $(document).ready(function () {
 
 
    function openEditModalMatKhau(data, isEditable) {
-       validator.resetForm();
-
+       validatorPassword.resetForm();
+       $("#updateMatKhauForm .error").removeClass("error");
 
        console.log("oke truoc hien thi + " + data)
        $("#id").val(data.id);
@@ -513,10 +533,7 @@ $(document).ready(function () {
        $("#sdt").val(data.phone).prop("readonly", true);
        $("#username").val(data.userName).prop("readonly", true);
        $("#fullName").val(data.fullName).prop("readonly", true);
-       $("#password").val(data.password).prop("readonly", false);
-
-
-
+       $("#password").val("").prop("readonly", false);
 
        $("#modalTitleUpdateMatKhau").text("Cập nhật mật khẩu Khách hàng");
        $("#resetmatkhau").show();
@@ -526,7 +543,8 @@ $(document).ready(function () {
 
 
    $("#btnUpdatematKhau").click(function (e) {
-     if (!validatePassword()) return;
+       e.preventDefault();
+       if (!$("#updateMatKhauForm").valid()) return;
        SwalUtils.confirm(
            "Xác nhận cập nhật mật khẩu Khách hàng?",
            "",
@@ -639,7 +657,7 @@ function loadProvinces() {
 
 // === Load danh sách Phường/Xã theo Tỉnh ===
 function loadCommunes(provinceCode) {
-    fetch(`/api/communes?provinceCode=${provinceCode}`)
+    return fetch(`/api/communes?provinceCode=${provinceCode}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -660,12 +678,14 @@ function loadCommunes(provinceCode) {
                 console.warn(`No communes found for province code: ${provinceCode}`);
                 select.append('<option value="">Không có dữ liệu phường/xã</option>');
             }
+            return communes;
         })
         .catch(error => {
             console.error('Error loading communes:', error);
             const select = $("#phuongXa");
             select.empty();
             select.append('<option value="">Lỗi tải dữ liệu</option>');
+            throw error;
         });
 }
 

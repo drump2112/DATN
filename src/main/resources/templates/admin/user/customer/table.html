@@ -46,7 +46,12 @@
           <span th:case="false">Nữ</span>
         </td>
         <td th:text="${#temporals.format(item.dateOfBirth, 'dd/MM/yyyy')}"></td>
-        <td th:text="${item.roleName}"></td>
+        <td th:switch="${item.roleName}">
+          <span th:case="'Quản Trị Viên'" class="badge badge-success">Quản Trị Viên</span>
+          <span th:case="'Nhân Viên Bán Hàng'" class="badge badge-info">Nhân Viên Bán Hàng</span>
+          <span th:case="'Khách Hàng'" class="badge badge-warning">Khách Hàng</span>
+          <span th:case="*" class="badge badge-secondary" th:text="${item.roleName}"></span>
+        </td>
         <td th:switch="${item.isActive}">
           <span th:case="true" class="badge badge-primary">Hoạt Động</span>
           <span th:case="false" class="badge badge-danger">Ngừng</span>
@@ -59,6 +64,11 @@
            data-username=${item.userName},
            data-phone=${item.phone},
            data-address=${item.address},
+           data-provincecode=${item.provinceCode},
+           data-provincename=${item.provinceName},
+           data-communecode=${item.communeCode},
+           data-communename=${item.communeName},
+           data-specificaddress=${item.specificAddress},
            data-role=${item.roleId},
 data-avatar=${item.avatar},
 data-gender=${item.gender},

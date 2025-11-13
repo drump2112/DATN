@@ -40,10 +40,11 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 	boolean existsByEmailAndRoleIdIn(@Param("email") String email,
 			@Param("roleIds") List<Integer> roleIds);
 
-	@Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
-			"FROM User u WHERE u.phone = :phone AND u.role.id IN :roleIds")
-	boolean existsByPhoneAndRoleIdIn(@Param("phone") String phone,
-			@Param("roleIds") List<Integer> roleIds);
+	@Query("SELECT u FROM User u WHERE u.phone = :phone AND u.role.id IN :roleIds")
+	List<User> findByPhoneAndRoleIdIn(@Param("phone") String phone,
+									  @Param("roleIds") List<Integer> roleIds);
+
+	boolean existsByPhoneAndRoleIdIn(String phone, List<Integer> roleIds);
 
 	@Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
 			"FROM User u WHERE u.userName = :userName AND u.role IS NOT NULL AND u.role.id IN :roleIds")

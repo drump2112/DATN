@@ -47,10 +47,8 @@ public class VNPayController {
 
                     if (order != null && !"COMPLETED".equals(order.getStatus())) {
                         // CHỈ xử lý nếu order chưa được xử lý (tránh duplicate)
+                        // updatePaymentStatus đã tự động gọi processOrderItems() - KHÔNG cần gọi thêm
                         orderService.updatePaymentStatus(order, "COMPLETED", transactionNo);
-
-                        // TRỪ KHO SẢN PHẨM ở đây
-                        orderService.processOrderItems(order);
 
                         System.out.println("✅ VNPay IPN: Order " + orderId + " processed successfully");
                         return "RspCode=00&Message=Confirm Success"; // Trả về cho VNPay
@@ -64,6 +62,18 @@ public class VNPayController {
                 }
             } else {
                 System.err.println("❌ VNPay IPN: Invalid signature or failed payment");
+
+                // Xử lý khi thanh toán thất bại - hủy đơn hàng
+                try {
+                    Integer orderId = Integer.parseInt(txnRef);
+                    Order order = orderService.findById(orderId);
+                    if (order != null && "PENDING".equals(order.getStatus())) {
+                        orderService.updateOrderStatus(orderId, "CANCELLED");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error canceling failed order: " + e.getMessage());
+                }
+
                 return "RspCode=97&Message=Invalid Signature";
             }
         } catch (Exception e) {

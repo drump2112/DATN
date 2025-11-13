@@ -595,7 +595,7 @@ $(document).ready(function () {
       placeholder: "Chọn danh mục",
       allowClear: true,
       ajax: {
-        url: "/admin/category/select2",
+        url: "/admin/categories/select2",
         dataType: "json",
         delay: 250,
         data: (params) => ({ q: params.term }),

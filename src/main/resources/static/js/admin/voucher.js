@@ -261,10 +261,16 @@ $(document).ready(function () {
     $(document).on("click", "#btnSaveVoucher", function () {
         if (!validateVoucher()) return;
 
-        SwalUtils.showConfirmDialog(
+        SwalUtils.confirm(
             "Xác nhận thêm voucher?",
+            "",
             "Thêm",
-            "Hủy"
+            "Hủy",
+            {
+                icon: "question",
+                customClass: { popup: "swal-pop-zindex" },
+                backdrop: "rgba(0, 0, 0, 0.4)"
+            }
         ).then((result) => {
             if (result.isConfirmed) {
                 const formData = new FormData($("#voucherForm")[0]);
@@ -280,13 +286,12 @@ $(document).ready(function () {
                         $("#btnSaveVoucher").prop("disabled", true).text("Đang thêm...");
                     },
                     success: function (response) {
-                        SwalUtils.showSuccessToast(response.message);
+                        SwalUtils.success("Thành công!", response.message);
                         $("#modalVoucher").modal("hide");
                         refreshVoucherTable();
-                        searchVoucher($("#paginationContainer").data("current-page") || 0);
                     },
                     error: function (xhr) {
-                        SwalUtils.showErrorAlert("Lỗi!", xhr.responseJSON?.message || "Cập nhật thất bại!");
+                        SwalUtils.error("Lỗi!", xhr.responseJSON?.message || "Cập nhật thất bại!");
                     },
                     complete: function () {
                         $("#btnSaveVoucher").prop("disabled", false).text("Thêm");
@@ -300,10 +305,16 @@ $(document).ready(function () {
     // nuts cập nhật voucher
     $(document).on("click", "#btnUpdateVoucher", function () {
         if (!validateVoucher()) return;
-        SwalUtils.showConfirmDialog(
+        SwalUtils.confirm(
             "Xác nhận cập nhật voucher?",
+            "",
             "Cập nhật",
-            "Hủy"
+            "Hủy",
+            {
+                icon: "question",
+                customClass: { popup: "swal-pop-zindex" },
+                backdrop: "rgba(0, 0, 0, 0.4)"
+            }
         ).then((result) => {
             if (result.isConfirmed) {
                 const formData = new FormData($("#voucherForm")[0]);
@@ -320,12 +331,20 @@ $(document).ready(function () {
                         $("#btnUpdateVoucher").prop("disabled", true).text("Đang cập nhật...");
                     },
                     success: function (response) {
-                        SwalUtils.showSuccessToast(response.message);
+                        SwalUtils.success("Cập nhật thành công!", response.message);
                         $("#modalVoucher").modal("hide");
-                        searchVoucher($("#paginationContainer").data("current-page") || 0);
+                        // Lấy page hiện tại từ nút active trong phân trang
+                        let currentPage = parseInt($(".pagination .active a").text()) - 1;
+                        if (isNaN(currentPage) || currentPage < 0) {
+                            currentPage = $("#voucherForm").data("current-page");
+                        }
+                        if (typeof currentPage === "undefined" || currentPage === null || isNaN(currentPage)) {
+                            currentPage = $("#paginationContainer").data("current-page") || 0;
+                        }
+                        searchVoucher(currentPage);
                     },
                     error: function (xhr) {
-                        SwalUtils.showErrorAlert("Lỗi!", xhr.responseJSON?.message || "Cập nhật thất bại!");
+                        SwalUtils.error("Lỗi!", xhr.responseJSON?.message || "Cập nhật thất bại!");
                     },
                     complete: function () {
                         $("#btnUpdateVoucher").prop("disabled", false).text("Cập Nhật");
@@ -353,7 +372,7 @@ $(document).ready(function () {
                 $("#voucherTableContainer").html(response);
             },
             error: function () {
-                SwalUtils.showErrorAlert("Lỗi!", "Không tải được dữ liệu voucher!");
+                SwalUtils.error("Lỗi!", "Không tải được dữ liệu voucher!");
                 searchVoucher($("#paginationContainer").data("current-page") || 0);
             }
         });
@@ -363,10 +382,16 @@ $(document).ready(function () {
     window.toggleVoucherStatus = function (voucherId, isActive) {
         const title = isActive ? "Vô hiệu hóa voucher này?" : "Kích hoạt voucher này?";
 
-        SwalUtils.showWarningConfirmDialog(
+        SwalUtils.confirm(
             title,
+            "",
             "Xác nhận",
-            "Hủy"
+            "Hủy",
+            {
+                icon: "warning",
+                customClass: { popup: "swal-pop-zindex" },
+                backdrop: "rgba(0, 0, 0, 0.4)"
+            }
         ).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
@@ -376,11 +401,19 @@ $(document).ready(function () {
                         $(`button[data-id="${voucherId}"]`).prop("disabled", true);
                     },
                     success: function (data) {
-                        SwalUtils.showSuccessToast(data.message);
-                        searchVoucher($("#paginationContainer").data("current-page") || 0);
+                        SwalUtils.success("Thành công!", data.message);
+                        // Lấy page hiện tại từ nút active trong phân trang
+                        let currentPage = parseInt($(".pagination .active a").text()) - 1;
+                        if (isNaN(currentPage) || currentPage < 0) {
+                            currentPage = $("#voucherForm").data("current-page");
+                        }
+                        if (typeof currentPage === "undefined" || currentPage === null || isNaN(currentPage)) {
+                            currentPage = $("#paginationContainer").data("current-page") || 0;
+                        }
+                        searchVoucher(currentPage);
                     },
                     error: function (xhr) {
-                        SwalUtils.showErrorAlert("Lỗi!", xhr.responseJSON?.message || "Có lỗi xảy ra!");
+                        SwalUtils.error("Lỗi!", xhr.responseJSON?.message || "Có lỗi xảy ra!");
                     },
                     complete: function () {
                         $(`button[data-id="${voucherId}"]`).prop("disabled", false);

@@ -132,6 +132,8 @@ public class OrderController {
          backendPaymentMethod = "CASH";
       } else if ("Chuyển Khoản".equals(paymentMethod)) {
          backendPaymentMethod = "TRANSFER";
+      } else if ("VNPay".equals(paymentMethod)) {
+         backendPaymentMethod = "VNPAY";
       }
 
       Page<OrderDTO> ordersDTOS;

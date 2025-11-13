@@ -1,6 +1,5 @@
 package com.example.DATN.services.impl;
 
-import com.example.DATN.Util.OTPUtil;
 import com.example.DATN.configs.email.EmailService;
 import com.example.DATN.dtos.CartItemDTO;
 import com.example.DATN.dtos.OrderDTO;
@@ -23,6 +22,7 @@ import com.example.DATN.request.OrderRequest;
 import com.example.DATN.services.OrderService;
 import com.example.DATN.services.RedisOtpService;
 import com.example.DATN.services.StockMovementService;
+import com.example.DATN.utils.OTPUtil;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -216,8 +216,17 @@ public class OrderServiceImpl implements OrderService {
 
         redisOtpService.deleteOtp(email, orderId);
 
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithVoucher(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        System.out.println("=== CONFIRM OTP - VOUCHER CHECK ===");
+        System.out.println("Order ID: " + order.getId());
+        System.out.println("Order Code: " + order.getOrderCode());
+        System.out.println("Has Voucher: " + (order.getVoucher() != null));
+        if (order.getVoucher() != null) {
+            System.out.println("Voucher Code: " + order.getVoucher().getCode());
+            System.out.println("Voucher Quantity: " + order.getVoucher().getQuantity());
+        }
 
         if (!"WAITING_OTP".equalsIgnoreCase(order.getStatus())) {
             throw new RuntimeException("Đơn hàng không ở trạng thái chờ OTP");
@@ -239,9 +248,11 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus("PENDING");
         orderRepository.save(order);
 
+        System.out.println("=== CALLING PROCESS ORDER ITEMS ===");
         // Ghi lại stock movement cho đơn hàng online sau khi confirm OTP
         processOrderItems(order);
 
+        System.out.println("=== PROCESS ORDER ITEMS COMPLETED ===");
         emailService.sendOrderConfirmation(order);
 
         return true;
@@ -358,9 +369,24 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Trạng thái không hợp lệ");
         }
 
+        String oldStatus = order.getStatus();
+
+        // Nếu hủy đơn và đơn có voucher, hoàn lại voucher
+        if ("CANCELLED".equals(status) && order.getVoucher() != null) {
+            restoreVoucherQuantity(order);
+        }
+
         order.setStatus(status);
         orderRepository.save(order);
         return true;
+    }
+
+    private void restoreVoucherQuantity(Order order) {
+        Voucher voucher = order.getVoucher();
+        if (voucher != null && voucher.getQuantity() != null) {
+            voucher.setQuantity(voucher.getQuantity() + 1);
+            voucherRepository.save(voucher);
+        }
     }
 
     @Override
@@ -387,21 +413,22 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void processOrderItems(Order order) {
         System.out.println("🔄 Processing order items for order: " + order.getId());
+        System.out.println("📋 Order status: " + order.getStatus());
+        System.out.println("💳 Payment method: " + order.getPaymentMethod());
+        System.out.println("🎫 Has voucher: " + (order.getVoucher() != null ? order.getVoucher().getCode() : "No"));
+        System.out.println("📦 Number of items: " + (order.getItems() != null ? order.getItems().size() : 0));
 
-        // Xử lý voucher - trừ số lượng voucher nếu có
-        if (order.getVoucher() != null) {
+        // Chỉ trừ voucher cho các trường hợp thành công:
+        // - COD: Đã confirm OTP (status = PENDING)
+        // - VNPay: Thanh toán thành công (status = COMPLETED)
+        // - Counter: Bán tại quầy (status = COMPLETED)
+        if (order.getVoucher() != null &&
+            ("PENDING".equals(order.getStatus()) || "COMPLETED".equals(order.getStatus()))) {
+
             Voucher voucher = order.getVoucher();
-            System.out.println("🎫 Processing voucher: " + voucher.getCode() + ", Current quantity: " + voucher.getQuantity());
-
             if (voucher.getQuantity() != null && voucher.getQuantity() > 0) {
-                // Kiểm tra xem voucher đã được sử dụng chưa (tránh trừ 2 lần)
                 voucher.setQuantity(voucher.getQuantity() - 1);
                 voucherRepository.save(voucher);
-                System.out.println("✅ Voucher quantity decreased. New quantity: " + voucher.getQuantity());
-            } else if (voucher.getQuantity() != null && voucher.getQuantity() == 0) {
-                System.out.println("⚠️ Warning: Voucher quantity is already 0");
-            } else {
-                System.out.println("ℹ️ Info: Voucher has unlimited quantity (null)");
             }
         }
 
