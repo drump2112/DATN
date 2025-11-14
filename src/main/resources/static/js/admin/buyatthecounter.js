@@ -1241,8 +1241,9 @@ $(document).ready(function () {
 
     $.ajax({
       url: '/api/product-variants/check-prices',
-      method: 'GET',
-      data: { codes: codesInCart },
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({ variantCodes: codesInCart }),
       timeout: 5000,
       success: function(currentPrices) {
         detectAndHandlePriceChanges(currentPrices);
@@ -1297,76 +1298,217 @@ $(document).ready(function () {
     // Dừng monitoring khi hiện modal để tránh conflict
     stopPriceMonitoring();
 
-    const changesByTab = {};
+    // Tạo HTML content cho modal
+    let htmlContent = `
+        <div class="price-change-alert">
+            <div class="alert-description">
+                <i class="fa fa-exclamation-triangle"></i>
+                <strong>Giá sản phẩm trong giỏ hàng đã thay đổi!</strong>
+                <br>
+                <small>Vui lòng kiểm tra và cập nhật giá mới để đảm bảo tính chính xác.</small>
+            </div>
+            <div class="price-change-list">
+    `;
+
     changedItems.forEach(change => {
-      if (!changesByTab[change.tabId]) {
-        changesByTab[change.tabId] = [];
-      }
-      changesByTab[change.tabId].push(change);
-    });
-
-    let message = '<div class="price-change-alert" style="max-height: 400px; overflow-y: auto; font-size: 14px; line-height: 1.5;">';
-    message += '<h4 style="color: #d9534f; margin-bottom: 20px; font-size: 18px; font-weight: 600;"><i class="fa fa-exclamation-triangle"></i> Giá sản phẩm đã thay đổi!</h4>';
-
-    Object.keys(changesByTab).forEach(tabId => {
-      const tabChanges = changesByTab[tabId];
-      const tabName = getTabDisplayName(tabId);
-
-      message += `<h5 style="color: #31708f; margin-bottom: 10px; font-size: 16px; font-weight: 500;">Đơn hàng: ${tabName}</h5>`;
-      message += '<ul style="list-style: none; padding-left: 0; margin-bottom: 15px;">';
-
-      tabChanges.forEach(change => {
         const priceDiff = change.newPrice - change.oldPrice;
+        const diffClass = priceDiff > 0 ? 'price-increase' : 'price-decrease';
         const diffText = priceDiff > 0 ? `+${priceDiff.toLocaleString()}đ` : `${priceDiff.toLocaleString()}đ`;
-        const diffClass = priceDiff > 0 ? 'text-danger' : 'text-success';
 
-        message += `
-          <li style="margin-bottom: 10px; padding: 12px; background: #f8f8f8; border-radius: 6px; border-left: 4px solid #1ab394;">
-            <strong style="font-size: 15px; color: #333;">${change.item.name}</strong>
-            <span style="color: #666; font-size: 13px;">(${change.item.color}/${change.item.size})</span><br>
-            <small style="font-size: 13px;">
-              <span style="color: #666;">Giá cũ: ${change.oldPrice.toLocaleString()}đ</span> →
-              <span style="color: #d9534f; font-weight: bold; font-size: 14px;">Giá mới: ${change.newPrice.toLocaleString()}đ</span>
-              <span class="${diffClass}" style="font-weight: 500;">(${diffText})</span>
-            </small>
-          </li>
+        htmlContent += `
+            <div class="price-change-item">
+                <div class="product-name">
+                    <strong>${change.item.name}</strong> (${change.item.color}/${change.item.size})
+                </div>
+                <div class="price-comparison">
+                    <div class="old-price">
+                        <div class="label">Giá cũ:</div>
+                        <div class="value">${change.oldPrice.toLocaleString()}đ</div>
+                    </div>
+                    <div class="new-price">
+                        <div class="label">Giá mới:</div>
+                        <div class="value">${change.newPrice.toLocaleString()}đ</div>
+                    </div>
+                    <div class="price-difference ${diffClass}">
+                        <div class="label">Chênh lệch:</div>
+                        <div class="value">${diffText}</div>
+                    </div>
+                </div>
+            </div>
         `;
-      });
-
-      message += '</ul>';
     });
 
-    message += '<p style="margin-top: 20px; font-size: 15px; font-weight: 500; color: #333;"><strong>Bạn có muốn cập nhật giá trong giỏ hàng không?</strong></p>';
-    message += '</div>';
+    htmlContent += `
+            </div>
+            <div class="alert-question">
+                Bạn có muốn cập nhật giá mới cho tất cả sản phẩm trong giỏ hàng không?
+            </div>
+        </div>
+    `;
+
+    // Thêm CSS cho modal
+    const customCSS = `
+        <style>
+            .price-change-alert {
+                text-align: left;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+            .alert-description {
+                color: #856404;
+                background-color: #fff3cd;
+                border: 1px solid #ffeaa7;
+                padding: 12px 16px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+            .alert-description i {
+                margin-right: 8px;
+            }
+            .price-change-list {
+                margin-bottom: 20px;
+            }
+            .price-change-item {
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 12px;
+                background-color: #f8f9fa;
+            }
+            .product-name {
+                margin-bottom: 12px;
+                color: #495057;
+                font-size: 16px;
+            }
+            .price-comparison {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .old-price, .new-price {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+            .old-price {
+                background-color: #f1aeb5;
+                color: #721c24;
+            }
+            .new-price {
+                background-color: #d4edda;
+                color: #155724;
+            }
+            .price-difference {
+                text-align: center;
+                padding: 8px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            .price-increase {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+            .price-decrease {
+                background-color: #d1ecf1;
+                color: #0c5460;
+            }
+            .label {
+                font-weight: bold;
+                min-width: 60px;
+            }
+            .value {
+                flex: 1;
+                text-align: center;
+            }
+            .total {
+                font-weight: bold;
+                min-width: 100px;
+                text-align: right;
+            }
+            .alert-question {
+                text-align: center;
+                color: #495057;
+                font-size: 16px;
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #e9ecef;
+                border-radius: 6px;
+                border: 1px solid #ced4da;
+            }
+            .price-change-footer {
+                display: flex;
+                justify-content: space-between;
+                gap: 15px;
+                padding: 20px 0 0 0;
+                border-top: 1px solid #e9ecef;
+                margin-top: 20px;
+            }
+            @media (max-width: 768px) {
+                .price-change-footer {
+                    flex-direction: column;
+                }
+                .price-change-footer .btn {
+                    width: 100%;
+                    margin: 5px 0;
+                }
+            }
+        </style>
+    `;
+
+    // Tạo custom footer với buttons đồng bộ style
+    const footerHtml = `
+        <div class="price-change-footer">
+            <button type="button" class="btn btn-secondary" id="btnCancelOrder">
+                <i class="fa fa-times"></i>
+                <span>Hủy cập nhật</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="btnContinueOrder">
+                <i class="fa fa-check"></i>
+                <span>Cập nhật giá mới</span>
+            </button>
+        </div>
+    `;
 
     Swal.fire({
-      title: 'Cảnh báo thay đổi giá',
-      html: message,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Cập nhật tất cả',
-      cancelButtonText: 'Giữ nguyên giá cũ',
-      confirmButtonColor: '#1ab394',
-      cancelButtonColor: '#6c757d',
-      width: '700px',
-      customClass: {
-        popup: 'price-change-modal',
-        confirmButton: 'btn btn-primary btn-lg',
-        cancelButton: 'btn btn-secondary btn-lg'
-      },
-      buttonsStyling: false,
-      allowOutsideClick: false,
-      allowEscapeKey: false
-    }).then((result) => {
-      if (result.isConfirmed) {
-        updateAllPricesToNew(changedItems);
-        toastr.success('Đã cập nhật giá mới cho tất cả sản phẩm!');
-      } else {
-        toastr.info('Giữ nguyên giá cũ trong giỏ hàng.');
-      }
+        title: '<i class="fa fa-exclamation-triangle text-warning"></i> Giá sản phẩm đã thay đổi',
+        html: customCSS + htmlContent,
+        showConfirmButton: false,
+        showCancelButton: false,
+        width: '600px',
+        customClass: {
+            popup: 'price-change-modal',
+            title: 'price-change-title',
+            content: 'price-change-content'
+        },
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp'
+        },
+        footer: footerHtml,
+        didOpen: () => {
+            // Bind events cho custom buttons
+            document.getElementById('btnCancelOrder').addEventListener('click', () => {
+                // Đóng modal và tiếp tục monitoring
+                Swal.close();
+                toastr.info("Đã giữ nguyên giá cũ trong giỏ hàng.");
+                startPriceMonitoring();
+            });
 
-      // Restart monitoring sau khi quyết định xong
-      startPriceMonitoring();
+            document.getElementById('btnContinueOrder').addEventListener('click', () => {
+                // Cập nhật giá mới và tiếp tục monitoring
+                updateAllPricesToNew(changedItems);
+                Swal.close();
+                toastr.success("Đã cập nhật giá mới cho tất cả sản phẩm!");
+                startPriceMonitoring();
+            });
+        }
     });
   }
 
