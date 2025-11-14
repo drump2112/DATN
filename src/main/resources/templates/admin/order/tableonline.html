@@ -493,6 +493,7 @@
             <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
           </td>
           <td th:switch="${item.status}">
+            <span th:case="WAITING_OTP" class="badge badge-warning">Xác nhận OTP</span>
             <span th:case="PENDING" class="badge badge-warning">Chờ xử lý</span>
             <span th:case="PROCESSING" class="badge badge-info">Đang xử lý</span>
             <span th:case="SHIPPING" class="badge badge-primary">Đang giao</span>

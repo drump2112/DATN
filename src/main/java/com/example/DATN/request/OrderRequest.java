@@ -23,6 +23,8 @@ public class OrderRequest {
 
   private String voucherCode;
 
+  private Integer voucherId;
+
   private BigDecimal totalAmount;
 
   private BigDecimal discountAmount;

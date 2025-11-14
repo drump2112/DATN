@@ -153,9 +153,26 @@ public class OrderServiceImpl implements OrderService {
         Voucher voucher = null;
         BigDecimal discountAmount = BigDecimal.ZERO;
 
-        if (dto.getVoucherCode() != null && !dto.getVoucherCode().isEmpty()) {
+        // Ưu tiên dùng voucherId nếu có, nếu không thì dùng voucherCode
+        if (dto.getVoucherId() != null) {
+            discountAmount = dto.getDiscountAmount();
+            voucher = voucherRepository.findById(dto.getVoucherId()).orElse(null);
+            if (voucher == null) {
+                // Nếu không tìm thấy voucher bằng id, thử tìm bằng code
+                if (dto.getVoucherCode() != null && !dto.getVoucherCode().isEmpty()) {
+                    voucher = voucherRepository.findByCode(dto.getVoucherCode());
+                }
+                if (voucher == null) {
+                    throw new RuntimeException("Voucher không tồn tại với ID: " + dto.getVoucherId() + " hoặc code: " + dto.getVoucherCode());
+                }
+            }
+            order.setVoucher(voucher);
+        } else if (dto.getVoucherCode() != null && !dto.getVoucherCode().isEmpty()) {
             discountAmount = dto.getDiscountAmount();
             voucher = voucherRepository.findByCode(dto.getVoucherCode());
+            if (voucher == null) {
+                throw new RuntimeException("Voucher không tồn tại với code: " + dto.getVoucherCode());
+            }
             order.setVoucher(voucher);
         } else {
             order.setDiscountAmount(BigDecimal.ZERO);
@@ -362,7 +379,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Nếu admin xác nhận đơn hàng (PENDING -> SHIPPING), thì trừ kho
         if ("PENDING".equals(oldStatus) && "SHIPPING".equals(status)) {
-            System.out.println("🏪 Admin confirming order - checking stock before deducting...");
+            System.out.println("Admin confirming order - checking stock before deducting...");
 
             // Kiểm tra tồn kho trước khi trừ
             for (OrderItem item : order.getItems()) {
@@ -378,12 +395,15 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
 
+            // Set status trước khi xử lý để logic check đúng
+            order.setStatus(status);
+
             // Trừ kho khi admin xác nhận
             processOrderItems(order);
-            System.out.println("✅ Stock deducted for order: " + order.getOrderCode());
+            System.out.println("Stock deducted for order: " + order.getOrderCode());
+        } else {
+            order.setStatus(status);
         }
-
-        order.setStatus(status);
         orderRepository.save(order);
         return true;
     }
@@ -410,18 +430,16 @@ public class OrderServiceImpl implements OrderService {
         order.setTransactionNo(transactionNo);
         orderRepository.save(order);
 
-        // Không trừ kho ở đây nữa - sẽ trừ khi admin xác nhận (PENDING -> SHIPPING)
-        System.out.println("✅ Payment status updated: " + oldStatus + " -> " + status + " (stock will be deducted when admin confirms)");
     }
 
     @Override
     @Transactional
     public void processOrderItems(Order order) {
-        System.out.println("🔄 Processing order items for order: " + order.getId() + " (Status: " + order.getStatus() + ")");
-        System.out.println("📋 Order status: " + order.getStatus());
-        System.out.println("💳 Payment method: " + order.getPaymentMethod());
-        System.out.println("🎫 Has voucher: " + (order.getVoucher() != null ? order.getVoucher().getCode() : "No"));
-        System.out.println("📦 Number of items: " + (order.getItems() != null ? order.getItems().size() : 0));
+        System.out.println("Processing order items for order: " + order.getId() + " (Status: " + order.getStatus() + ")");
+        System.out.println("Order status: " + order.getStatus());
+        System.out.println("Payment method: " + order.getPaymentMethod());
+        System.out.println("Has voucher: " + (order.getVoucher() != null ? order.getVoucher().getCode() : "No"));
+        System.out.println("Number of items: " + (order.getItems() != null ? order.getItems().size() : 0));
 
         // Chỉ trừ voucher khi admin xác nhận đơn hàng (PENDING -> SHIPPING)
         // cho cả COD và VNPay
@@ -438,7 +456,7 @@ public class OrderServiceImpl implements OrderService {
             ProductVariant variant = item.getProductVariant();
             Integer orderQuantity = item.getQuantity();
 
-            System.out.println("📦 Product: " + variant.getProduct().getName() +
+            System.out.println(" Product: " + variant.getProduct().getName() +
                               ", Size: " + variant.getSize().getName() +
                               ", Color: " + variant.getColor().getName() +
                               ", Current Stock: " + variant.getQuantity() +
@@ -455,7 +473,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        System.out.println("✅ Order items processing completed for order: " + order.getId());
+        System.out.println(" Order items processing completed for order: " + order.getId());
     }
 
     @Override
@@ -463,7 +481,7 @@ public class OrderServiceImpl implements OrderService {
                                            LocalDate dateStart, LocalDate dateEnd,
                                            int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println("🌐 Searching ONLINE orders - This should NOT be called for completed page!");
+        System.out.println(" Searching ONLINE orders - This should NOT be called for completed page!");
 
         // Convert LocalDate to LocalDateTime for database query
         LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
@@ -478,7 +496,7 @@ public class OrderServiceImpl implements OrderService {
                                             LocalDate dateStart, LocalDate dateEnd,
                                             int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println("🏪 Searching OFFLINE orders - This should NOT be called for completed page!");
+        System.out.println(" Searching OFFLINE orders - This should NOT be called for completed page!");
 
         // Convert LocalDate to LocalDateTime for database query
         LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
@@ -493,7 +511,7 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageable = PageRequest.of(page, size);
         System.out.println("🔍 Getting completed orders - page: " + page + ", size: " + size);
         Page<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc("COMPLETED", pageable);
-        System.out.println("📊 Found " + orders.getTotalElements() + " completed orders");
+        System.out.println(" Found " + orders.getTotalElements() + " completed orders");
         // Debug: in ra một số order đầu tiên
         orders.getContent().forEach(o ->
             System.out.println("   Order: " + o.getOrderCode() + " - Status: " + o.getStatus() + " - Type: " + o.getOrderType())
@@ -506,14 +524,14 @@ public class OrderServiceImpl implements OrderService {
                                               LocalDate dateStart, LocalDate dateEnd,
                                               int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println("🔍 Searching completed orders with keyword: " + keyword + ", paymentMethod: " + paymentMethod);
+        System.out.println(" Searching completed orders with keyword: " + keyword + ", paymentMethod: " + paymentMethod);
 
         // Convert LocalDate to LocalDateTime for database query
         LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
         LocalDateTime dateTimeEnd = dateEnd != null ? dateEnd.plusDays(1).atStartOfDay() : null;
 
         Page<Order> orders = orderRepository.searchCompletedOrders(keyword, paymentMethod, dateTimeStart, dateTimeEnd, pageable);
-        System.out.println("📊 Found " + orders.getTotalElements() + " completed orders from search");
+        System.out.println(" Found " + orders.getTotalElements() + " completed orders from search");
         // Debug: in ra một số order đầu tiên
         orders.getContent().forEach(o ->
             System.out.println("   Order: " + o.getOrderCode() + " - Status: " + o.getStatus() + " - Type: " + o.getOrderType())
@@ -526,7 +544,7 @@ public class OrderServiceImpl implements OrderService {
                                                              LocalDate dateStart, LocalDate dateEnd,
                                                              int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println("🔍 Searching completed orders with type filter: " + orderTypeFilter);
+        System.out.println(" Searching completed orders with type filter: " + orderTypeFilter);
 
         // Convert LocalDate to LocalDateTime for database query
         LocalDateTime dateTimeStart = dateStart != null ? dateStart.atStartOfDay() : null;
@@ -542,7 +560,7 @@ public class OrderServiceImpl implements OrderService {
         // If orderTypeFilter is empty or null, dbOrderType remains null (search all)
 
         Page<Order> orders = orderRepository.searchCompletedOrdersWithTypeFilter(keyword, paymentMethod, dbOrderType, dateTimeStart, dateTimeEnd, pageable);
-        System.out.println("📊 Found " + orders.getTotalElements() + " completed orders with type filter: " + orderTypeFilter);
+        System.out.println("Found " + orders.getTotalElements() + " completed orders with type filter: " + orderTypeFilter);
         return orders.map(this::mapToOrderDTO);
     }
 

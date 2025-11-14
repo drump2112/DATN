@@ -95,8 +95,9 @@ $(document).ready(function () {
 
                     if (best) {
                         console.log('Best voucher found:', best);
-                        // Convert format để phù hợp với function showVoucherSuggestion
+                    // Convert format để phù hợp với function showVoucherSuggestion
                         const suggestionVoucher = {
+                            id: best.id,
                             code: best.code,
                             discountType: best.discountType,
                             discountValue: best.discountValue,
@@ -122,6 +123,7 @@ $(document).ready(function () {
     function useFallbackVoucher(subtotal) {
         const sampleVouchers = [
             {
+                id: 1,
                 code: "SALE10",
                 discountType: "PERCENT",
                 discountValue: 10,
@@ -130,6 +132,7 @@ $(document).ready(function () {
                 discountAmount: 50000,
             },
             {
+                id: 2,
                 code: "FLAT50",
                 discountType: "AMOUNT",
                 discountValue: 50000,
@@ -137,6 +140,7 @@ $(document).ready(function () {
                 discountAmount: 50000,
             },
             {
+                id: 3,
                 code: "WELCOME20",
                 discountType: "PERCENT",
                 discountValue: 20,
@@ -258,11 +262,16 @@ $(document).ready(function () {
         // Ẩn gợi ý
         $("#voucherSuggestion").hide();
 
-        // Cập nhật voucher đã áp dụng
-        appliedVoucher = {
-            code: voucherCode,
-            discount: discountAmount
-        };
+        // Chỉ cập nhật appliedVoucher nếu chưa có id (để tránh ghi đè id)
+        if (!appliedVoucher || !appliedVoucher.id) {
+            appliedVoucher = {
+                code: voucherCode,
+                discount: discountAmount
+            };
+        } else {
+            // Nếu đã có id, chỉ cập nhật discount
+            appliedVoucher.discount = discountAmount;
+        }
 
         // Hiển thị voucher đã áp dụng với format chuẩn
         $("#discountValue").text(discountAmount.toLocaleString() + " VNĐ");
@@ -318,6 +327,7 @@ $(document).ready(function () {
             .fail(function () {
                 const sample = [
                     {
+                        id: 1,
                         code: "SALE10",
                         discountType: "PERCENT",
                         discountValue: 10,
@@ -327,6 +337,7 @@ $(document).ready(function () {
                         discountAmount: 50000,
                     },
                     {
+                        id: 2,
                         code: "FLAT50",
                         discountType: "AMOUNT",
                         discountValue: 50000,
@@ -335,6 +346,7 @@ $(document).ready(function () {
                         discountAmount: 50000,
                     },
                     {
+                        id: 3,
                         code: "WELCOME20",
                         discountType: "PERCENT",
                         discountValue: 20,

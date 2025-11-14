@@ -1216,7 +1216,7 @@ $(document).ready(function () {
 
     priceCheckInterval = setInterval(() => {
       checkPriceChanges();
-    }, 18000); // 18 giây check một lần
+    }, 20000); // 18 giây check một lần
   }
 
   function stopPriceMonitoring() {
