@@ -200,7 +200,7 @@
         // Clear cart after successful payment
         document.addEventListener('DOMContentLoaded', function() {
             const paymentStatus = /*[[${paymentStatus}]]*/ 'UNKNOWN';
-            if (paymentStatus === 'SUCCESS') {
+            if (paymentStatus === 'PAID') {
                 fetch('/cart/clear', {
                     method: 'POST',
                     headers: {
