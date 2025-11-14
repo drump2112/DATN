@@ -145,8 +145,37 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public void validateStockBeforeOrder(List<CartItemDTO> items) throws Exception {
+        System.out.println("🔍 Validating stock for " + items.size() + " items before creating order...");
+
+        for (CartItemDTO item : items) {
+            ProductVariant variant = productVariantRepository.findById(item.getVariantId())
+                    .orElseThrow(() -> new Exception("Sản phẩm không tồn tại: " + item.getVariantId()));
+
+            if (variant.getQuantity() == null || variant.getQuantity() < item.getQuantity()) {
+                String productName = variant.getProduct().getName();
+                String variantInfo = variant.getColor().getName() + " - " + variant.getSize().getName();
+                throw new Exception("Sản phẩm \"" + productName + " (" + variantInfo + ")\" đã hết hàng hoặc không đủ số lượng. " +
+                                  "Có sẵn: " + (variant.getQuantity() != null ? variant.getQuantity() : 0) +
+                                  ", Cần: " + item.getQuantity());
+            }
+
+            System.out.println("✅ " + variant.getProduct().getName() + " - Stock: " + variant.getQuantity() + ", Requested: " + item.getQuantity());
+        }
+
+        System.out.println("✅ All items have sufficient stock");
+    }
+
+    @Override
     @Transactional
     public Order createOrder(OrderRequest dto) {
+        // Validate stock before creating order
+        try {
+            validateStockBeforeOrder(dto.getItems());
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
         User user = userRepository.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         Order order = new Order();
 

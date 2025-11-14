@@ -1,5 +1,6 @@
 package com.example.DATN.controllers.api;
 
+import com.example.DATN.dtos.CartItemDTO;
 import com.example.DATN.dtos.OrderDetailResponse;
 import com.example.DATN.models.*;
 import com.example.DATN.repositories.*;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import com.example.DATN.configs.vnpay.VNPayService;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,16 @@ public class OnlineOrderRestController {
 
     @Autowired
     private VNPayService vnPayService;
+
+    @PostMapping("/validate-stock")
+    public ResponseEntity<?> validateStock(@RequestBody List<CartItemDTO> items) {
+        try {
+            orderService.validateStockBeforeOrder(items);
+            return ResponseEntity.ok(Map.of("valid", true, "message", "Tất cả sản phẩm đều có đủ hàng"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("valid", false, "message", e.getMessage()));
+        }
+    }
 
    @PostMapping("/create")
     public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest, HttpServletRequest request) {

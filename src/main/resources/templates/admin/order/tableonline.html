@@ -491,6 +491,7 @@
           <td th:switch="${item.paymentMethod}">
             <span th:case="CASH" class="badge badge-primary">Tiền Mặt</span>
             <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
+            <span th:case="VNPAY" class="badge badge-primary">VNPay</span>
           </td>
           <td th:switch="${item.status}">
             <span th:case="WAITING_OTP" class="badge badge-warning">Xác nhận OTP</span>

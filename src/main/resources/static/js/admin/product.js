@@ -106,21 +106,23 @@
         // Fast add modal events
         $(document).on("click.productFastAdd", "#fastAddColor", function () {
             clearFastAddColorForm();
+            $("#myModalProductVariants").css("z-index", "1070");
             $("#fastAddColorModal").modal({
                 backdrop: "static",
                 keyboard: false,
-            });
+            }).css("z-index", "1080");
+            setTimeout(() => $(".modal-backdrop").last().css("z-index", "1075"), 100);
         });
 
         $(document).on("click.productFastAdd", "#fastAddSize", function () {
             clearFastAddSizeForm();
+            $("#myModalProductVariants").css("z-index", "1070");
             $("#fastAddSizeModal").modal({
                 backdrop: "static",
                 keyboard: false,
-            });
-        });
-
-        // Fast add button events
+            }).css("z-index", "1080");
+            setTimeout(() => $(".modal-backdrop").last().css("z-index", "1075"), 100);
+        });        // Fast add button events
         $(document).on("click.productFastAddColor", "#btnAddColor", function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -141,6 +143,8 @@
                 $("body").removeClass("modal-open");
                 $(".modal-backdrop").remove();
             }
+            // Reset z-index for parent modal
+            $("#myModalProductVariants").css("z-index", "");
         });
     }
 
@@ -884,7 +888,7 @@
         const formData = new FormData();
         formData.append("price", Number($("#price").val()));
         formData.append("status", $("#status").val());
-        formData.append("productId", $("#id").val());
+        formData.append("productId", $("#productIdsp").val());
         formData.append("colorId", $("#mauSac").val());
 
 
@@ -973,7 +977,6 @@
                 $("#ProductVariantsForm fieldset").eq(1).find(".row").empty();
 
 
-                $("#id").val(product.id);
                 $("#codeProduct").val(product.productCode || "");
 
                 $("#nameProduct").val(product.name || "");

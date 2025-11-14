@@ -2,15 +2,16 @@ package com.example.DATN.controllers;
 
 import com.example.DATN.models.Order;
 import com.example.DATN.services.OrderService;
+import com.example.DATN.repositories.OrderRepository;
 import com.example.DATN.configs.vnpay.VNPayService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 
 @Controller
@@ -21,6 +22,9 @@ public class VNPayController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     // IPN Endpoint - VNPay gọi để confirm thanh toán (QUAN TRỌNG!)
     @GetMapping("/vnpay/ipn")
@@ -49,16 +53,17 @@ public class VNPayController {
 
                     Order order = orderService.findById(orderId);
 
-                    if (order != null && !"COMPLETED".equals(order.getStatus())) {
-                        System.out.println("✅ VNPay IPN: Order found, current status: " + order.getStatus() + ", updating to COMPLETED");
-                        // CHỈ xử lý nếu order chưa được xử lý (tránh duplicate)
-                        // updatePaymentStatus đã tự động gọi processOrderItems() - KHÔNG cần gọi thêm
-                        orderService.updatePaymentStatus(order, "COMPLETED", transactionNo);
+                    if (order != null && !"PAID".equals(order.getPaymentStatus())) {
+                        System.out.println("✅ VNPay IPN: Order found, current paymentStatus: " + order.getPaymentStatus() + ", updating to PAID");
+                        // CHỈ cập nhật paymentStatus, status vẫn PENDING (chờ admin confirm)
+                        order.setPaymentStatus("PAID");
+                        order.setTransactionNo(transactionNo);
+                        orderRepository.save(order);
 
-                        System.out.println("✅ VNPay IPN: Order " + orderId + " processed successfully");
+                        System.out.println("✅ VNPay IPN: Order " + orderId + " payment updated successfully - Status: " + order.getStatus() + ", PaymentStatus: " + order.getPaymentStatus());
                         return "RspCode=00&Message=Confirm Success"; // Trả về cho VNPay
                     } else {
-                        System.out.println("⚠️ VNPay IPN: Order " + orderId + " already processed or not found");
+                        System.out.println("⚠️ VNPay IPN: Order " + orderId + " already has paymentStatus = PAID or not found");
                         return "RspCode=00&Message=Order Already Processed";
                     }
                 } catch (Exception e) {
@@ -93,7 +98,7 @@ public class VNPayController {
     }
 
     @GetMapping("/vnpay/return")
-    public String vnpayReturn(HttpServletRequest request, Model model) {
+    public String   vnpayReturn(HttpServletRequest request, Model model, HttpSession session) {
         try {
             Map<String, String> fields = vnPayService.getFieldsFromRequest(request);
 
@@ -111,15 +116,29 @@ public class VNPayController {
             model.addAttribute("transactionNo", transactionNo);
 
             if (isValidSignature && "00".equals(responseCode)) {
-                // Chỉ hiển thị kết quả - KHÔNG xử lý thanh toán (đã xử lý ở IPN)
+                // Xử lý thanh toán thành công nếu chưa được xử lý ở IPN
                 try {
                     String orderIdStr = txnRef.contains("_") ? txnRef.split("_")[0] : txnRef;
                     Integer orderId = Integer.parseInt(orderIdStr);
                     Order order = orderService.findById(orderId);
                     if (order != null) {
+                        // Nếu paymentStatus chưa PAID, update luôn (trường hợp IPN chưa gọi)
+                        if (!"PAID".equals(order.getPaymentStatus())) {
+                            System.out.println("🔄 VNPay Return: Order " + orderId + " paymentStatus is " + order.getPaymentStatus() + ", updating to PAID");
+                            order.setPaymentStatus("PAID");
+                            order.setTransactionNo(transactionNo);
+                            orderRepository.save(order);
+                        } else {
+                            System.out.println("✅ VNPay Return: Order " + orderId + " already has paymentStatus = PAID");
+                        }
+
+                        // Xóa giỏ hàng ngay lập tức sau khi thanh toán thành công
+                        session.removeAttribute("CART_ITEMS");
+                        System.out.println("🗑️ VNPay Return: Cart cleared for session " + session.getId());
+
                         model.addAttribute("paymentStatus", "SUCCESS");
                         model.addAttribute("order", order);
-                        System.out.println("✅ VNPay Return: Showing success page for order " + orderId);
+                        System.out.println("✅ VNPay Return: Showing success page for order " + orderId + " - Status: " + order.getStatus() + ", PaymentStatus: " + order.getPaymentStatus());
                     } else {
                         model.addAttribute("paymentStatus", "ORDER_NOT_FOUND");
                     }

@@ -107,10 +107,10 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 		Optional<BigDecimal> existingPrice = productVariantRepository
 				.findPriceByProductIdAndColorId(req.getProductId(), req.getColorId());
 
-		BigDecimal price = existingPrice.orElse(BigDecimal.valueOf(req.getPrice()));
-		if (existingPrice.isPresent() && existingPrice.get().compareTo(BigDecimal.valueOf(req.getPrice())) != 0) {
-			throw new BusinessException("Sản phẩm đang có giá " + price + " VNĐ");
-		}
+		// BigDecimal price = existingPrice.orElse(BigDecimal.valueOf(req.getPrice()));
+		// if (existingPrice.isPresent() && existingPrice.get().compareTo(BigDecimal.valueOf(req.getPrice())) != 0) {
+		// 	throw new BusinessException("Sản phẩm đang có giá " + price + " VNĐ");
+		// }
 
 		// Tạo danh sách biến thể
 		List<ProductVariant> variants = fromRequest(req);

@@ -1,6 +1,7 @@
 package com.example.DATN.services;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,8 @@ public interface OrderService {
   OrderDetailResponse getOrderDetailByCode(String orderCode);
 
   Order createOrder(OrderRequest dto);
+
+  void validateStockBeforeOrder(List<com.example.DATN.dtos.CartItemDTO> items) throws Exception;
 
   Page<OrderDTO> getOnlineOrders(int page, int size);
 
