@@ -15,6 +15,10 @@ import com.example.DATN.services.ProductVariantService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.math.BigDecimal;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/product-variants")
@@ -33,6 +37,27 @@ public class ProductVariantRestController {
   @ResponseBody
   public List<ProductVariantDTO> getAllVariants() {
     return productVariantService.findAllActive();
+  }
+
+  @GetMapping("/check-prices")
+  @ResponseBody
+  public Map<String, BigDecimal> checkPrices(@RequestParam List<String> codes) {
+    Map<String, BigDecimal> priceMap = new HashMap<>();
+
+    for (String code : codes) {
+      // Tìm variant theo code bằng cách search và filter
+      List<ProductVariantDTO> results = productVariantService.search(code);
+      ProductVariantDTO variant = results.stream()
+          .filter(v -> code.equals(v.getVariantCode()))
+          .findFirst()
+          .orElse(null);
+
+      if (variant != null && variant.getPrice() != null) {
+        priceMap.put(code, variant.getPrice());
+      }
+    }
+
+    return priceMap;
   }
 
 }

@@ -1204,5 +1204,216 @@ $(document).ready(function () {
     $("#changeMoney").text(`${change > 0 ? change.toLocaleString() : 0} VNĐ`);
   });
 
+  // ========== PRICE MONITORING  ==========
+  let priceCheckInterval = null;
+  let isPriceMonitoringActive = false;
+
+  function startPriceMonitoring() {
+    if (isPriceMonitoringActive) return;
+
+    console.log("Starting price monitoring...");
+    isPriceMonitoringActive = true;
+
+    priceCheckInterval = setInterval(() => {
+      checkPriceChanges();
+    }, 18000); // 18 giây check một lần
+  }
+
+  function stopPriceMonitoring() {
+    if (!isPriceMonitoringActive) return;
+
+    console.log("Stopping price monitoring...");
+    isPriceMonitoringActive = false;
+
+    if (priceCheckInterval) {
+      clearInterval(priceCheckInterval);
+      priceCheckInterval = null;
+    }
+  }
+
+  function checkPriceChanges() {
+    if (!navigator.onLine) return;
+
+    const codesInCart = getVariantCodesInCart();
+    if (codesInCart.length === 0) return;
+
+    console.log("🔍 Checking prices for:", codesInCart.length, "variants");
+
+    $.ajax({
+      url: '/api/product-variants/check-prices',
+      method: 'GET',
+      data: { codes: codesInCart },
+      timeout: 5000,
+      success: function(currentPrices) {
+        detectAndHandlePriceChanges(currentPrices);
+      },
+      error: function(xhr, status, error) {
+        console.log("Price check failed:", status, error);
+      }
+    });
+  }
+
+  function getVariantCodesInCart() {
+    const codes = new Set();
+
+    for (let tabId in orders) {
+      if (orders[tabId].items) {
+        orders[tabId].items.forEach(item => {
+          codes.add(item.code);
+        });
+      }
+    }
+
+    return Array.from(codes);
+  }
+
+  function detectAndHandlePriceChanges(currentPrices) {
+    const changedItems = [];
+
+    for (let tabId in orders) {
+      if (!orders[tabId].items) continue;
+
+      orders[tabId].items.forEach((item, index) => {
+        const currentPrice = currentPrices[item.code];
+
+        if (currentPrice && parseFloat(currentPrice) !== parseFloat(item.price)) {
+          changedItems.push({
+            tabId: tabId,
+            itemIndex: index,
+            item: item,
+            oldPrice: parseFloat(item.price),
+            newPrice: parseFloat(currentPrice)
+          });
+        }
+      });
+    }
+
+    if (changedItems.length > 0) {
+      showPriceChangeAlert(changedItems);
+    }
+  }
+
+  function showPriceChangeAlert(changedItems) {
+    // Dừng monitoring khi hiện modal để tránh conflict
+    stopPriceMonitoring();
+
+    const changesByTab = {};
+    changedItems.forEach(change => {
+      if (!changesByTab[change.tabId]) {
+        changesByTab[change.tabId] = [];
+      }
+      changesByTab[change.tabId].push(change);
+    });
+
+    let message = '<div class="price-change-alert" style="max-height: 400px; overflow-y: auto; font-size: 14px; line-height: 1.5;">';
+    message += '<h4 style="color: #d9534f; margin-bottom: 20px; font-size: 18px; font-weight: 600;"><i class="fa fa-exclamation-triangle"></i> Giá sản phẩm đã thay đổi!</h4>';
+
+    Object.keys(changesByTab).forEach(tabId => {
+      const tabChanges = changesByTab[tabId];
+      const tabName = getTabDisplayName(tabId);
+
+      message += `<h5 style="color: #31708f; margin-bottom: 10px; font-size: 16px; font-weight: 500;">Đơn hàng: ${tabName}</h5>`;
+      message += '<ul style="list-style: none; padding-left: 0; margin-bottom: 15px;">';
+
+      tabChanges.forEach(change => {
+        const priceDiff = change.newPrice - change.oldPrice;
+        const diffText = priceDiff > 0 ? `+${priceDiff.toLocaleString()}đ` : `${priceDiff.toLocaleString()}đ`;
+        const diffClass = priceDiff > 0 ? 'text-danger' : 'text-success';
+
+        message += `
+          <li style="margin-bottom: 10px; padding: 12px; background: #f8f8f8; border-radius: 6px; border-left: 4px solid #1ab394;">
+            <strong style="font-size: 15px; color: #333;">${change.item.name}</strong>
+            <span style="color: #666; font-size: 13px;">(${change.item.color}/${change.item.size})</span><br>
+            <small style="font-size: 13px;">
+              <span style="color: #666;">Giá cũ: ${change.oldPrice.toLocaleString()}đ</span> →
+              <span style="color: #d9534f; font-weight: bold; font-size: 14px;">Giá mới: ${change.newPrice.toLocaleString()}đ</span>
+              <span class="${diffClass}" style="font-weight: 500;">(${diffText})</span>
+            </small>
+          </li>
+        `;
+      });
+
+      message += '</ul>';
+    });
+
+    message += '<p style="margin-top: 20px; font-size: 15px; font-weight: 500; color: #333;"><strong>Bạn có muốn cập nhật giá trong giỏ hàng không?</strong></p>';
+    message += '</div>';
+
+    Swal.fire({
+      title: 'Cảnh báo thay đổi giá',
+      html: message,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Cập nhật tất cả',
+      cancelButtonText: 'Giữ nguyên giá cũ',
+      confirmButtonColor: '#1ab394',
+      cancelButtonColor: '#6c757d',
+      width: '700px',
+      customClass: {
+        popup: 'price-change-modal',
+        confirmButton: 'btn btn-primary btn-lg',
+        cancelButton: 'btn btn-secondary btn-lg'
+      },
+      buttonsStyling: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        updateAllPricesToNew(changedItems);
+        toastr.success('Đã cập nhật giá mới cho tất cả sản phẩm!');
+      } else {
+        toastr.info('Giữ nguyên giá cũ trong giỏ hàng.');
+      }
+
+      // Restart monitoring sau khi quyết định xong
+      startPriceMonitoring();
+    });
+  }
+
+  function updateAllPricesToNew(changedItems) {
+    changedItems.forEach(change => {
+      const tabState = orders[change.tabId];
+      if (tabState && tabState.items && tabState.items[change.itemIndex]) {
+        const item = tabState.items[change.itemIndex];
+        item.price = change.newPrice;
+        item.total = item.price * item.quantity;
+
+        const row = $(`#table-${change.tabId} tr[data-code="${item.code}"]`);
+        if (row.length > 0) {
+          row.find('td').eq(6).text(item.price.toLocaleString() + 'đ'); // Price column
+          row.find('.total').text(item.total.toLocaleString() + 'đ'); // Total column
+        }
+      }
+    });
+
+    // Update totals for affected tabs
+    const affectedTabs = [...new Set(changedItems.map(c => c.tabId))];
+    affectedTabs.forEach(tabId => {
+      updateClientDetail(tabId);
+    });
+
+    // Reload product list để đảm bảo tất cả tab đều có giá mới nhất
+    // Tránh conflict với các tab sau này
+    console.log("🔄 Reloading product list after price update...");
+    loadQuickProductList();
+  }
+
+  function getTabDisplayName(tabId) {
+    const tabIndex = Object.keys(orders).indexOf(tabId) + 1;
+    return `Đơn ${tabIndex}`;
+  }
+
+  $(document).ready(function() {
+    // ... existing code ...
+
+    // Start price monitoring
+    startPriceMonitoring();
+
+    $(window).on('beforeunload', function() {
+      stopPriceMonitoring();
+    });
+  });
+
 });
+
 

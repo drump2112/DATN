@@ -33,7 +33,6 @@ $(document).ready(function() {
         'cảm ơn': 'Cảm ơn bạn! Rất vui được hỗ trợ. Chúc bạn mua sắm vui vẻ! 😊'
     };
 
-    // Function to scroll chat to bottom
     function scrollToBottom() {
         chatBody.scrollTop(chatBody[0].scrollHeight);
     }

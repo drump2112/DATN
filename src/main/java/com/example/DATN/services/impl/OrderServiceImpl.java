@@ -232,27 +232,11 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Đơn hàng không ở trạng thái chờ OTP");
         }
 
-        // Kiểm tra tồn kho trước khi trừ
-        for (OrderItem item : order.getItems()) {
-            ProductVariant variant = productVariantRepository.findByIdForUpdate(item.getProductVariant().getId());
-
-            if (variant == null) {
-                throw new RuntimeException("Không tìm thấy biến thể sản phẩm");
-            }
-
-            if (variant.getQuantity() < item.getQuantity()) {
-                throw new RuntimeException("Biến thể " + variant.getVariantCode() + " không đủ hàng");
-            }
-        }
-
         order.setStatus("PENDING");
         orderRepository.save(order);
 
-        System.out.println("=== CALLING PROCESS ORDER ITEMS ===");
-        // Ghi lại stock movement cho đơn hàng online sau khi confirm OTP
-        processOrderItems(order);
-
-        System.out.println("=== PROCESS ORDER ITEMS COMPLETED ===");
+        System.out.println("=== OTP CONFIRMED - ORDER NOW PENDING ===");
+        System.out.println("Order will be processed when admin confirms (PENDING -> SHIPPING)");
         emailService.sendOrderConfirmation(order);
 
         return true;
@@ -376,6 +360,29 @@ public class OrderServiceImpl implements OrderService {
             restoreVoucherQuantity(order);
         }
 
+        // Nếu admin xác nhận đơn hàng (PENDING -> SHIPPING), thì trừ kho
+        if ("PENDING".equals(oldStatus) && "SHIPPING".equals(status)) {
+            System.out.println("🏪 Admin confirming order - checking stock before deducting...");
+
+            // Kiểm tra tồn kho trước khi trừ
+            for (OrderItem item : order.getItems()) {
+                ProductVariant variant = productVariantRepository.findByIdForUpdate(item.getProductVariant().getId());
+
+                if (variant == null) {
+                    throw new RuntimeException("Không tìm thấy biến thể sản phẩm: " + item.getProductVariant().getId());
+                }
+
+                if (variant.getQuantity() < item.getQuantity()) {
+                    throw new RuntimeException("Biến thể " + variant.getVariantCode() + " không đủ hàng trong kho. Có: " +
+                                             variant.getQuantity() + ", cần: " + item.getQuantity());
+                }
+            }
+
+            // Trừ kho khi admin xác nhận
+            processOrderItems(order);
+            System.out.println("✅ Stock deducted for order: " + order.getOrderCode());
+        }
+
         order.setStatus(status);
         orderRepository.save(order);
         return true;
@@ -403,28 +410,22 @@ public class OrderServiceImpl implements OrderService {
         order.setTransactionNo(transactionNo);
         orderRepository.save(order);
 
-        // Nếu đơn hàng chuyển từ PENDING sang COMPLETED và chưa trừ kho, thì trừ kho
-        if ("PENDING".equals(oldStatus) && "COMPLETED".equals(status)) {
-            processOrderItems(order);
-        }
+        // Không trừ kho ở đây nữa - sẽ trừ khi admin xác nhận (PENDING -> SHIPPING)
+        System.out.println("✅ Payment status updated: " + oldStatus + " -> " + status + " (stock will be deducted when admin confirms)");
     }
 
     @Override
     @Transactional
     public void processOrderItems(Order order) {
-        System.out.println("🔄 Processing order items for order: " + order.getId());
+        System.out.println("🔄 Processing order items for order: " + order.getId() + " (Status: " + order.getStatus() + ")");
         System.out.println("📋 Order status: " + order.getStatus());
         System.out.println("💳 Payment method: " + order.getPaymentMethod());
         System.out.println("🎫 Has voucher: " + (order.getVoucher() != null ? order.getVoucher().getCode() : "No"));
         System.out.println("📦 Number of items: " + (order.getItems() != null ? order.getItems().size() : 0));
 
-        // Chỉ trừ voucher cho các trường hợp thành công:
-        // - COD: Đã confirm OTP (status = PENDING)
-        // - VNPay: Thanh toán thành công (status = COMPLETED)
-        // - Counter: Bán tại quầy (status = COMPLETED)
-        if (order.getVoucher() != null &&
-            ("PENDING".equals(order.getStatus()) || "COMPLETED".equals(order.getStatus()))) {
-
+        // Chỉ trừ voucher khi admin xác nhận đơn hàng (PENDING -> SHIPPING)
+        // cho cả COD và VNPay
+        if (order.getVoucher() != null && "SHIPPING".equals(order.getStatus())) {
             Voucher voucher = order.getVoucher();
             if (voucher.getQuantity() != null && voucher.getQuantity() > 0) {
                 voucher.setQuantity(voucher.getQuantity() - 1);

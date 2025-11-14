@@ -29,6 +29,7 @@ public class VNPayController {
             Map<String, String> fields = vnPayService.getFieldsFromRequest(request);
 
             System.out.println("=== VNPay IPN Received ===");
+            System.out.println("Timestamp: " + java.time.LocalDateTime.now());
             for (Map.Entry<String, String> entry : fields.entrySet()) {
                 System.out.println(entry.getKey() + " = " + entry.getValue());
             }
@@ -36,16 +37,20 @@ public class VNPayController {
             boolean isValidSignature = vnPayService.validateSignature(fields);
             String responseCode = fields.get("vnp_ResponseCode");
             String txnRef = fields.get("vnp_TxnRef");
-            String amount = fields.get("vnp_Amount");
             String transactionNo = fields.get("vnp_TransactionNo");
 
             if (isValidSignature && "00".equals(responseCode)) {
                 // Thanh toán thành công - XỬ LÝ THẬT ở đây
                 try {
-                    Integer orderId = Integer.parseInt(txnRef);
+                    // Parse orderId từ txnRef (format: orderId_timestamp)
+                    String orderIdStr = txnRef.contains("_") ? txnRef.split("_")[0] : txnRef;
+                    Integer orderId = Integer.parseInt(orderIdStr);
+                    System.out.println("✅ VNPay IPN: Processing successful payment for order ID: " + orderId);
+
                     Order order = orderService.findById(orderId);
 
                     if (order != null && !"COMPLETED".equals(order.getStatus())) {
+                        System.out.println("✅ VNPay IPN: Order found, current status: " + order.getStatus() + ", updating to COMPLETED");
                         // CHỈ xử lý nếu order chưa được xử lý (tránh duplicate)
                         // updatePaymentStatus đã tự động gọi processOrderItems() - KHÔNG cần gọi thêm
                         orderService.updatePaymentStatus(order, "COMPLETED", transactionNo);
@@ -57,21 +62,26 @@ public class VNPayController {
                         return "RspCode=00&Message=Order Already Processed";
                     }
                 } catch (Exception e) {
-                    System.err.println("❌ VNPay IPN Error: " + e.getMessage());
+                    System.err.println("❌ VNPay IPN Error processing order: " + e.getMessage());
+                    e.printStackTrace();
                     return "RspCode=99&Message=Unknown error";
                 }
             } else {
-                System.err.println("❌ VNPay IPN: Invalid signature or failed payment");
+                System.err.println("❌ VNPay IPN: Invalid signature or failed payment - ResponseCode: " + responseCode + ", ValidSignature: " + isValidSignature);
 
                 // Xử lý khi thanh toán thất bại - hủy đơn hàng
                 try {
-                    Integer orderId = Integer.parseInt(txnRef);
+                    String orderIdStr = txnRef.contains("_") ? txnRef.split("_")[0] : txnRef;
+                    Integer orderId = Integer.parseInt(orderIdStr);
+                    System.out.println("❌ VNPay IPN: Processing failed payment for order ID: " + orderId);
+
                     Order order = orderService.findById(orderId);
                     if (order != null && "PENDING".equals(order.getStatus())) {
                         orderService.updateOrderStatus(orderId, "CANCELLED");
+                        System.out.println("✅ VNPay IPN: Order " + orderId + " cancelled due to failed payment");
                     }
                 } catch (Exception e) {
-                    System.err.println("Error canceling failed order: " + e.getMessage());
+                    System.err.println("❌ VNPay IPN Error cancelling failed order: " + e.getMessage());
                 }
 
                 return "RspCode=97&Message=Invalid Signature";
