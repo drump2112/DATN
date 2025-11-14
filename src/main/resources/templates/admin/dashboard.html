@@ -26,14 +26,17 @@
         <div class="ibox float-e-margins">
           <div class="ibox-title">
             <span class="label label-info pull-right">Doanh thu</span>
-            <h5>Doanh thu tháng này</h5>
+            <select id="revenuePeriodSelect" style="border: none; background: transparent; font-size: 14px; font-weight: 500; color: #676a6c; padding: 0; margin: 0; outline: none; cursor: pointer;">
+              <option value="month">Tháng này</option>
+              <option value="today">Ngày hôm nay</option>
+            </select>
           </div>
           <div class="ibox-content">
             <h1 class="no-margins" id="totalRevenue">0 VNĐ</h1>
             <div class="stat-percent font-bold text-info">
               <i class="fa fa-money"></i> <span id="revenuePercent">100%</span>
             </div>
-            <small>Doanh thu các đơn đã hoàn thành trong tháng</small>
+            <small id="revenueDescription">Doanh thu các đơn đã hoàn thành trong tháng</small>
           </div>
         </div>
       </div>
@@ -204,7 +207,6 @@
   </section>
 
   <th:block th:fragment="script">
-    <!-- Flot Charts -->
     <script th:src="@{/assets/js/plugins/flot/jquery.flot.js}"></script>
     <script th:src="@{/assets/js/plugins/flot/jquery.flot.tooltip.min.js}"></script>
     <script th:src="@{/assets/js/plugins/flot/jquery.flot.spline.js}"></script>
@@ -212,28 +214,27 @@
     <script th:src="@{/assets/js/plugins/flot/jquery.flot.pie.js}"></script>
     <script th:src="@{/assets/js/plugins/flot/jquery.flot.time.js}"></script>
 
-    <!-- Chart.js -->
     <script th:src="@{/assets/js/plugins/chartJs/Chart.min.js}"></script>
 
-    <!-- Peity -->
     <script th:src="@{/assets/js/plugins/peity/jquery.peity.min.js}"></script>
 
     <script>
       $(document).ready(function() {
-        // Set current year
         $('#currentYear').text(new Date().getFullYear());
 
-        // Load ONLY real dashboard data - NO fake data
         loadRealDashboardData();
+
+        $('#revenuePeriodSelect').change(function() {
+          const selectedPeriod = $(this).val();
+          loadRevenueByPeriod(selectedPeriod);
+        });
       });
 
       function loadRealDashboardData() {
-        // Show loading state
         showLoadingState();
 
         console.log('Loading dashboard data...');
 
-        // Try to load from the main service first
         $.ajax({
           url: '/admin/api/dashboard/stats',
           method: 'GET',
@@ -267,8 +268,38 @@
         });
       }
 
+      function loadRevenueByPeriod(period) {
+        if (period === 'month') {
+          // Reset to monthly revenue
+          loadRealDashboardData();
+          return;
+        }
+
+        if (period === 'today') {
+          const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+          $('#totalRevenue').html('<i class="fa fa-spinner fa-spin"></i>');
+          $('#revenueDescription').text('Đang tải doanh thu...');
+
+          $.ajax({
+            url: '/admin/api/dashboard/revenue-by-date',
+            method: 'GET',
+            data: { date: today },
+            success: function(revenue) {
+              $('#totalRevenue').text(formatCurrency(revenue));
+              $('#revenueDescription').text('Doanh thu ngày hôm nay');
+              $('#revenuePercent').text('--'); // Hide percent for daily view
+            },
+            error: function(xhr, status, error) {
+              console.error('Revenue by date API failed:', error);
+              $('#totalRevenue').text('Lỗi');
+              $('#revenueDescription').text('Không thể tải doanh thu ngày hôm nay');
+              showErrorMessage('Không thể tải doanh thu ngày hôm nay: ' + error);
+            }
+          });
+        }
+      }
+
       function loadSimpleStatsOnly() {
-        // If complex API fails, load only basic stats from simple API
         $.ajax({
           url: '/admin/api/simple/stats',
           method: 'GET',
@@ -292,7 +323,15 @@
         console.log('updateDashboardStats called with data:', data);
         // Update main stats
         $('#totalOrders').text(formatNumber(data.totalOrders || 0));
-        $('#totalRevenue').text(formatCurrency(data.totalRevenue || 0));
+
+        // Only update revenue if we're in month mode
+        const currentPeriod = $('#revenuePeriodSelect').val();
+        if (currentPeriod === 'month') {
+          $('#totalRevenue').text(formatCurrency(data.totalRevenue || 0));
+          $('#revenueDescription').text('Doanh thu các đơn đã hoàn thành trong tháng');
+          $('#revenuePercent').text('100%');
+        }
+
         $('#totalProducts').text(formatNumber(data.totalProducts || 0));
 
         // Update payment method stats
@@ -323,7 +362,13 @@
         let completed = data.completedOrders || 0;
         let completionRate = total > 0 ? (completed / total * 100) : 0;
 
-        $('#totalRevenue').text('Đang tính...');
+        // Only update revenue if we're in month mode
+        const currentPeriod = $('#revenuePeriodSelect').val();
+        if (currentPeriod === 'month') {
+          $('#totalRevenue').text('Đang tính...');
+          $('#revenueDescription').text('Doanh thu các đơn đã hoàn thành trong tháng');
+        }
+
         $('#completionRate').text(completionRate.toFixed(1) + '%');
         $('#cancellationRate').text('0%'); // Will update with real data later
 
@@ -334,7 +379,13 @@
 
       function showLoadingState() {
         $('#totalOrders').html('<i class="fa fa-spinner fa-spin"></i>');
-        $('#totalRevenue').html('<i class="fa fa-spinner fa-spin"></i>');
+
+        // Only show loading for revenue if we're in month mode
+        const currentPeriod = $('#revenuePeriodSelect').val();
+        if (currentPeriod === 'month') {
+          $('#totalRevenue').html('<i class="fa fa-spinner fa-spin"></i>');
+        }
+
         $('#totalProducts').html('<i class="fa fa-spinner fa-spin"></i>');
         $('#cashPercent').html('<i class="fa fa-spinner fa-spin"></i>');
         $('#transferPercent').html('<i class="fa fa-spinner fa-spin"></i>');
@@ -360,7 +411,13 @@
 
           // If main stats still show spinner, replace with placeholders
           if ($('#totalOrders').find('.fa-spinner').length > 0) $('#totalOrders').text('--');
-          if ($('#totalRevenue').find('.fa-spinner').length > 0) $('#totalRevenue').text('--');
+
+          // Only replace revenue if we're in month mode
+          const currentPeriod = $('#revenuePeriodSelect').val();
+          if (currentPeriod === 'month' && $('#totalRevenue').find('.fa-spinner').length > 0) {
+            $('#totalRevenue').text('--');
+          }
+
           if ($('#totalProducts').find('.fa-spinner').length > 0) $('#totalProducts').text('--');
           if ($('#completionRate').find('.fa-spinner').length > 0) $('#completionRate').text('0%');
           if ($('#cancellationRate').find('.fa-spinner').length > 0) $('#cancellationRate').text('0%');
@@ -700,10 +757,7 @@
       }
 
       function formatCurrency(amount) {
-        return new Intl.NumberFormat('vi-VN', {
-          style: 'currency',
-          currency: 'VND'
-        }).format(amount);
+        return new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
       }
     </script>
   </th:block>

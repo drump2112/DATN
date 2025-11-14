@@ -4,6 +4,8 @@ import com.example.DATN.dtos.ProductVariantDTO;
 import com.example.DATN.services.ProductVariantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -14,6 +16,7 @@ import com.example.DATN.services.ProductVariantService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -39,9 +42,14 @@ public class ProductVariantRestController {
     return productVariantService.findAllActive();
   }
 
-  @GetMapping("/check-prices")
+  @PostMapping("/check-prices")
   @ResponseBody
-  public Map<String, BigDecimal> checkPrices(@RequestParam List<String> codes) {
+  public Map<String, BigDecimal> checkPrices(@RequestBody Map<String, List<String>> request) {
+    List<String> codes = request.get("variantCodes");
+    if (codes == null) {
+      codes = new ArrayList<>();
+    }
+
     Map<String, BigDecimal> priceMap = new HashMap<>();
 
     for (String code : codes) {

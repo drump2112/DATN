@@ -83,6 +83,17 @@ public class DashboardService {
         }
     }
 
+    public BigDecimal getRevenueByDate(String date) {
+        try {
+            BigDecimal result = orderRepository.findRevenueByDate(date);
+            logger.info("Revenue for date {}: {}", date, result);
+            return result != null ? result : BigDecimal.ZERO;
+        } catch (Exception e) {
+            logger.error("Error getting revenue for date {}", date, e);
+            return BigDecimal.ZERO;
+        }
+    }
+
     private Long getTotalProducts() {
         return productRepository.count();
     }

@@ -127,6 +127,10 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
          "AND MONTH(ord.OrderDate) = MONTH(GETDATE()) AND YEAR(ord.OrderDate) = YEAR(GETDATE())", nativeQuery = true)
   BigDecimal findCurrentMonthRevenue();
 
+  @Query(value = "SELECT COALESCE(SUM(ord.finalAmount), 0) FROM Orders ord WHERE ord.Status = 'COMPLETED' " +
+         "AND CAST(ord.OrderDate AS DATE) = :date", nativeQuery = true)
+  BigDecimal findRevenueByDate(@Param("date") String date);
+
   long countByStatus(String status);
 
   @Query(value = "SELECT MONTH(ord.OrderDate) as month, COALESCE(SUM(ord.finalAmount), 0) as revenue, COUNT(*) as orderCount " +

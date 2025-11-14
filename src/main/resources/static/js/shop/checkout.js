@@ -582,6 +582,367 @@ $(document).ready(function () {
             return;
         }
 
+        // Kiểm tra thay đổi giá trước khi đặt hàng
+        checkPriceChangesForCheckout().then(priceChanged => {
+            if (priceChanged) {
+                // Có giá thay đổi, đã hiển thị modal cảnh báo
+                return; // Dừng lại, chờ user quyết định
+            }
+
+            // Không có giá thay đổi hoặc user đã quyết định tiếp tục
+            proceedWithOrder($btn, paymentMethod);
+        }).catch(error => {
+            console.error("Error checking price changes:", error);
+            // Nếu lỗi check giá, vẫn cho phép đặt hàng
+            proceedWithOrder($btn, paymentMethod);
+        });
+    });
+
+    // Function để kiểm tra thay đổi giá trước khi đặt hàng
+    function checkPriceChangesForCheckout() {
+        return new Promise((resolve, reject) => {
+            if (!cartItems || cartItems.length === 0) {
+                resolve(false);
+                return;
+            }
+
+            // Lấy danh sách variant codes từ giỏ hàng
+            const variantCodes = cartItems.map(item => item.variantCode).filter(code => code);
+
+            if (variantCodes.length === 0) {
+                resolve(false);
+                return;
+            }
+
+            // Gọi API kiểm tra giá
+            $.ajax({
+                url: "/api/product-variants/check-prices",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ variantCodes: variantCodes }),
+                success: function (currentPrices) {
+                    let hasPriceChange = false;
+                    let changedItems = [];
+
+                    // So sánh giá hiện tại với giá trong giỏ hàng
+                    cartItems.forEach(item => {
+                        const currentPrice = currentPrices[item.variantCode];
+                        if (currentPrice !== undefined && currentPrice !== item.price) {
+                            hasPriceChange = true;
+                            changedItems.push({
+                                name: item.name,
+                                oldPrice: item.price,
+                                newPrice: currentPrice,
+                                quantity: item.quantity
+                            });
+                        }
+                    });
+
+                    if (hasPriceChange) {
+                        // Hiển thị modal cảnh báo thay đổi giá
+                        showPriceChangeAlertForCheckout(changedItems);
+                        resolve(true); // Có thay đổi giá
+                    } else {
+                        resolve(false); // Không có thay đổi
+                    }
+                },
+                error: function (xhr) {
+                    console.error("Error checking prices:", xhr);
+                    reject(xhr);
+                }
+            });
+        });
+    }
+
+    // Function hiển thị modal cảnh báo thay đổi giá cho checkout
+    function showPriceChangeAlertForCheckout(changedItems) {
+        // Tạo HTML content cho modal
+        let htmlContent = '<div class="price-change-alert">';
+        htmlContent += '<p class="alert-description"><i class="fa fa-exclamation-triangle text-warning"></i> Giá của một số sản phẩm trong giỏ hàng đã thay đổi:</p>';
+        htmlContent += '<div class="price-change-list">';
+
+        changedItems.forEach(item => {
+            const oldTotal = item.oldPrice * item.quantity;
+            const newTotal = item.newPrice * item.quantity;
+            const priceDiff = newTotal - oldTotal;
+            const diffClass = priceDiff > 0 ? 'price-increase' : 'price-decrease';
+            const diffIcon = priceDiff > 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+            const diffText = priceDiff > 0 ? 'Tăng' : 'Giảm';
+
+            htmlContent += `
+                <div class="price-change-item">
+                    <div class="product-name">
+                        <strong>${item.name}</strong>
+                    </div>
+                    <div class="price-comparison">
+                        <div class="old-price">
+                            <span class="label">Giá cũ:</span>
+                            <span class="value">${item.oldPrice.toLocaleString()} VNĐ x ${item.quantity}</span>
+                            <span class="total">= ${oldTotal.toLocaleString()} VNĐ</span>
+                        </div>
+                        <div class="new-price">
+                            <span class="label">Giá mới:</span>
+                            <span class="value">${item.newPrice.toLocaleString()} VNĐ x ${item.quantity}</span>
+                            <span class="total">= ${newTotal.toLocaleString()} VNĐ</span>
+                        </div>
+                        <div class="price-difference ${diffClass}">
+                            <i class="fa ${diffIcon}"></i>
+                            <span>${diffText} ${Math.abs(priceDiff).toLocaleString()} VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        htmlContent += '</div>';
+        htmlContent += '<p class="alert-question"><strong>Bạn có muốn tiếp tục đặt hàng với giá mới không?</strong></p>';
+        htmlContent += '</div>';
+
+        // Thêm CSS cho modal
+        const customCSS = `
+            <style>
+                .price-change-alert {
+                    text-align: left;
+                    max-height: 400px;
+                    overflow-y: auto;
+                }
+                .alert-description {
+                    color: #856404;
+                    background-color: #fff3cd;
+                    border: 1px solid #ffeaa7;
+                    padding: 12px 16px;
+                    border-radius: 6px;
+                    margin-bottom: 20px;
+                    font-size: 14px;
+                }
+                .alert-description i {
+                    margin-right: 8px;
+                }
+                .price-change-list {
+                    margin-bottom: 20px;
+                }
+                .price-change-item {
+                    border: 1px solid #e9ecef;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 12px;
+                    background-color: #f8f9fa;
+                }
+                .product-name {
+                    margin-bottom: 12px;
+                    color: #495057;
+                    font-size: 16px;
+                }
+                .price-comparison {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                .old-price, .new-price {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                }
+                .old-price {
+                    background-color: #f1aeb5;
+                    color: #721c24;
+                }
+                .new-price {
+                    background-color: #d4edda;
+                    color: #155724;
+                }
+                .price-difference {
+                    text-align: center;
+                    padding: 8px;
+                    border-radius: 4px;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+                .price-increase {
+                    background-color: #f8d7da;
+                    color: #721c24;
+                }
+                .price-decrease {
+                    background-color: #d1ecf1;
+                    color: #0c5460;
+                }
+                .label {
+                    font-weight: bold;
+                    min-width: 60px;
+                }
+                .value {
+                    flex: 1;
+                    text-align: center;
+                }
+                .total {
+                    font-weight: bold;
+                    min-width: 100px;
+                    text-align: right;
+                }
+                .alert-question {
+                    text-align: center;
+                    color: #495057;
+                    font-size: 16px;
+                    margin-top: 20px;
+                    padding: 15px;
+                    background-color: #e9ecef;
+                    border-radius: 6px;
+                    border: 1px solid #ced4da;
+                }
+                .price-change-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 15px;
+                    padding: 20px 0 0 0;
+                    border-top: 1px solid #e9ecef;
+                    margin-top: 20px;
+                }
+                .modern-btn-secondary {
+                    background: linear-gradient(135deg, #6c757d, #5a6268);
+                    border: none;
+                    color: white;
+                    padding: 12px 25px;
+                    border-radius: 15px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex: 1;
+                    justify-content: center;
+                    cursor: pointer;
+                }
+                .modern-btn-secondary:hover {
+                    background: linear-gradient(135deg, #5a6268, #495057);
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+                    color: white;
+                }
+                .modern-btn-primary {
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    border: none;
+                    color: white;
+                    padding: 12px 25px;
+                    border-radius: 15px;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex: 1;
+                    justify-content: center;
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                }
+                .modern-btn-primary:hover {
+                    background: linear-gradient(135deg, #218838, #17a2b8);
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+                    color: white;
+                }
+                @media (max-width: 768px) {
+                    .price-change-footer {
+                        flex-direction: column;
+                    }
+                    .modern-btn-secondary,
+                    .modern-btn-primary {
+                        width: 100%;
+                        margin: 5px 0;
+                    }
+                }
+            </style>
+        `;
+
+        // Tạo custom footer với buttons đồng bộ style
+        const footerHtml = `
+            <div class="price-change-footer">
+                <button type="button" class="btn modern-btn-secondary" id="btnCancelOrder">
+                    <i class="fa fa-times"></i>
+                    <span>Hủy đặt hàng</span>
+                </button>
+                <button type="button" class="btn modern-btn-primary" id="btnContinueOrder">
+                    <i class="fa fa-check"></i>
+                    <span>Tiếp tục với giá mới</span>
+                </button>
+            </div>
+        `;
+
+        // Hiển thị modal với custom footer
+        Swal.fire({
+            title: '<i class="fa fa-exclamation-triangle text-warning"></i> Giá sản phẩm đã thay đổi',
+            html: customCSS + htmlContent,
+            showConfirmButton: false,
+            showCancelButton: false,
+            width: '600px',
+            customClass: {
+                popup: 'price-change-modal',
+                title: 'price-change-title',
+                content: 'price-change-content'
+            },
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            },
+            footer: footerHtml,
+            didOpen: () => {
+                // Bind events cho custom buttons
+                document.getElementById('btnCancelOrder').addEventListener('click', () => {
+                    // Cập nhật giá mới trong giỏ hàng và UI, sau đó đóng modal
+                    updateCartWithNewPrices(changedItems).then(() => {
+                        Swal.close();
+                        SwalUtils.info("Đã cập nhật giá", "Giá sản phẩm trong giỏ hàng đã được cập nhật theo giá mới.");
+                    }).catch(error => {
+                        console.error("Error updating cart prices:", error);
+                        Swal.close();
+                        SwalUtils.error("Lỗi!", "Không thể cập nhật giá trong giỏ hàng. Vui lòng thử lại.");
+                    });
+                });
+
+                document.getElementById('btnContinueOrder').addEventListener('click', () => {
+                    // User đồng ý với giá mới, cập nhật giỏ hàng và tiếp tục đặt hàng
+                    updateCartWithNewPrices(changedItems).then(() => {
+                        Swal.close();
+                        // Sau khi cập nhật xong, tự động trigger lại nút đặt hàng
+                        $("#btnConfirmOrder").trigger("click");
+                    }).catch(error => {
+                        console.error("Error updating cart prices:", error);
+                        Swal.close();
+                        SwalUtils.error("Lỗi!", "Không thể cập nhật giá trong giỏ hàng. Vui lòng thử lại.");
+                    });
+                });
+            }
+        });
+    }
+
+    // Function cập nhật giá trong giỏ hàng
+    function updateCartWithNewPrices(changedItems) {
+        return new Promise((resolve, reject) => {
+            // Cập nhật giá trong cartItems
+            changedItems.forEach(changedItem => {
+                const cartItem = cartItems.find(item =>
+                    item.name === changedItem.name &&
+                    item.price === changedItem.oldPrice
+                );
+                if (cartItem) {
+                    cartItem.price = changedItem.newPrice;
+                }
+            });
+
+            // Cập nhật hiển thị trên UI
+            renderCheckoutItems(cartItems);
+            calculateTotals(cartItems);
+
+            resolve();
+        });
+    }
+
+    // Function xử lý đặt hàng sau khi đã kiểm tra giá
+    function proceedWithOrder($btn, paymentMethod) {
         // Customize confirm message based on payment method
         let confirmTitle = "Xác nhận đặt hàng?";
         let confirmText = "Bạn có chắc chắn muốn đặt đơn hàng này không?";
@@ -610,7 +971,7 @@ $(document).ready(function () {
                 const orderData = {
                     userId: $("#userId").val(),
                     customerName: $("#userFullName").text().trim(),
-                    paymentMethod: $("input[name='paymentMethod']:checked").val(),
+                    paymentMethod: paymentMethod,
                     voucherCode: $("#appliedVoucherCode").val() || null,
                     shippingFee: parseMoney($("#shippingValue").text()),
                     totalAmount: parseMoney($("#totalAmount").text()),
@@ -685,7 +1046,7 @@ $(document).ready(function () {
                 });
             }
         });
-    });
+    }
 
     // Helper function to clear cart and redirect
     function clearCartAndRedirect(orderId, message) {
