@@ -1,258 +1,357 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
-<section class="container features" th:fragment="content" style="width: 90%; margin: 30px auto; padding: 0 15px;">
-  <div class="wrapper wrapper-content animated fadeInUp">
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="shop/fragments/base :: base"
+>
+  <section
+    class="container features"
+    th:fragment="content"
+    style="width: 90%; margin: 30px auto; padding: 0 15px"
+  >
+    <div class="wrapper wrapper-content animated fadeInUp">
+      <!-- Thank You Message with Icon -->
+      <div class="text-center" style="margin-bottom: 40px">
+        <h1
+          style="
+            color: #333;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+          "
+        >
+          <span
+            style="
+              display: inline-flex;
+              background: linear-gradient(135deg, #1bb394 0%, #3deac5 100%);
+              width: 50px;
+              height: 50px;
+              border-radius: 50%;
+              align-items: center;
+              justify-content: center;
+              box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+              animation: scaleIn 0.5s ease-out;
+            "
+          >
+            <i class="fa fa-check" style="font-size: 24px; color: white"></i>
+          </span>
+          <span>Cảm ơn bạn đã đặt hàng!</span>
+        </h1>
+        <p style="color: #666; font-size: 1.1rem">
+          Đơn hàng của bạn đã được xác nhận thành công
+        </p>
+      </div>
 
-    <!-- Thank You Message with Icon -->
-    <div class="text-center" style="margin-bottom: 40px;">
-      <h1
-        style="color: #333; font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px;">
-        <span style="display: inline-flex; background: linear-gradient(135deg, #1bb394 0%, #3deac5 100%);
-                     width: 50px; height: 50px; border-radius: 50%;
-                     align-items: center; justify-content: center;
-                     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-                     animation: scaleIn 0.5s ease-out;">
-          <i class="fa fa-check" style="font-size: 24px; color: white;"></i>
-        </span>
-        <span>Cảm ơn bạn đã mua hàng!</span>
-      </h1>
-      <p style="color: #666; font-size: 1.1rem;">
-        Đơn hàng của bạn đã được xác nhận thành công
-      </p>
-    </div>
-
-    <div class="row">
-      <div class="col-lg-8 col-md-10 col-sm-12" style="margin: 0 auto; float: none;">
-        <div class="ibox"
-          style="border: none; box-shadow: 0 0 30px rgba(0, 0, 0, 0.1); border-radius: 15px; overflow: hidden;">
-
-          <div class="ibox-title" style="background: linear-gradient(135deg, #0dbc96 0%, #1bb394  100%);
-                                         border: none; padding: 25px; color: white;">
-            <div class="row">
-              <div class="col-md-6">
-                <h3 style="color: white; margin: 0; font-size: 1.7rem;">
-                  <i class="fa fa-shopping-bag"></i> Chi tiết đơn hàng
-                </h3>
-              </div>
-              <div class="col-md-6 text-right">
-                <div style="font-size: 1.7rem; font-weight: 600;">
-                  <span th:text="${order.orderCode}">ONL-20250101-0001</span>
+      <div class="row">
+        <div
+          class="col-lg-8 col-md-10 col-sm-12"
+          style="margin: 0 auto; float: none"
+        >
+          <div
+            class="ibox"
+            style="
+              border: none;
+              box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+              border-radius: 15px;
+              overflow: hidden;
+            "
+          >
+            <div
+              class="ibox-title"
+              style="
+                background: linear-gradient(135deg, #0dbc96 0%, #1bb394 100%);
+                border: none;
+                padding: 25px;
+                color: white;
+              "
+            >
+              <div class="row">
+                <div class="col-md-6">
+                  <h3 style="color: white; margin: 0; font-size: 1.7rem">
+                    <i class="fa fa-shopping-bag"></i> Chi tiết đơn hàng
+                  </h3>
                 </div>
-                <div style="font-size: 1.3rem; opacity: 0.9;">
-                  <i class="fa fa-clock-o"></i>
-                  <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">28/10/2025 15:30</span>
+                <div class="col-md-6 text-right">
+                  <div style="font-size: 1.7rem; font-weight: 600">
+                    <span th:text="${order.orderCode}">ONL-20250101-0001</span>
+                  </div>
+                  <div style="font-size: 1.3rem; opacity: 0.9">
+                    <i class="fa fa-clock-o"></i>
+                    <span
+                      th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"
+                      >28/10/2025 15:30</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ibox-content" style="padding: 30px">
+              <div class="row" style="margin-bottom: 30px">
+                <div class="col-md-6">
+                  <div
+                    style="
+                      background: #f8f9fa;
+                      padding: 20px;
+                      border-radius: 10px;
+                      height: 100%;
+                    "
+                  >
+                    <h4
+                      style="
+                        color: #667eea;
+                        font-size: 1.1rem;
+                        margin-bottom: 15px;
+                      "
+                    >
+                      <i class="fa fa-user"></i> Thông tin người nhận
+                    </h4>
+                    <p style="margin-bottom: 8px">
+                      <strong>Tên:</strong>
+                      <span th:text="${order.customerName}">Nguyễn Văn A</span>
+                    </p>
+                    <p style="margin-bottom: 8px">
+                      <strong>Số điện thoại:</strong>
+                      <span th:text="${order.shippingPhone}">0123456789</span>
+                    </p>
+                    <p style="margin-bottom: 0">
+                      <strong>Địa chỉ:</strong>
+                      <span th:text="${order.shippingAddress}"
+                        >123 Đường ABC, Quận XYZ</span
+                      >
+                    </p>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div
+                    style="
+                      background: #f8f9fa;
+                      padding: 20px;
+                      border-radius: 10px;
+                      height: 100%;
+                    "
+                  >
+                    <h4
+                      style="
+                        color: #667eea;
+                        font-size: 1.1rem;
+                        margin-bottom: 15px;
+                      "
+                    >
+                      <i class="fa fa-credit-card"></i> Thông tin thanh toán
+                    </h4>
+                    <p style="margin-bottom: 8px">
+                      <strong>Phương thức:</strong>
+                      <span th:if="${order.paymentMethod == 'CASH'}">
+                        <span class="label label-info">Tiền mặt</span>
+                      </span>
+                      <span th:if="${order.paymentMethod == 'TRANSFER'}">
+                        <span class="label label-success">Chuyển khoản</span>
+                      </span>
+                    </p>
+                    <p style="margin-bottom: 8px">
+                      <strong>Trạng thái:</strong>
+                      <span th:if="${order.status == 'PENDING'}">
+                        <span class="label label-warning">Chờ xác nhận</span>
+                      </span>
+                      <span th:if="${order.status == 'CONFIRMED'}">
+                        <span class="label label-primary">Đã xác nhận</span>
+                      </span>
+                      <span th:if="${order.status == 'PROCESSING'}">
+                        <span class="label label-info">Đang xử lý</span>
+                      </span>
+                      <span th:if="${order.status == 'COMPLETED'}">
+                        <span class="label label-success">Hoàn thành</span>
+                      </span>
+                    </p>
+                    <p
+                      style="margin-bottom: 0"
+                      th:if="${order.voucherCode != null}"
+                    >
+                      <strong>Mã giảm giá:</strong>
+                      <span
+                        class="label label-primary"
+                        th:text="${order.voucherCode}"
+                        >SALE10</span
+                      >
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Order Summary -->
+              <div
+                style="
+                  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                  padding: 25px;
+                  border-radius: 10px;
+                  margin-bottom: 30px;
+                "
+              >
+                <h4 style="color: #333; font-size: 1.1rem; margin-bottom: 20px">
+                  <i class="fa fa-calculator"></i> Tổng quan đơn hàng
+                </h4>
+
+                <div class="row">
+                  <div class="col-xs-8">
+                    <span style="font-size: 1rem">Tạm tính:</span>
+                  </div>
+                  <div class="col-xs-4 text-right">
+                    <strong
+                      th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
+                    >
+                      500,000 VNĐ
+                    </strong>
+                  </div>
+                </div>
+
+                <div class="row" style="margin-top: 10px">
+                  <div class="col-xs-8">
+                    <span style="font-size: 1rem">Phí vận chuyển:</span>
+                  </div>
+                  <div class="col-xs-4 text-right">
+                    <strong
+                      th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
+                    >
+                      30,000 VNĐ
+                    </strong>
+                  </div>
+                </div>
+
+                <div
+                  class="row"
+                  style="margin-top: 10px"
+                  th:if="${order.discountAmount > 0}"
+                >
+                  <div class="col-xs-8">
+                    <span style="font-size: 1rem; color: #e74c3c">
+                      <i class="fa fa-tag"></i> Giảm giá:
+                    </span>
+                  </div>
+                  <div class="col-xs-4 text-right">
+                    <strong
+                      style="color: #e74c3c"
+                      th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
+                    >
+                      -50,000 VNĐ
+                    </strong>
+                  </div>
+                </div>
+
+                <hr style="margin: 15px 0; border-top: 2px dashed #999" />
+
+                <div class="row">
+                  <div class="col-xs-8">
+                    <span style="font-size: 1.3rem; font-weight: 700"
+                      >Tổng cộng:</span
+                    >
+                  </div>
+                  <div class="col-xs-4 text-right">
+                    <strong
+                      style="font-size: 1.5rem; color: #667eea"
+                      th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
+                    >
+                      480,000 VNĐ
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="row">
+                <div class="col-md-6 col-sm-6" style="margin-bottom: 15px">
+                  <a
+                    th:href="@{/orders}"
+                    class="btn btn-primary btn-block btn-lg"
+                    style="border-radius: 8px; padding: 12px; font-size: 1rem"
+                  >
+                    <i class="fa fa-list"></i> Xem tất cả đơn hàng
+                  </a>
+                </div>
+                <div class="col-md-6 col-sm-6" style="margin-bottom: 15px">
+                  <a
+                    th:href="@{/}"
+                    class="btn btn-success btn-block btn-lg"
+                    style="border-radius: 8px; padding: 12px; font-size: 1rem"
+                  >
+                    <i class="fa fa-shopping-cart"></i> Tiếp tục mua sắm
+                  </a>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="ibox-content" style="padding: 30px;">
-
-            <div class="row" style="margin-bottom: 30px;">
-              <div class="col-md-6">
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; height: 100%;">
-                  <h4 style="color: #667eea; font-size: 1.1rem; margin-bottom: 15px;">
-                    <i class="fa fa-user"></i> Thông tin người nhận
-                  </h4>
-                  <p style="margin-bottom: 8px;">
-                    <strong>Tên:</strong>
-                    <span th:text="${order.customerName}">Nguyễn Văn A</span>
-                  </p>
-                  <p style="margin-bottom: 8px;">
-                    <strong>Số điện thoại:</strong>
-                    <span th:text="${order.shippingPhone}">0123456789</span>
-                  </p>
-                  <p style="margin-bottom: 0;">
-                    <strong>Địa chỉ:</strong>
-                    <span th:text="${order.shippingAddress}">123 Đường ABC, Quận XYZ</span>
-                  </p>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; height: 100%;">
-                  <h4 style="color: #667eea; font-size: 1.1rem; margin-bottom: 15px;">
-                    <i class="fa fa-credit-card"></i> Thông tin thanh toán
-                  </h4>
-                  <p style="margin-bottom: 8px;">
-                    <strong>Phương thức:</strong>
-                    <span th:if="${order.paymentMethod == 'CASH'}">
-                      <span class="label label-info">Tiền mặt</span>
-                    </span>
-                    <span th:if="${order.paymentMethod == 'TRANSFER'}">
-                      <span class="label label-success">Chuyển khoản</span>
-                    </span>
-                  </p>
-                  <p style="margin-bottom: 8px;">
-                    <strong>Trạng thái:</strong>
-                    <span th:if="${order.status == 'PENDING'}">
-                      <span class="label label-warning">Chờ xác nhận</span>
-                    </span>
-                    <span th:if="${order.status == 'CONFIRMED'}">
-                      <span class="label label-primary">Đã xác nhận</span>
-                    </span>
-                    <span th:if="${order.status == 'PROCESSING'}">
-                      <span class="label label-info">Đang xử lý</span>
-                    </span>
-                    <span th:if="${order.status == 'COMPLETED'}">
-                      <span class="label label-success">Hoàn thành</span>
-                    </span>
-                  </p>
-                  <p style="margin-bottom: 0;" th:if="${order.voucherCode != null}">
-                    <strong>Mã giảm giá:</strong>
-                    <span class="label label-primary" th:text="${order.voucherCode}">SALE10</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Order Summary -->
-            <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-                        padding: 25px; border-radius: 10px; margin-bottom: 30px;">
-              <h4 style="color: #333; font-size: 1.1rem; margin-bottom: 20px;">
-                <i class="fa fa-calculator"></i> Tổng quan đơn hàng
-              </h4>
-
-              <div class="row">
-                <div class="col-xs-8">
-                  <span style="font-size: 1rem;">Tạm tính:</span>
-                </div>
-                <div class="col-xs-4 text-right">
-                  <strong th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                    500,000 VNĐ
-                  </strong>
-                </div>
-              </div>
-
-              <div class="row" style="margin-top: 10px;">
-                <div class="col-xs-8">
-                  <span style="font-size: 1rem;">Phí vận chuyển:</span>
-                </div>
-                <div class="col-xs-4 text-right">
-                  <strong th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                    30,000 VNĐ
-                  </strong>
-                </div>
-              </div>
-
-              <div class="row" style="margin-top: 10px;" th:if="${order.discountAmount > 0}">
-                <div class="col-xs-8">
-                  <span style="font-size: 1rem; color: #e74c3c;">
-                    <i class="fa fa-tag"></i> Giảm giá:
-                  </span>
-                </div>
-                <div class="col-xs-4 text-right">
-                  <strong style="color: #e74c3c;"
-                    th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                    -50,000 VNĐ
-                  </strong>
-                </div>
-              </div>
-
-              <hr style="margin: 15px 0; border-top: 2px dashed #999;">
-
-              <div class="row">
-                <div class="col-xs-8">
-                  <span style="font-size: 1.3rem; font-weight: 700;">Tổng cộng:</span>
-                </div>
-                <div class="col-xs-4 text-right">
-                  <strong style="font-size: 1.5rem; color: #667eea;"
-                    th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
-                    480,000 VNĐ
-                  </strong>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="row">
-              <div class="col-md-6 col-sm-6" style="margin-bottom: 15px;">
-                <a th:href="@{/orders}" class="btn btn-primary btn-block btn-lg"
-                  style="border-radius: 8px; padding: 12px; font-size: 1rem;">
-                  <i class="fa fa-list"></i> Xem tất cả đơn hàng
-                </a>
-              </div>
-              <div class="col-md-6 col-sm-6" style="margin-bottom: 15px;">
-                <a th:href="@{/}" class="btn btn-success btn-block btn-lg"
-                  style="border-radius: 8px; padding: 12px; font-size: 1rem;">
-                  <i class="fa fa-shopping-cart"></i> Tiếp tục mua sắm
-                </a>
-              </div>
-            </div>
-
+          <!-- Additional Information -->
+          <div class="text-center" style="margin-top: 30px; color: #666">
+            <p style="margin-bottom: 10px">
+              <i class="fa fa-envelope"></i>
+              Chúng tôi đã gửi email xác nhận đơn hàng đến địa chỉ email của bạn
+            </p>
+            <p style="margin-bottom: 10px">
+              <i class="fa fa-truck"></i>
+              Đơn hàng sẽ được giao trong vòng 3-5 ngày làm việc
+            </p>
+            <p>
+              <i class="fa fa-phone"></i>
+              Nếu có thắc mắc, vui lòng liên hệ: <strong>097-547-8916</strong>
+            </p>
           </div>
         </div>
-
-        <!-- Additional Information -->
-        <div class="text-center" style="margin-top: 30px; color: #666;">
-          <p style="margin-bottom: 10px;">
-            <i class="fa fa-envelope"></i>
-            Chúng tôi đã gửi email xác nhận đơn hàng đến địa chỉ email của bạn
-          </p>
-          <p style="margin-bottom: 10px;">
-            <i class="fa fa-truck"></i>
-            Đơn hàng sẽ được giao trong vòng 3-5 ngày làm việc
-          </p>
-          <p>
-            <i class="fa fa-phone"></i>
-            Nếu có thắc mắc, vui lòng liên hệ: <strong>097-547-8916</strong>
-          </p>
-        </div>
-
       </div>
     </div>
 
-  </div>
+    <style>
+      @keyframes scaleIn {
+        from {
+          transform: scale(0);
+          opacity: 0;
+        }
 
-  <style>
-    @keyframes scaleIn {
-      from {
-        transform: scale(0);
-        opacity: 0;
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
       }
 
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    .animated.fadeInUp {
-      animation: fadeInUp 0.5s ease-out;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
+      .animated.fadeInUp {
+        animation: fadeInUp 0.5s ease-out;
       }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
 
-    .btn {
-      transition: all 0.3s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 1.8rem !important;
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
-      .col-md-6 {
-        margin-bottom: 15px;
+      .btn {
+        transition: all 0.3s ease;
       }
-    }
-  </style>
 
-</section>
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
 
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 1.8rem !important;
+        }
+
+        .col-md-6 {
+          margin-bottom: 15px;
+        }
+      }
+    </style>
+  </section>
 </html>
+

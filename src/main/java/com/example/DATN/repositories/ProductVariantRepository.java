@@ -75,7 +75,8 @@ public interface ProductVariantRepository
 	@Query("SELECT v FROM ProductVariant v WHERE v.id = :id")
 	ProductVariant findByIdForUpdate(@Param("id") Integer id);
 
-	// Lấy các sản phẩm bán chạy nhất dựa trên tổng số lượng đã bán trong OrderItem (chỉ tính đơn hoàn thành)
+	// Lấy các sản phẩm bán chạy nhất dựa trên tổng số lượng đã bán trong OrderItem
+	// (chỉ tính đơn hoàn thành)
 	@Query("""
 			SELECT pv.product.id, SUM(oi.quantity) as totalSold
 			FROM OrderItem oi
@@ -88,15 +89,17 @@ public interface ProductVariantRepository
 			""")
 	List<Object[]> findBestSellingProducts(Pageable pageable);
 
-	// Lấy các biến thể sản phẩm bán chạy nhất (ProductVariant) = Lấy theo tháng gần nhát hoặc quý
+	// Lấy các biến thể sản phẩm bán chạy nhất (ProductVariant) trong tháng hiện tại
 	@Query("""
 			SELECT pv.id, SUM(oi.quantity) as totalSold
 			FROM OrderItem oi
 			JOIN oi.productVariant pv
 			JOIN oi.order o
 			WHERE o.status = 'COMPLETED'
-			  AND pv.status = true
-			  AND pv.product.isActive = true
+				AND pv.status = true
+				AND pv.product.isActive = true
+				AND FUNCTION('MONTH', o.orderDate) = FUNCTION('MONTH', CURRENT_DATE)
+				AND FUNCTION('YEAR', o.orderDate) = FUNCTION('YEAR', CURRENT_DATE)
 			GROUP BY pv.id
 			ORDER BY totalSold DESC
 			""")

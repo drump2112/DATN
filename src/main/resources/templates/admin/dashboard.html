@@ -460,6 +460,10 @@
 
       function updatePaymentMethodStats(paymentStats) {
         console.log('Payment method stats received:', paymentStats);
+        // Log all keys and values for debug
+        Object.keys(paymentStats).forEach(function(key) {
+          console.log('Key:', key, 'Value:', paymentStats[key]);
+        });
         // Calculate total orders for percentage calculation
         var totalPayments = Object.values(paymentStats).reduce(function(sum, count) {
           return sum + (count || 0);
@@ -477,29 +481,43 @@
         }
 
         // Calculate percentages
-        var cashCount = paymentStats['Tiền mặt'] || 0;
-        var transferCount = paymentStats['Chuyển khoản'] || 0;
-        var vnpayCount = paymentStats['VNPay'] || 0;
+        // Defensive: ensure all keys are present and log raw data
+        var cashCount = Number(paymentStats['Tiền mặt']) || 0;
+        var transferCount = Number(paymentStats['Chuyển khoản']) || 0;
+        var vnpayCount = Number(paymentStats['VNPay']) || 0;
 
-        var cashPercent = (cashCount / totalPayments * 100);
-        var transferPercent = (transferCount / totalPayments * 100);
-        var vnpayPercent = (vnpayCount / totalPayments * 100);
+        var totalPayments = cashCount + transferCount + vnpayCount;
+        console.log('Raw paymentStats:', paymentStats);
+        console.log('Counts:', { cashCount, transferCount, vnpayCount, totalPayments });
 
-        // Update display
+        var cashPercent = totalPayments > 0 ? (cashCount / totalPayments * 100) : 0;
+        var transferPercent = totalPayments > 0 ? (transferCount / totalPayments * 100) : 0;
+        var vnpayPercent = totalPayments > 0 ? (vnpayCount / totalPayments * 100) : 0;
+
+        // Fill correct IDs and log DOM update
         $('#cashPercent').text(cashPercent.toFixed(1) + '%');
         $('#transferPercent').text(transferPercent.toFixed(1) + '%');
         $('#vnpayPercent').text(vnpayPercent.toFixed(1) + '%');
 
-        // Update progress bars
         $('#cashProgressBar').css('width', cashPercent + '%');
         $('#transferProgressBar').css('width', transferPercent + '%');
         $('#vnpayProgressBar').css('width', vnpayPercent + '%');
 
-        console.log('Payment method stats updated:', {
-          cash: cashCount + ' (' + cashPercent.toFixed(1) + '%)',
-          transfer: transferCount + ' (' + transferPercent.toFixed(1) + '%)',
-          vnpay: vnpayCount + ' (' + vnpayPercent.toFixed(1) + '%)',
-          total: totalPayments
+        // Highlight if all are zero
+        if (totalPayments === 0) {
+          $('#paymentMethodStats .payment-method-item').css('opacity', '0.5');
+        } else {
+          $('#paymentMethodStats .payment-method-item').css('opacity', '1');
+        }
+
+        // Extra debug: show which IDs are filled and their values
+        console.log('Filled IDs:', {
+          cashPercentId: $('#cashPercent').attr('id'),
+          cashPercentVal: $('#cashPercent').text(),
+          transferPercentId: $('#transferPercent').attr('id'),
+          transferPercentVal: $('#transferPercent').text(),
+          vnpayPercentId: $('#vnpayPercent').attr('id'),
+          vnpayPercentVal: $('#vnpayPercent').text()
         });
       }
 

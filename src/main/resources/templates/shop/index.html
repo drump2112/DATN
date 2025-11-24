@@ -1,9 +1,58 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<head>
+</head>
 <section class="container features" th:fragment="content">
 
-  <!-- Sản phẩm bán chạy nhất -->
-  <div class="row" th:if="${bestSellingVariants != null && !bestSellingVariants.isEmpty()}">
+  <!-- Bộ lọc tìm kiếm sản phẩm đẹp hơn -->
+  <div class="row mb-4 justify-content-center">
+    <div class="container-fluid" style="max-width:1200px; margin:auto;">
+      <div class="shop-filter-card" style="padding:20px 16px 8px 16px;">
+        <form id="productFilterForm" th:action="@{/shop}" method="get">
+          <div class="row g-3 align-items-center">
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-money text-success"></i> Giá từ</label>
+                <input type="number" name="minPrice" class="form-control" placeholder="Tối thiểu" th:value="${minPrice}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-money text-danger"></i> Giá đến</label>
+                <input type="number" name="maxPrice" class="form-control" placeholder="Tối đa" th:value="${maxPrice}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-paint-brush text-primary"></i> Màu sắc</label>
+                <select name="color" class="form-select">
+                  <option value="">Tất cả</option>
+                  <option th:each="c : ${colors}" th:value="${c.id}" th:text="${c.colorName}" th:selected="${color} == ${c.id}"></option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-industry text-info"></i> Thương hiệu</label>
+                <select name="brand" class="form-select">
+                  <option value="">Tất cả</option>
+                  <option th:each="b : ${brands}" th:value="${b.id}" th:text="${b.name}" th:selected="${brand} == ${b.id}"></option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-arrows-v text-warning"></i> Kích thước</label>
+                <select name="size" class="form-select">
+                  <option value="">Tất cả</option>
+                  <option th:each="s : ${sizes}" th:value="${s.id}" th:text="${s.name}" th:selected="${size} == ${s.id}"></option>
+                </select>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="fa fa-filter"></i> Lọc
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+    <!-- Sản phẩm bán chạy nhất -->
+    <div class="row"
+      th:if="${bestSellingVariants != null && !bestSellingVariants.isEmpty()} and ${minPrice == null} and ${maxPrice == null} and ${color == null} and ${brand == null} and ${size == null}">
     <div class="col-lg-12">
       <div class="navy-line"></div>
       <h1 class="text-center">
@@ -46,8 +95,9 @@
     </div>
   </div>
 
-  <!-- Sản phẩm mới nhất -->
-  <div class="row" th:if="${newestVariants != null && !newestVariants.isEmpty()}">
+    <!-- Sản phẩm mới nhất -->
+    <div class="row"
+      th:if="${newestVariants != null && !newestVariants.isEmpty()} and ${minPrice == null} and ${maxPrice == null} and ${color == null} and ${brand == null} and ${size == null}">
     <div class="col-lg-12">
       <div class="navy-line"></div>
       <h1 class="text-center">
@@ -95,7 +145,9 @@
     <div class="col-lg-12">
       <div class="navy-line"></div>
       <h1 class="text-center">
-        <i class="fa fa-shopping-bag" style="color: #1ab394;"></i> Tất Cả Sản Phẩm
+        <i class="fa fa-shopping-bag" style="color: #1ab394;"></i>
+        <span th:if="${minPrice != null or maxPrice != null or color != null or brand != null or size != null}">Kết Quả Tìm Kiếm</span>
+        <span th:if="${minPrice == null and maxPrice == null and color == null and brand == null and size == null}">Tất Cả Sản Phẩm</span>
       </h1>
       <div class="navy-line"></div>
       <br />
