@@ -50,40 +50,65 @@ public class GHNService {
     public double calculateShippingFee(String toProvinceCode, String toCommuneCode,
                                      Integer weight, Double totalValue) {
         try {
-            // Bước 1: Lấy District ID từ Province Code
-            String toDistrictId = getDistrictIdFromProvince(toProvinceCode);
-            if (toDistrictId == null) {
+            System.out.println("🚀 GHNService.calculateShippingFee() called with:");
+            System.out.println("   - Province Code: " + toProvinceCode);
+            System.out.println("   - Commune Code: " + toCommuneCode);
+            System.out.println("   - Weight: " + weight + "g");
+            System.out.println("   - Total Value: " + totalValue);
+
+            // Bước 1: Lấy Province ID từ Province Code
+            Integer toProvinceId = convertProvinceCodeToGHNId(toProvinceCode);
+            System.out.println("   - Province ID from Province Code: " + toProvinceId);
+            if (toProvinceId == null) {
+                System.out.println("❌ Province ID is null, returning default 30000");
                 return getDefaultShippingFee();
             }
 
-            // Bước 2: Lấy Ward Code từ Commune Code
-            String toWardCode = getWardCodeFromCommune(toCommuneCode, toDistrictId);
+            // Bước 2: Lấy Ward Code từ Commune Code (gọi trực tiếp với province_id, không cần district)
+            String toWardCode = getWardCodeFromCommuneByProvince(toCommuneCode, toProvinceId);
+            System.out.println("   - Ward Code from Commune: " + toWardCode);
             if (toWardCode == null) {
+                System.out.println("❌ Ward Code is null, returning default 30000");
                 return getDefaultShippingFee();
             }
 
-            // Bước 3: Gọi API tính phí
-            return calculateFeeFromGHN(toDistrictId, toWardCode, weight != null ? weight : 500,
+            // Bước 3: Lấy District ID từ Province (GHN fee API vẫn cần district_id)
+            String toDistrictId = getDistrictIdFromProvince(toProvinceCode);
+            System.out.println("   - District ID from Province: " + toDistrictId);
+            if (toDistrictId == null) {
+                System.out.println("⚠️ District ID is null but continuing with fee calculation");
+            }
+
+            // Bước 4: Gọi API tính phí
+            double fee = calculateFeeFromGHN(toDistrictId != null ? toDistrictId : toProvinceId.toString(), toWardCode, weight != null ? weight : 500,
                                      totalValue != null ? totalValue : 0);
+            System.out.println("✅ GHN returned fee: " + fee);
+            return fee;
 
         } catch (Exception e) {
-            System.err.println("Error calculating shipping fee with GHN: " + e.getMessage());
+            System.err.println("❌ Error calculating shipping fee with GHN: " + e.getMessage());
+            e.printStackTrace();
             return getDefaultShippingFee();
         }
     }
 
     private String getDistrictIdFromProvince(String provinceCode) {
         try {
-            String url = ghnApiUrl + "/master-data/district";
+            Integer provinceId = convertProvinceCodeToGHNId(provinceCode);
+            System.out.println("   📌 System Province Code: " + provinceCode + " → GHN Province ID: " + provinceId);
+
+            // GHN API endpoint - URL không có /v2
+            String url = ghnApiUrl.replace("/v2", "") + "/master-data/district";
+            System.out.println("   📤 Request URL: " + url);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Token", ghnToken);
+            headers.set("ShopId", ghnShopId);
 
-            // Body request với province_id (GHN sử dụng ID khác với mã tỉnh của ta)
+            // Request body với province_id
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("province_id", convertProvinceCodeToGHNId(provinceCode));
-
+            requestBody.put("province_id", provinceId);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
@@ -103,17 +128,94 @@ public class GHNService {
         return null;
     }
 
-    private String getWardCodeFromCommune(String communeCode, String districtId) {
+    private String getWardCodeFromCommuneByProvince(String communeCode, Integer provinceId) {
         try {
-            String url = ghnApiUrl + "/master-data/ward";
+            // GHN API không hỗ trợ lấy ward trực tiếp từ province
+            // Thay vào đó, sử dụng phương pháp fallback: gọi district endpoint với province_id
+            System.out.println("   📌 Getting district from province ID: " + provinceId);
+
+            // URL không có /v2
+            String districtUrl = ghnApiUrl.replace("/v2", "") + "/master-data/district";
+            System.out.println("   📤 Request URL: " + districtUrl);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Token", ghnToken);
+            headers.set("ShopId", ghnShopId);
 
+            // Request body với province_id (POST body, không phải query parameter)
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("province_id", provinceId);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(districtUrl, HttpMethod.POST, entity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode jsonNode = objectMapper.readTree(response.getBody());
+                JsonNode data = jsonNode.get("data");
+
+                if (data != null && data.isArray() && data.size() > 0) {
+                    // Lấy district ID đầu tiên
+                    String districtId = data.get(0).get("DistrictID").asText();
+                    System.out.println("   📌 Got district ID: " + districtId + ", now fetching wards...");
+
+                    // Bây giờ gọi ward endpoint với district_id
+                    return getWardCodeFromDistrict(communeCode, districtId);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting ward code by province: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private String getWardCodeFromDistrict(String communeCode, String districtId) {
+        try {
+            // GHN API endpoint - POST body thay vì query parameter (không có /v2)
+            String url = ghnApiUrl.replace("/v2", "") + "/master-data/ward";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Token", ghnToken);
+            headers.set("ShopId", ghnShopId);
+
+            // Request body với district_id
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("district_id", Integer.parseInt(districtId));
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode jsonNode = objectMapper.readTree(response.getBody());
+                JsonNode data = jsonNode.get("data");
+
+                if (data != null && data.isArray() && data.size() > 0) {
+                    // Lấy ward đầu tiên (thường là phường/xã chính của quận)
+                    return data.get(0).get("WardCode").asText();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting ward code from district: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // ============ DEPRECATED METHODS (Keeping for backward compatibility) ============
+    // Giữ lại để không làm broken các method khác nếu có gọi
+
+    private String getWardCodeFromCommune(String communeCode, String districtId) {
+        try {
+            // GHN API endpoint với district_id làm query parameter (không có /v2)
+            String url = ghnApiUrl.replace("/v2", "") + "/master-data/ward?district_id=" + districtId;
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Token", ghnToken);
+            headers.set("ShopId", ghnShopId);
+
+            // Request body trống
+            Map<String, Object> requestBody = new HashMap<>();
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);

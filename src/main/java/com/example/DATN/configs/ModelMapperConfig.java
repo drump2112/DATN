@@ -15,17 +15,15 @@ import com.example.DATN.repositories.ProductVariantImageRepository;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ModelMapperConfig {
 
-	private final ProductVariantImageRepository imageRepository;
-
-	public ModelMapperConfig(ProductVariantImageRepository imageRepository) {
-		this.imageRepository = imageRepository;
-	}
+	@Autowired(required = false)
+	private ProductVariantImageRepository imageRepository;
 
 	@Bean
 	public ModelMapper modelMapper() {
@@ -44,49 +42,54 @@ public class ModelMapperConfig {
 			return dest;
 		});
 
-		TypeMap<ProductVariant, ProductVariantDTO> variantTypeMap = mapper.createTypeMap(ProductVariant.class,
-				ProductVariantDTO.class);
-		variantTypeMap.setPostConverter(context -> {
-			ProductVariant source = context.getSource();
-			ProductVariantDTO dest = context.getDestination();
+		try {
+			TypeMap<ProductVariant, ProductVariantDTO> variantTypeMap = mapper.createTypeMap(ProductVariant.class,
+					ProductVariantDTO.class);
+			variantTypeMap.setPostConverter(context -> {
+				ProductVariant source = context.getSource();
+				ProductVariantDTO dest = context.getDestination();
 
-			if (source.getProduct() != null) {
-				dest.setProductId(source.getProduct().getId());
-				dest.setProductName(source.getProduct().getName());
-				dest.setProductDescription(source.getProduct().getDescription());
+				if (source.getProduct() != null) {
+					dest.setProductId(source.getProduct().getId());
+					dest.setProductName(source.getProduct().getName());
+					dest.setProductDescription(source.getProduct().getDescription());
 
-				if (source.getProduct().getBrand() != null) {
-					dest.setBrandId(source.getProduct().getBrand().getId());
-					dest.setBrandName(source.getProduct().getBrand().getName());
+					if (source.getProduct().getBrand() != null) {
+						dest.setBrandId(source.getProduct().getBrand().getId());
+						dest.setBrandName(source.getProduct().getBrand().getName());
+					}
+					if (source.getProduct().getCategory() != null) {
+						dest.setCategoryId(source.getProduct().getCategory().getId());
+						dest.setCategoryName(source.getProduct().getCategory().getName());
+					}
 				}
-				if (source.getProduct().getCategory() != null) {
-					dest.setCategoryId(source.getProduct().getCategory().getId());
-					dest.setCategoryName(source.getProduct().getCategory().getName());
+
+				if (source.getSize() != null) {
+					dest.setSizeId(source.getSize().getId());
+					dest.setSizeName(source.getSize().getName());
 				}
-			}
 
-			if (source.getSize() != null) {
-				dest.setSizeId(source.getSize().getId());
-				dest.setSizeName(source.getSize().getName());
-			}
+				if (source.getColor() != null) {
+					dest.setColorId(source.getColor().getId());
+					dest.setColorName(source.getColor().getName());
+				}
 
-			if (source.getColor() != null) {
-				dest.setColorId(source.getColor().getId());
-				dest.setColorName(source.getColor().getName());
-			}
+				// Lấy ảnh theo ProductId + ColorId
+				if (source.getProduct() != null && source.getColor() != null) {
+					var images = imageRepository.findByProductIdAndColorIdOrderBySortOrder(
+							source.getProduct().getId(),
+							source.getColor().getId());
+					dest.setImageUrls(images.stream()
+							.map(ProductVariantImage::getImageUrl)
+							.collect(Collectors.toList()));
+				}
 
-			// Lấy ảnh theo ProductId + ColorId
-			if (source.getProduct() != null && source.getColor() != null) {
-				var images = imageRepository.findByProductIdAndColorIdOrderBySortOrder(
-						source.getProduct().getId(),
-						source.getColor().getId());
-				dest.setImageUrls(images.stream()
-						.map(ProductVariantImage::getImageUrl)
-						.collect(Collectors.toList()));
-			}
-
-			return dest;
-		});
+				return dest;
+			});
+		} catch (Exception e) {
+			// Silently ignore if ProductVariantDTO mapping fails during initialization
+			System.err.println("Warning: Could not initialize ProductVariantDTO mapping: " + e.getMessage());
+		}
 
 		TypeMap<Order, OrderDTO> orderTypeMap = mapper.createTypeMap(Order.class, OrderDTO.class);
 		orderTypeMap.setPostConverter(context -> {

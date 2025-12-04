@@ -38,4 +38,10 @@ public class DashboardController {
 		return dashboardService.getRevenueByDate(date);
 	}
 
+	@GetMapping("/api/dashboard/revenue-by-date-range")
+	@ResponseBody
+	public DashboardStatsDto getRevenueByDateRange(@RequestParam String startDate, @RequestParam String endDate) {
+		return dashboardService.getDashboardStatsByDateRange(startDate, endDate);
+	}
+
 }

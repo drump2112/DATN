@@ -94,6 +94,43 @@ public class DashboardService {
         }
     }
 
+    public DashboardStatsDto getDashboardStatsByDateRange(String startDate, String endDate) {
+        logger.info("Getting dashboard stats for date range: {} to {}", startDate, endDate);
+
+        try {
+            List<MonthlyRevenueDto> monthlyRevenue = getMonthlyRevenueByDateRange(startDate, endDate);
+
+            DashboardStatsDto stats = DashboardStatsDto.builder()
+                    .monthlyRevenue(monthlyRevenue)
+                    .build();
+
+            logger.info("Dashboard stats for date range collected: monthlyRevenue.size={}", monthlyRevenue.size());
+            return stats;
+        } catch (Exception e) {
+            logger.error("Error getting dashboard stats for date range", e);
+            return DashboardStatsDto.builder()
+                    .monthlyRevenue(new ArrayList<>())
+                    .build();
+        }
+    }
+
+    private List<MonthlyRevenueDto> getMonthlyRevenueByDateRange(String startDate, String endDate) {
+        try {
+            List<Object[]> results = orderRepository.findMonthlyRevenueByDateRange(startDate, endDate);
+            return results.stream()
+                    .map(result -> MonthlyRevenueDto.builder()
+                            .month(((Number) result[0]).intValue())
+                            .year(((Number) result[1]).intValue())
+                            .revenue((BigDecimal) result[2])
+                            .orderCount(((Number) result[3]).longValue())
+                            .build())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error getting monthly revenue by date range", e);
+            return new ArrayList<>();
+        }
+    }
+
     private Long getTotalProducts() {
         return productRepository.count();
     }

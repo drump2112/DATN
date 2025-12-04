@@ -190,4 +190,14 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
          "END, p.id, p.Name " +
          "ORDER BY quarter, SUM(oi.quantity) DESC", nativeQuery = true)
   List<Object[]> findQuarterlyProductSales(@Param("year") int year);
+
+  @Query(value = "SELECT MONTH(ord.OrderDate) as month, YEAR(ord.OrderDate) as year, " +
+         "SUM(ord.TotalAmount) as revenue, COUNT(ord.id) as orderCount " +
+         "FROM Orders ord " +
+         "WHERE ord.Status = 'COMPLETED' " +
+         "AND CAST(ord.OrderDate AS DATE) >= CAST(:startDate AS DATE) " +
+         "AND CAST(ord.OrderDate AS DATE) <= CAST(:endDate AS DATE) " +
+         "GROUP BY MONTH(ord.OrderDate), YEAR(ord.OrderDate) " +
+         "ORDER BY year ASC, month ASC", nativeQuery = true)
+  List<Object[]> findMonthlyRevenueByDateRange(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

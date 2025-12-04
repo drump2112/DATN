@@ -1,136 +1,131 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
 <th:block th:fragment="content">
-   <div class="row">
-       <div class="ibox float-e-margins">
-           <div class="ibox-title">
-               <h5>Danh Sách Sự Kiện Giảm Giá</h5>
-           </div>
-           <div class="ibox-content">
-               <div class="row">
-                   <div class="col-sm-2 m-b-xs">
-                       <select class="input-sm form-control input-s-sm inline"
-                               id="eventStatusFilter">
-                           <option value="">Chọn trạng thái</option>
-                           <option value="1">Đang Hoạt Động</option>
-                           <option value="0">Ngừng Hoạt Động</option>
-                       </select>
-                   </div>
-                   <div class="col-sm-4 m-b-xs">
-                       <div class="input-group">
-                           <input type="text" placeholder="Tìm Kiếm Event"
-                                  class="input-sm form-control" id="eventSearchInput">
-                           <span class="input-group-btn">
-                                                   <button type="button" class="btn btn-sm btn-primary"
-                                                           onclick="searchEvent(0)">
-                                                       <i class="fa fa-search"></i>
-                                                   </button>
-                                               </span>
-                       </div>
-                   </div>
-                   <div class="col-sm-2 m-b-xs" style="margin-bottom:  21px;">
-                       <div class="input-group">
-                           <button id="resetFilterBtn" class="btn btn-info" type="button"><i
-                                   class="fa fa-mail-reply-all"></i></button>
-                       </div>
-                   </div>
-                   <div class="col-sm-4">
-           <span class="input-group-btn">
-           <button type="button" class="btn btn-sm btn-primary pull-right"
-                   id="btnOpenAddEvent">
-           <i class="fa fa-plus-circle"></i> Thêm
-           </button></span></div>
-               </div>
-               <div class="ibox-content" id="eventTableContainer">
-                   <th:block th:replace="admin/voucher/tableEvent :: table"></th:block>
-               </div>
-           </div>
-       </div>
-   </div>
-   <div class="modal inmodal" id="modalEvent" tabindex="-1" role="dialog" aria-hidden="true"
+    <div class="row">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Danh Sách Sự Kiện Giảm Giá</h5>
+            </div>
+            <div class="ibox-content">
+                <div class="row">
+                    <div class="col-sm-2 m-b-xs">
+                        <select class="input-sm form-control input-s-sm inline" id="eventStatusFilter">
+                            <option value="">Chọn trạng thái</option>
+                            <option value="1">Đang Hoạt Động</option>
+                            <option value="0">Ngừng Hoạt Động</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-4 m-b-xs">
+                        <div class="input-group">
+                            <input type="text" placeholder="Tìm Kiếm Event" class="input-sm form-control"
+                                id="eventSearchInput">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="searchEvent(0)">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-sm-2 m-b-xs" style="margin-bottom:  21px;">
+                        <div class="input-group">
+                            <button id="resetFilterBtn" class="btn btn-info" type="button"><i
+                                    class="fa fa-mail-reply-all"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-sm btn-primary pull-right" id="btnOpenAddEvent">
+                                <i class="fa fa-plus-circle"></i> Thêm
+                            </button></span>
+                    </div>
+                </div>
+                <div class="ibox-content" id="eventTableContainer">
+                    <th:block th:replace="admin/voucher/tableEvent :: table"></th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal inmodal" id="modalEvent" tabindex="-1" role="dialog" aria-hidden="true"
         style="padding-right: 15px;" data-backdrop="static" data-keyboard="false">
-       <div class="modal-dialog" style="width: 1200px;">
-           <div class="modal-content animated bounceInRight">
-               <div class="modal-header">
-                   <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
-                           class="sr-only">Close</span></button>
-                   <h4 class="modal-title" id="eventModalTitle">Thêm Đợt Giảm Giá</h4>
-               </div>
-               <div class="modal-body">
-                   <div class="row">
-                       <form id="eventForm" role="form">
-                           <input type="hidden" id="eventId" name="id">
-                           <div class="col-sm-6 b-r">
-                               <div class="form-group">
-                                   <label>Mã Sự Kiện</label>
-                                   <input type="text" id="eventCode" name="code" placeholder="Mã Sự Kiện"
-                                          class="form-control">
-                               </div>
-                               <div class="form-group">
-                                   <label>Tên Sự Kiện</label>
-                                   <input type="text" id="eventName" name="name" placeholder="Nhập Tên Sự Kiện"
-                                          class="form-control">
-                               </div>
-                               <div class="form-group">
-                                   <label>Kiểu Giảm Giá</label>
-                                   <select id="eventDiscountType" name="discountType" class="form-control">
-                                       <option value="" selected>Chọn loại giảm giá</option>
-                                       <option value="PERCENT">Phần trăm (%)</option>
-                                       <option value="FIXED">Số tiền cố định</option>
-                                   </select>
-                               </div>
-                               <div class="form-group">
-                                   <label>Giá Trị Giảm</label>
-                                   <input type="number" id="eventDiscountValue" name="discountValue"
-                                          placeholder="Giá trị giảm" class="form-control">
-                               </div>
-
-
-
-
-                           </div>
-                           <div class="col-sm-6">
-                               <div class="form-group">
-                                   <label>Giá Trị Giảm Tối Đa</label>
-                                   <input type="number" id="eventMaxDiscountValue" name="maxDiscountValue"
-                                          placeholder="Giảm tối đa" class="form-control">
-                               </div>
-                               <div class="form-group">
-                                   <label>Ngày Bắt Đầu</label>
-                                   <input type="date" id="eventStartDate" name="startDate" class="form-control">
-                               </div>
-                               <div class="form-group">
-                                   <label>Ngày Kết Thúc</label>
-                                   <input type="date" id="eventEndDate" name="endDate" class="form-control">
-                               </div>
-                               <div class="form-group">
-                                   <label>Trạng Thái</label>
-                                   <select class="form-control" id="eventIsActive" name="isActive">
-                                       <option value="" selected>Chọn trạng thái</option>
-                                       <option value="1">Hoạt Động</option>
-                                       <option value="0">Không Hoạt Động</option>
-                                   </select>
-                               </div>
-                           </div>
-                           <div style="margin-right: 14px; clear: both;">
-                               <button id="btnUpdateEvent" class="btn btn-sm btn-success pull-right m-t-n-xs"
-                                       type="button" style="display: none;">
-                                   <strong>Cập Nhật</strong>
-                               </button>
-                               <button id="btnSaveEvent" class="btn btn-sm btn-primary pull-right m-t-n-xs"
-                                       type="button" style="margin-right:6px;">
-                                   <strong>Thêm/Lưu</strong>
-                               </button>
-                           </div>
-                       </form>
-                   </div>
-               </div>
-           </div>
-       </div>
-   </div>
-   <th:block th:fragment="script">
-       <script th:src="@{/js/admin/event.js}"></script>
-   </th:block>
+        <div class="modal-dialog" style="width: 1200px;">
+            <div class="modal-content animated bounceInRight">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="eventModalTitle">Thêm Đợt Giảm Giá</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <form id="eventForm" role="form">
+                            <input type="hidden" id="eventId" name="id">
+                            <div class="col-sm-6 b-r">
+                                <div class="form-group">
+                                    <label>Mã Sự Kiện</label>
+                                    <input type="text" id="eventCode" name="code" placeholder="Mã Sự Kiện"
+                                        class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tên Sự Kiện</label>
+                                    <input type="text" id="eventName" name="name" placeholder="Nhập Tên Sự Kiện"
+                                        class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Kiểu Giảm Giá</label>
+                                    <select id="eventDiscountType" name="discountType" class="form-control">
+                                        <option value="" selected>Chọn loại giảm giá</option>
+                                        <option value="PERCENT">Phần trăm (%)</option>
+                                        <option value="FIXED">Số tiền cố định</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Giá Trị Giảm</label>
+                                    <input type="number" id="eventDiscountValue" name="discountValue"
+                                        placeholder="Giá trị giảm" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label>Ngày Bắt Đầu</label>
+                                    <input type="date" id="eventStartDate" name="startDate" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Ngày Kết Thúc</label>
+                                    <input type="date" id="eventEndDate" name="endDate" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Trạng Thái</label>
+                                    <select class="form-control" id="eventIsActive" name="isActive">
+                                        <option value="" selected>Chọn trạng thái</option>
+                                        <option value="1">Hoạt Động</option>
+                                        <option value="0">Không Hoạt Động</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Sản Phẩm Áp Dụng</label>
+                                    <select id="eventProductVariants" name="productVariantIds" class="form-control"
+                                        multiple="multiple" style="width: 100%;">
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-right: 14px; clear: both;">
+                                <button id="btnUpdateEvent" class="btn btn-sm btn-success pull-right m-t-n-xs"
+                                    type="button" style="display: none;">
+                                    <strong>Cập Nhật</strong>
+                                </button>
+                                <button id="btnSaveEvent" class="btn btn-sm btn-primary pull-right m-t-n-xs"
+                                    type="button" style="margin-right:6px;">
+                                    <strong>Thêm/Lưu</strong>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:fragment="script">
+        <script th:src="@{/js/admin/event.js}"></script>
+    </th:block>
 </th:block>
-</html>
 
+</html>

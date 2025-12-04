@@ -112,9 +112,17 @@
           <div class="ibox-title">
             <h5>Doanh thu theo tháng <span id="currentYear"></span></h5>
             <div class="pull-right">
-              <div class="btn-group">
-                <button type="button" class="btn btn-xs btn-white active">Doanh thu</button>
-                <button type="button" class="btn btn-xs btn-white">Số đơn</button>
+              <div style="display: flex; align-items: center; gap: 10px; margin-right: 10px;">
+                <label style="margin: 0; font-weight: 500;">Từ ngày:</label>
+                <input type="date" id="chartStartDate" class="form-control" style="width: 150px; padding: 4px 8px; font-size: 12px;">
+                <label style="margin: 0; font-weight: 500;">Đến ngày:</label>
+                <input type="date" id="chartEndDate" class="form-control" style="width: 150px; padding: 4px 8px; font-size: 12px;">
+                <button type="button" class="btn btn-xs btn-primary" id="filterChartBtn" style="padding: 4px 12px;">
+                  <i class="fa fa-filter"></i> Lọc
+                </button>
+                <button type="button" class="btn btn-xs btn-default" id="resetChartFilterBtn" style="padding: 4px 12px;">
+                  <i class="fa fa-refresh"></i> Reset
+                </button>
               </div>
             </div>
           </div>
@@ -222,11 +230,51 @@
       $(document).ready(function() {
         $('#currentYear').text(new Date().getFullYear());
 
+        // Set default date range (last 12 months)
+        const today = new Date();
+        const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+        $('#chartEndDate').val(today.toISOString().split('T')[0]);
+        $('#chartStartDate').val(lastYear.toISOString().split('T')[0]);
+
         loadRealDashboardData();
 
         $('#revenuePeriodSelect').change(function() {
           const selectedPeriod = $(this).val();
           loadRevenueByPeriod(selectedPeriod);
+        });
+
+        // Chart filter events
+        $('#filterChartBtn').click(function() {
+          const startDate = $('#chartStartDate').val();
+          const endDate = $('#chartEndDate').val();
+
+          if (!startDate || !endDate) {
+            if (typeof toastr !== 'undefined') {
+              toastr.warning('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc');
+            } else {
+              alert('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc');
+            }
+            return;
+          }
+
+          if (new Date(startDate) > new Date(endDate)) {
+            if (typeof toastr !== 'undefined') {
+              toastr.warning('Ngày bắt đầu không được lớn hơn ngày kết thúc');
+            } else {
+              alert('Ngày bắt đầu không được lớn hơn ngày kết thúc');
+            }
+            return;
+          }
+
+          loadChartByDateRange(startDate, endDate);
+        });
+
+        $('#resetChartFilterBtn').click(function() {
+          const today = new Date();
+          const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+          $('#chartEndDate').val(today.toISOString().split('T')[0]);
+          $('#chartStartDate').val(lastYear.toISOString().split('T')[0]);
+          loadRealDashboardData();
         });
       });
 
@@ -264,6 +312,42 @@
               console.error('Failed to clear payment stats after API error:', e);
             }
             showErrorMessage('Không thể tải dữ liệu dashboard. Lỗi: ' + error);
+          }
+        });
+      }
+
+      function loadChartByDateRange(startDate, endDate) {
+        $('#flot-dashboard-chart').html('<div class="text-center" style="padding: 40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><small>Đang tải dữ liệu...</small></div>');
+
+        $.ajax({
+          url: '/admin/api/dashboard/revenue-by-date-range',
+          method: 'GET',
+          data: {
+            startDate: startDate,
+            endDate: endDate
+          },
+          success: function(data) {
+            console.log('Chart data received:', data);
+            if (data.monthlyRevenue && data.monthlyRevenue.length > 0) {
+              renderMonthlyRevenueChart(data.monthlyRevenue);
+            } else {
+              $('#flot-dashboard-chart').html(
+                '<div class="text-center" style="padding: 40px; color: #999;">' +
+                  '<i class="fa fa-bar-chart" style="font-size: 48px; margin-bottom: 10px;"></i>' +
+                  '<p>Không có dữ liệu trong khoảng thời gian này</p>' +
+                '</div>'
+              );
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('Chart API failed:', error);
+            $('#flot-dashboard-chart').html(
+              '<div class="text-center" style="padding: 40px; color: #dc3545;">' +
+                '<i class="fa fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 10px;"></i>' +
+                '<p>Không thể tải dữ liệu: ' + error + '</p>' +
+              '</div>'
+            );
+            showErrorMessage('Không thể tải dữ liệu biểu đồ: ' + error);
           }
         });
       }

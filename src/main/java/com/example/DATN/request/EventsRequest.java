@@ -5,6 +5,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Setter
 @AllArgsConstructor
@@ -33,6 +34,5 @@ public class EventsRequest {
 
   private Boolean isActive;
 
-  // chưa có chức năng tạo sự kiện giảm giá theo sản phẩm
-  // private List<SaleEventProduct> saleEventProducts;
+  private List<Integer> productVariantIds; // IDs của ProductVariant được chọn
 }

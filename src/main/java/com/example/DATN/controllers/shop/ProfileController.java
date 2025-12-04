@@ -4,12 +4,14 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -289,5 +291,64 @@ public class ProfileController {
     public String addressManagementPage(Model model) {
         model.addAttribute("showSlide", false);
         return "shop/address-management";
+    }
+
+    @GetMapping("/api/current-address")
+    @ResponseBody
+    @Transactional(readOnly = true)
+    public ResponseEntity<Map<String, Object>> getCurrentAddress() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Get current user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+                response.put("success", false);
+                response.put("message", "Người dùng chưa đăng nhập");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            User currentUser = userDetails.getUser();
+
+            // Initialize lazy-loaded relationships using Hibernate.initialize()
+            if (currentUser != null && currentUser.getAddress() != null) {
+                Hibernate.initialize(currentUser.getAddress());
+                if (currentUser.getAddress().getProvince() != null) {
+                    Hibernate.initialize(currentUser.getAddress().getProvince());
+                }
+                if (currentUser.getAddress().getCommune() != null) {
+                    Hibernate.initialize(currentUser.getAddress().getCommune());
+                }
+            }
+
+            // Return address information (even if null)
+            Map<String, Object> addressInfo = new HashMap<>();
+
+            if (currentUser != null && currentUser.getAddress() != null) {
+                addressInfo.put("fullAddress", currentUser.getAddress().getFullAddress());
+
+                if (currentUser.getAddress().getProvince() != null) {
+                    addressInfo.put("provinceCode", currentUser.getAddress().getProvince().getProvinceCode());
+                    addressInfo.put("provinceName", currentUser.getAddress().getProvince().getProvinceName());
+                }
+
+                if (currentUser.getAddress().getCommune() != null) {
+                    addressInfo.put("communeCode", currentUser.getAddress().getCommune().getCommuneCode());
+                    addressInfo.put("communeName", currentUser.getAddress().getCommune().getCommuneName());
+                }
+            }
+
+            response.put("success", true);
+            response.put("address", addressInfo);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error getting current address: ", e);
+            response.put("success", false);
+            response.put("message", "Có lỗi xảy ra khi lấy địa chỉ");
+            return ResponseEntity.internalServerError().body(response);
+        }
     }
 }

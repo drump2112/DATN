@@ -296,13 +296,17 @@ $(document).ready(function () {
 
     function calculateTotals(cart) {
         const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        const shipping = 30000;
+        // Lấy phí vận chuyển hiện tại (có thể được tính từ GHN hoặc mặc định 30000)
+        const currentShipping = parseFloat($("#shippingValue").text().replace(/[^\d]/g, '')) || 30000;
         const discount = appliedVoucher ? appliedVoucher.discount : 0;
-        const total = Math.max(0, subtotal + shipping - discount);
+        const total = Math.max(0, subtotal + currentShipping - discount);
 
         // Cập nhật giá trị hiển thị
         $("#totalAmount").text(subtotal.toLocaleString() + " VNĐ");
-        $("#shippingValue").text(shipping.toLocaleString() + " VNĐ");
+        // Chỉ update shippingValue nếu nó chưa được set bởi GHN (giá trị mặc định)
+        if (!$("#shippingValue").text().match(/\d+/)) {
+            $("#shippingValue").text(currentShipping.toLocaleString() + " VNĐ");
+        }
         $("#totalPayment").text(total.toLocaleString() + " VNĐ");
         $("#appliedVoucherCode").val(appliedVoucher ? appliedVoucher.code : "");
 
@@ -524,6 +528,9 @@ $(document).ready(function () {
         .fail(function () {
             loadVouchers(0);
         });
+
+    // Tính phí ship cho địa chỉ hiện tại khi load trang
+    loadInitialShippingFee();
 
     // Event listener cho nút áp dụng voucher gợi ý
     $(document).on('click', '#applySuggestedVoucher', applySuggestedVoucher);
@@ -1289,8 +1296,21 @@ $(document).ready(function () {
             $('#shippingProvince').prop('required', false);
             $('#shippingCommune').prop('required', false);
             $('#shippingSpecificAddress').prop('required', false);
-            // Reset giá phí ship về mặc định khi dùng địa chỉ hiện tại
-            calculateShippingFee(null, null);
+
+            // Tính lại phí ship theo địa chỉ hiện tại khi chọn "Giao đến địa chỉ hiện tại"
+            const currentAddress = $('#currentFullAddress');
+            // Dùng .attr() để lấy string
+            const provinceCode = currentAddress.attr('data-province-code');
+            const communeCode = currentAddress.attr('data-commune-code');
+
+            if (provinceCode && communeCode) {
+                console.log('Recalculating shipping fee for current address:', {provinceCode, communeCode});
+                calculateShippingFee(provinceCode, communeCode);
+            } else {
+                console.log('No current address, using default fee');
+                calculateShippingFee(null, null);
+            }
+
             // Cập nhật map về địa chỉ hiện tại
             updateMapWithCurrentAddress();
         }
@@ -1394,32 +1414,41 @@ function calculateShippingFee(provinceCode, communeCode) {
     let shippingFee = 30000; // Phí mặc định
 
     if (provinceCode && communeCode) {
+        console.log('calculateShippingFee() called with:', {provinceCode, communeCode});
+
         // Lấy thông tin đơn hàng để tính phí chính xác
         const totalValue = parseFloat($('#totalAmount').text().replace(/[^\d]/g, '')) || 0;
         const estimatedWeight = calculateEstimatedWeight(); // Ước tính trọng lượng từ giỏ hàng
 
-        // Gọi API GHN tính phí ship
-        const params = new URLSearchParams({
-            provinceCode: provinceCode,
-            communeCode: communeCode,
-            weight: estimatedWeight,
-            totalValue: totalValue
-        });
+        console.log('Request payload:', {provinceCode, communeCode, weight: estimatedWeight, totalValue});
 
-        $.get(`/api/shipping-fee?${params.toString()}`)
-            .done(function(response) {
+        // Gọi API tính phí ship qua GHN
+        $.ajax({
+            url: '/api/orders/calculate-shipping-fee',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                provinceCode: provinceCode,
+                communeCode: communeCode,
+                weight: estimatedWeight,
+                totalValue: totalValue
+            }),
+            success: function(response) {
                 shippingFee = response.fee || 30000;
-                console.log(`GHN shipping fee: ${shippingFee} VNĐ for ${provinceCode}-${communeCode}`);
+                console.log(`GHN shipping fee received: ${shippingFee.toLocaleString()} VNĐ for ${provinceCode}-${communeCode}`, response);
                 updateShippingFee(shippingFee);
                 updateShippingFeePreview(shippingFee);
-            })
-            .fail(function(xhr) {
-                console.warn('Error calculating shipping fee with GHN, using fallback:', xhr);
+            },
+            error: function(xhr) {
+                console.error('Error calculating shipping fee with GHN:', xhr);
+                console.log('Response text:', xhr.responseText);
                 updateShippingFee(30000);
                 updateShippingFeePreview(30000);
-            });
+            }
+        });
     } else {
         // Sử dụng phí mặc định
+        console.log('No address selected (Province:', provinceCode, ', Commune:', communeCode, '), using default shipping fee (30,000 VNĐ)');
         updateShippingFee(30000);
     }
 }
@@ -1579,5 +1608,26 @@ function updateShippingFeePreview(fee) {
         preview.fadeIn(300);
     } else {
         preview.fadeOut(300);
+    }
+}
+
+// Tính phí ship ban đầu khi load trang
+function loadInitialShippingFee() {
+    // Lấy provinceCode và communeCode từ địa chỉ hiện tại
+    const currentAddress = $('#currentFullAddress');
+    // Dùng .attr() thay vì .data() để lấy string, không bị convert sang number
+    const provinceCode = currentAddress.attr('data-province-code');
+    const communeCode = currentAddress.attr('data-commune-code');
+
+    console.log('Loading initial shipping fee with current address:');
+    console.log('   - Province Code:', provinceCode, '(type:', typeof provinceCode, ')');
+    console.log('   - Commune Code:', communeCode, '(type:', typeof communeCode, ')');
+
+    if (provinceCode && communeCode) {
+        // Tính phí ship cho địa chỉ hiện tại
+        calculateShippingFee(provinceCode, communeCode);
+    } else {
+        console.log('No current address found, using default shipping fee (30,000 VNĐ)');
+        updateShippingFee(30000);
     }
 }

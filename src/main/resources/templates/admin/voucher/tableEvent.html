@@ -46,7 +46,8 @@
                                 data-maxdiscountvalue=${item.maxDiscountValue},
                                 data-startdate=${item.startDate},
                                 data-enddate=${item.endDate},
-                                data-isactive=${item.isActive}"
+                                data-isactive=${item.isActive},
+                                data-productvariantids=${#strings.arrayJoin(item.productVariantIds, ',')}"
                        th:title="'Thông tin và cập nhật'"
                        onclick="handleEventDetailClick(this)"
                >

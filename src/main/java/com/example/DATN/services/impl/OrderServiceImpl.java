@@ -77,7 +77,6 @@ public class OrderServiceImpl implements OrderService {
     public Order createCounterOrder(CounterOrderRequest request) {
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        // Kiểm tra tồn kho trước khi tạo đơn
         for (OrderItemDTO dto : request.getItems()) {
             ProductVariant pv = productVariantRepository.findById(Integer.valueOf(dto.getProductVariantId()))
                     .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại"));
