@@ -7,11 +7,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.DATN.configs.GHNMappingHelper;
+import com.example.DATN.models.Commune;
+import com.example.DATN.repositories.CommuneRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class GHNService {
@@ -34,9 +37,11 @@ public class GHNService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final GHNMappingHelper mappingHelper;
+    private final CommuneRepository communeRepository;
 
-    public GHNService(GHNMappingHelper mappingHelper) {
+    public GHNService(GHNMappingHelper mappingHelper, CommuneRepository communeRepository) {
         this.mappingHelper = mappingHelper;
+        this.communeRepository = communeRepository;
     }
 
     /**
@@ -55,6 +60,49 @@ public class GHNService {
             System.out.println("   - Commune Code: " + toCommuneCode);
             System.out.println("   - Weight: " + weight + "g");
             System.out.println("   - Total Value: " + totalValue);
+
+            // Lấy thông tin Commune từ database để lấy GHN Ward Code và District ID
+            Optional<Commune> communeOpt = communeRepository.findById(toCommuneCode);
+
+            if (!communeOpt.isPresent()) {
+                System.out.println("❌ Commune not found in database: " + toCommuneCode);
+                return getDefaultShippingFee();
+            }
+
+            Commune commune = communeOpt.get();
+            String toWardCode = commune.getGhnWardCode();
+            Integer toDistrictId = commune.getGhnDistrictId();
+
+            System.out.println("   - GHN Ward Code from DB: " + toWardCode);
+            System.out.println("   - GHN District ID from DB: " + toDistrictId);
+
+            // Nếu chưa có GHN Ward Code trong DB, fallback sang cách cũ
+            if (toWardCode == null || toDistrictId == null) {
+                System.out.println("⚠️ GHN data not in DB, using fallback method...");
+                return calculateShippingFeeFallback(toProvinceCode, toCommuneCode, weight, totalValue);
+            }
+
+            // Gọi API tính phí với dữ liệu chính xác từ DB
+            double fee = calculateFeeFromGHN(toDistrictId.toString(), toWardCode,
+                                             weight != null ? weight : 500,
+                                             totalValue != null ? totalValue : 0);
+            System.out.println("✅ GHN returned fee: " + fee);
+            return fee;
+
+        } catch (Exception e) {
+            System.err.println("❌ Error calculating shipping fee with GHN: " + e.getMessage());
+            e.printStackTrace();
+            return getDefaultShippingFee();
+        }
+    }
+
+    /**
+     * Fallback method - sử dụng khi chưa có GHN Ward Code trong DB
+     */
+    private double calculateShippingFeeFallback(String toProvinceCode, String toCommuneCode,
+                                                Integer weight, Double totalValue) {
+        try {
+            System.out.println("📌 Using fallback method to get GHN data...");
 
             // Bước 1: Lấy Province ID từ Province Code
             Integer toProvinceId = convertProvinceCodeToGHNId(toProvinceCode);
@@ -86,7 +134,7 @@ public class GHNService {
             return fee;
 
         } catch (Exception e) {
-            System.err.println("❌ Error calculating shipping fee with GHN: " + e.getMessage());
+            System.err.println("❌ Error in fallback method: " + e.getMessage());
             e.printStackTrace();
             return getDefaultShippingFee();
         }

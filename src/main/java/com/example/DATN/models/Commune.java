@@ -39,6 +39,12 @@ public class Commune {
     @Column(name = "CodeName", length = 50)
     private String codeName;
 
+    @Column(name = "GHNWardCode", length = 20)
+    private String ghnWardCode;
+
+    @Column(name = "GHNDistrictId")
+    private Integer ghnDistrictId;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ProvinceCode", referencedColumnName = "ProvinceCode")
     private Province province;

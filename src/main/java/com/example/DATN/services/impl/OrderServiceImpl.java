@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -98,6 +99,7 @@ public class OrderServiceImpl implements OrderService {
             order.setUser(user);
 
             order.setCustomerName(user.getFullName());
+            order.setShippingPhone(user.getPhone());
         } else {
             order.setCustomerName("Khách Lẻ");
         }
@@ -340,14 +342,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderDTO> getOnlineOrders(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         Page<Order> orders = orderRepository.findByOrderType("ONLINE", pageable);
         return orders.map(this::mapToOrderDTO);
     }
 
     @Override
     public Page<OrderDTO> getOfflineOrders(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         Page<Order> orders = orderRepository.findByOrderType("COUNTER", pageable);
         return orders.map(this::mapToOrderDTO);
     }
@@ -508,7 +510,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchOnlineOrders(String keyword, String paymentMethod,
                                            LocalDate dateStart, LocalDate dateEnd,
                                            int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         System.out.println(" Searching ONLINE orders - This should NOT be called for completed page!");
 
         // Convert LocalDate to LocalDateTime for database query
@@ -523,7 +525,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchOfflineOrders(String keyword, String paymentMethod,
                                             LocalDate dateStart, LocalDate dateEnd,
                                             int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         System.out.println(" Searching OFFLINE orders - This should NOT be called for completed page!");
 
         // Convert LocalDate to LocalDateTime for database query
@@ -551,7 +553,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchCompletedOrders(String keyword, String paymentMethod,
                                               LocalDate dateStart, LocalDate dateEnd,
                                               int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         System.out.println(" Searching completed orders with keyword: " + keyword + ", paymentMethod: " + paymentMethod);
 
         // Convert LocalDate to LocalDateTime for database query
@@ -571,7 +573,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchCompletedOrdersWithTypeFilter(String keyword, String paymentMethod, String orderTypeFilter,
                                                              LocalDate dateStart, LocalDate dateEnd,
                                                              int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         System.out.println(" Searching completed orders with type filter: " + orderTypeFilter);
 
         // Convert LocalDate to LocalDateTime for database query
