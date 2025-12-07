@@ -147,7 +147,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void validateStockBeforeOrder(List<CartItemDTO> items) throws Exception {
-        System.out.println("🔍 Validating stock for " + items.size() + " items before creating order...");
+        System.out.println("Validating stock for " + items.size() + " items before creating order...");
 
         for (CartItemDTO item : items) {
             ProductVariant variant = productVariantRepository.findById(item.getVariantId())
@@ -161,10 +161,10 @@ public class OrderServiceImpl implements OrderService {
                                   ", Cần: " + item.getQuantity());
             }
 
-            System.out.println("✅ " + variant.getProduct().getName() + " - Stock: " + variant.getQuantity() + ", Requested: " + item.getQuantity());
+            System.out.println(variant.getProduct().getName() + " - Stock: " + variant.getQuantity() + ", Requested: " + item.getQuantity());
         }
 
-        System.out.println("✅ All items have sufficient stock");
+        System.out.println("All items have sufficient stock");
     }
 
     @Override
@@ -496,7 +496,7 @@ public class OrderServiceImpl implements OrderService {
                 String createdBy = "SYSTEM";
                 stockMovementService.processSale(variant.getId(), orderQuantity, order.getOrderCode(), createdBy);
 
-                System.out.println("✅ Stock updated and movement recorded for variant: " + variant.getId());
+                System.out.println("Stock updated and movement recorded for variant: " + variant.getId());
             } catch (Exception e) {
                 System.err.println("❌ Error processing stock for variant " + variant.getId() + ": " + e.getMessage());
                 throw new RuntimeException("Lỗi xử lý kho: " + e.getMessage());
@@ -539,7 +539,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderDTO> getCompletedOrders(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println("🔍 Getting completed orders - page: " + page + ", size: " + size);
+        System.out.println("Getting completed orders - page: " + page + ", size: " + size);
         Page<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc("COMPLETED", pageable);
         System.out.println(" Found " + orders.getTotalElements() + " completed orders");
         // Debug: in ra một số order đầu tiên

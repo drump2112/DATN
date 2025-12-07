@@ -42,7 +42,7 @@ public class GHNDataSyncUtil {
      */
     public void syncGHNWardCodes(Integer provinceId, Integer districtId) {
         try {
-            System.out.println("🔄 Syncing GHN Ward Codes for District ID: " + districtId);
+            System.out.println("Syncing GHN Ward Codes for District ID: " + districtId);
 
             // Gọi GHN API để lấy danh sách wards
             String url = ghnApiUrl.replace("/v2", "") + "/master-data/ward";
@@ -78,18 +78,18 @@ public class GHNDataSyncUtil {
                                 commune.setGhnWardCode(wardCode);
                                 commune.setGhnDistrictId(districtId);
                                 communeRepository.save(commune);
-                                System.out.println("✅ Updated: " + commune.getCommuneName() + " -> " + wardCode);
+                                System.out.println("Updated: " + commune.getCommuneName() + " -> " + wardCode);
                             });
 
                         updateCount++;
                     }
 
-                    System.out.println("✅ Synced " + updateCount + " wards for District " + districtId);
+                    System.out.println("Synced " + updateCount + " wards for District " + districtId);
                 }
             }
 
         } catch (Exception e) {
-            System.err.println("❌ Error syncing GHN ward codes: " + e.getMessage());
+            System.err.println("Error syncing GHN ward codes: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -117,7 +117,7 @@ public class GHNDataSyncUtil {
                 JsonNode data = jsonNode.get("data");
 
                 if (data != null && data.isArray()) {
-                    System.out.println("📋 Districts for Province " + provinceId + ":");
+                    System.out.println("Districts for Province " + provinceId + ":");
                     for (JsonNode district : data) {
                         Integer districtId = district.get("DistrictID").asInt();
                         String districtName = district.get("DistrictName").asText();
@@ -130,7 +130,7 @@ public class GHNDataSyncUtil {
             }
 
         } catch (Exception e) {
-            System.err.println("❌ Error getting districts: " + e.getMessage());
+            System.err.println("Error getting districts: " + e.getMessage());
             e.printStackTrace();
         }
     }

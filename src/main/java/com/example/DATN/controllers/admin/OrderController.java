@@ -106,7 +106,7 @@ public class OrderController {
          HttpServletRequest request,
          Model model) {
 
-      System.out.println("🔍 Order search request - Page: " + page + ", Type: " + orderType + ", Keyword: " + keyword);
+      System.out.println("Order search request - Page: " + page + ", Type: " + orderType + ", Keyword: " + keyword);
 
       // Xác định request đến từ trang nào dựa trên referer
       String referer = request.getHeader("Referer");
@@ -123,7 +123,7 @@ public class OrderController {
             endDate = LocalDate.parse(dateEnd);
          }
       } catch (Exception e) {
-         System.out.println("⚠️ Invalid date format ignored");
+         System.out.println("Invalid date format ignored");
       }
 
       // Chuyển đổi payment method từ frontend sang backend
@@ -141,25 +141,25 @@ public class OrderController {
 
       if (isFromCompletedPage) {
          // Từ trang completed - luôn tìm trong completed orders, có thể filter theo orderType
-         System.out.println("✅ Searching COMPLETED orders from completed page with filter: " + orderType);
+         System.out.println("Searching COMPLETED orders from completed page with filter: " + orderType);
          ordersDTOS = orderService.searchCompletedOrdersWithTypeFilter(keyword, backendPaymentMethod, orderType, startDate, endDate, page, size);
          templatePath = "admin/order/table :: table";
       } else if ("Online".equals(orderType)) {
-         System.out.println("📱 Searching ONLINE orders");
+         System.out.println("Searching ONLINE orders");
          ordersDTOS = orderService.searchOnlineOrders(keyword, backendPaymentMethod, startDate, endDate, page, size);
          templatePath = "admin/order/tableonline :: table";
       } else if ("Offline".equals(orderType)) {
-         System.out.println("🏪 Searching OFFLINE orders");
+         System.out.println("Searching OFFLINE orders");
          ordersDTOS = orderService.searchOfflineOrders(keyword, backendPaymentMethod, startDate, endDate, page, size);
          templatePath = "admin/order/table :: table";
       } else {
          // Fallback - mặc định tìm completed orders
-         System.out.println("✅ Fallback - Searching COMPLETED orders");
+         System.out.println("Fallback - Searching COMPLETED orders");
          ordersDTOS = orderService.searchCompletedOrders(keyword, backendPaymentMethod, startDate, endDate, page, size);
          templatePath = "admin/order/table :: table";
       }
 
-      System.out.println("📊 Found " + ordersDTOS.getTotalElements() + " orders, " + ordersDTOS.getTotalPages() + " pages");
+      System.out.println("Found " + ordersDTOS.getTotalElements() + " orders, " + ordersDTOS.getTotalPages() + " pages");
 
       model.addAttribute("orders", ordersDTOS.getContent());
       model.addAttribute("currentPage", ordersDTOS.getNumber());

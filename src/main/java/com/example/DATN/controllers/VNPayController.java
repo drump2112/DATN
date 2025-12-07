@@ -49,21 +49,21 @@ public class VNPayController {
                     // Parse orderId từ txnRef (format: orderId_timestamp)
                     String orderIdStr = txnRef.contains("_") ? txnRef.split("_")[0] : txnRef;
                     Integer orderId = Integer.parseInt(orderIdStr);
-                    System.out.println("✅ VNPay IPN: Processing successful payment for order ID: " + orderId);
+                    System.out.println("VNPay IPN: Processing successful payment for order ID: " + orderId);
 
                     Order order = orderService.findById(orderId);
 
                     if (order != null && !"PAID".equals(order.getPaymentStatus())) {
-                        System.out.println("✅ VNPay IPN: Order found, current paymentStatus: " + order.getPaymentStatus() + ", updating to PAID");
+                        System.out.println("VNPay IPN: Order found, current paymentStatus: " + order.getPaymentStatus() + ", updating to PAID");
                         // CHỈ cập nhật paymentStatus, status vẫn PENDING (chờ admin confirm)
                         order.setPaymentStatus("PAID");
                         order.setTransactionNo(transactionNo);
                         orderRepository.save(order);
 
-                        System.out.println("✅ VNPay IPN: Order " + orderId + " payment updated successfully - Status: " + order.getStatus() + ", PaymentStatus: " + order.getPaymentStatus());
+                        System.out.println("VNPay IPN: Order " + orderId + " payment updated successfully - Status: " + order.getStatus() + ", PaymentStatus: " + order.getPaymentStatus());
                         return "RspCode=00&Message=Confirm Success"; // Trả về cho VNPay
                     } else {
-                        System.out.println("⚠️ VNPay IPN: Order " + orderId + " already has paymentStatus = PAID or not found");
+                        System.out.println("VNPay IPN: Order " + orderId + " already has paymentStatus = PAID or not found");
                         return "RspCode=00&Message=Order Already Processed";
                     }
                 } catch (Exception e) {
@@ -78,12 +78,12 @@ public class VNPayController {
                 try {
                     String orderIdStr = txnRef.contains("_") ? txnRef.split("_")[0] : txnRef;
                     Integer orderId = Integer.parseInt(orderIdStr);
-                    System.out.println("❌ VNPay IPN: Processing failed payment for order ID: " + orderId);
+                    System.out.println("VNPay IPN: Processing failed payment for order ID: " + orderId);
 
                     Order order = orderService.findById(orderId);
                     if (order != null && "PENDING".equals(order.getStatus())) {
                         orderService.updateOrderStatus(orderId, "CANCELLED");
-                        System.out.println("✅ VNPay IPN: Order " + orderId + " cancelled due to failed payment");
+                        System.out.println("VNPay IPN: Order " + orderId + " cancelled due to failed payment");
                     }
                 } catch (Exception e) {
                     System.err.println("❌ VNPay IPN Error cancelling failed order: " + e.getMessage());
@@ -124,21 +124,21 @@ public class VNPayController {
                     if (order != null) {
                         // Nếu paymentStatus chưa PAID, update luôn (trường hợp IPN chưa gọi)
                         if (!"PAID".equals(order.getPaymentStatus())) {
-                            System.out.println("🔄 VNPay Return: Order " + orderId + " paymentStatus is " + order.getPaymentStatus() + ", updating to PAID");
+                            System.out.println("VNPay Return: Order " + orderId + " paymentStatus is " + order.getPaymentStatus() + ", updating to PAID");
                             order.setPaymentStatus("PAID");
                             order.setTransactionNo(transactionNo);
                             orderRepository.save(order);
                         } else {
-                            System.out.println("✅ VNPay Return: Order " + orderId + " already has paymentStatus = PAID");
+                            System.out.println("VNPay Return: Order " + orderId + " already has paymentStatus = PAID");
                         }
 
                         // Xóa giỏ hàng ngay lập tức sau khi thanh toán thành công
                         session.removeAttribute("CART_ITEMS");
-                        System.out.println("🗑️ VNPay Return: Cart cleared for session " + session.getId());
+                        System.out.println("VNPay Return: Cart cleared for session " + session.getId());
 
                         model.addAttribute("paymentStatus", "SUCCESS");
                         model.addAttribute("order", order);
-                        System.out.println("✅ VNPay Return: Showing success page for order " + orderId + " - Status: " + order.getStatus() + ", PaymentStatus: " + order.getPaymentStatus());
+                        System.out.println("VNPay Return: Showing success page for order " + orderId + " - Status: " + order.getStatus() + ", PaymentStatus: " + order.getPaymentStatus());
                     } else {
                         model.addAttribute("paymentStatus", "ORDER_NOT_FOUND");
                     }

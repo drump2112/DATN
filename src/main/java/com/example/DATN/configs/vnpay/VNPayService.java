@@ -191,19 +191,19 @@ public class VNPayService {
         }
 
         System.out.println("=== VNPAY COMPATIBILITY CHECK ===");
-        System.out.println("✓ vnp_Version: " + params.get("vnp_Version") + " (should be 2.1.0)");
-        System.out.println("✓ vnp_Command: " + params.get("vnp_Command") + " (should be pay)");
-        System.out.println("✓ vnp_TmnCode: " + params.get("vnp_TmnCode") + " (should be FJDRZR2R)");
-        System.out.println("✓ vnp_Amount: " + params.get("vnp_Amount") + " (in VND cents)");
-        System.out.println("✓ vnp_CurrCode: " + params.get("vnp_CurrCode") + " (should be VND)");
-        System.out.println("✓ vnp_TxnRef length: " + params.get("vnp_TxnRef").length() + " chars");
-        System.out.println("✓ vnp_OrderInfo: " + params.get("vnp_OrderInfo"));
-        System.out.println("✓ vnp_OrderType: " + params.get("vnp_OrderType") + " (should be other)");
-        System.out.println("✓ vnp_Locale: " + params.get("vnp_Locale") + " (should be vn)");
-        System.out.println("✓ vnp_CreateDate format: " + params.get("vnp_CreateDate") + " (yyyyMMddHHmmss)");
-        System.out.println("✓ vnp_ExpireDate format: " + params.get("vnp_ExpireDate") + " (yyyyMMddHHmmss)");
-        System.out.println("✓ vnp_IpAddr: " + params.get("vnp_IpAddr"));
-        System.out.println("✓ Parameter count: " + fieldNames.size() + " fields");
+        System.out.println("- vnp_Version: " + params.get("vnp_Version") + " (should be 2.1.0)");
+        System.out.println("- vnp_Command: " + params.get("vnp_Command") + " (should be pay)");
+        System.out.println("- vnp_TmnCode: " + params.get("vnp_TmnCode") + " (should be FJDRZR2R)");
+        System.out.println("- vnp_Amount: " + params.get("vnp_Amount") + " (in VND cents)");
+        System.out.println("- vnp_CurrCode: " + params.get("vnp_CurrCode") + " (should be VND)");
+        System.out.println("- vnp_TxnRef length: " + params.get("vnp_TxnRef").length() + " chars");
+        System.out.println("- vnp_OrderInfo: " + params.get("vnp_OrderInfo"));
+        System.out.println("- vnp_OrderType: " + params.get("vnp_OrderType") + " (should be other)");
+        System.out.println("- vnp_Locale: " + params.get("vnp_Locale") + " (should be vn)");
+        System.out.println("- vnp_CreateDate format: " + params.get("vnp_CreateDate") + " (yyyyMMddHHmmss)");
+        System.out.println("- vnp_ExpireDate format: " + params.get("vnp_ExpireDate") + " (yyyyMMddHHmmss)");
+        System.out.println("- vnp_IpAddr: " + params.get("vnp_IpAddr"));
+        System.out.println("- Parameter count: " + fieldNames.size() + " fields");
 
         validateVNPayParameters(params);
 
@@ -212,16 +212,16 @@ public class VNPayService {
         }
 
         System.out.println("=== FINAL VALIDATION FOR ERROR 99 ===");
-        System.out.println("✓ Amount validation: " + (amount >= 500000 ? "PASS" : "FAIL - Too low"));
-        System.out.println("✓ TxnRef validation: " + (txnRef.length() <= 100 ? "PASS" : "FAIL - Too long"));
-        System.out.println("✓ OrderInfo validation: " + (orderInfo.length() <= 255 ? "PASS" : "FAIL - Too long"));
-        System.out.println("✓ IP validation: " + (isValidIP(clientIp) ? "PASS" : "FAIL - Invalid IP"));
-        System.out.println("✓ Encoding: UTF-8 for both URL and hash");
-        System.out.println("✓ Hash length: " + vnp_SecureHash.length() + " chars (should be 128)");
-        System.out.println("✓ TmnCode: " + vnp_TmnCode + " (should be FJDRZR2R)");
-        System.out.println("✓ OrderInfo: " + orderInfo);
-        System.out.println("✓ Return URL in hash: " + vnp_ReturnUrl);
-        System.out.println("✓ IPN URL in hash: " + vnp_IpnUrl);
+        System.out.println("- Amount validation: " + (amount >= 500000 ? "PASS" : "FAIL - Too low"));
+        System.out.println("- TxnRef validation: " + (txnRef.length() <= 100 ? "PASS" : "FAIL - Too long"));
+        System.out.println("- OrderInfo validation: " + (orderInfo.length() <= 255 ? "PASS" : "FAIL - Too long"));
+        System.out.println("- IP validation: " + (isValidIP(clientIp) ? "PASS" : "FAIL - Invalid IP"));
+        System.out.println("- Encoding: UTF-8 for both URL and hash");
+        System.out.println("- Hash length: " + vnp_SecureHash.length() + " chars (should be 128)");
+        System.out.println("- TmnCode: " + vnp_TmnCode + " (should be FJDRZR2R)");
+        System.out.println("- OrderInfo: " + orderInfo);
+        System.out.println("- Return URL in hash: " + vnp_ReturnUrl);
+        System.out.println("- IPN URL in hash: " + vnp_IpnUrl);
         try {
             System.out.println("✓ Return URL encoded: " + java.net.URLEncoder.encode(vnp_ReturnUrl, "UTF-8"));
             System.out.println("✓ IPN URL encoded: " + java.net.URLEncoder.encode(vnp_IpnUrl, "UTF-8"));
@@ -423,45 +423,45 @@ public class VNPayService {
 
         for (String param : requiredParams) {
             if (!params.containsKey(param) || params.get(param) == null || params.get(param).isEmpty()) {
-                System.err.println("❌ MISSING REQUIRED PARAMETER: " + param);
+                System.err.println("MISSING REQUIRED PARAMETER: " + param);
             } else {
-                System.out.println("✅ " + param + ": " + params.get(param));
+                System.out.println(param + ": " + params.get(param));
             }
         }
 
         // Check parameter values
         if (!"2.1.0".equals(params.get("vnp_Version"))) {
-            System.err.println("❌ Wrong vnp_Version: " + params.get("vnp_Version"));
+            System.err.println(" Wrong vnp_Version: " + params.get("vnp_Version"));
         }
         if (!"pay".equals(params.get("vnp_Command"))) {
-            System.err.println("❌ Wrong vnp_Command: " + params.get("vnp_Command"));
+            System.err.println("Wrong vnp_Command: " + params.get("vnp_Command"));
         }
         if (!"VND".equals(params.get("vnp_CurrCode"))) {
-            System.err.println("❌ Wrong vnp_CurrCode: " + params.get("vnp_CurrCode"));
+            System.err.println("Wrong vnp_CurrCode: " + params.get("vnp_CurrCode"));
         }
         if (!"FJDRZR2R".equals(params.get("vnp_TmnCode"))) {
-            System.err.println("❌ Wrong vnp_TmnCode: " + params.get("vnp_TmnCode"));
+            System.err.println("Wrong vnp_TmnCode: " + params.get("vnp_TmnCode"));
         }
 
         // Check amount format (must be integer, >= 5000 VND in cents)
         try {
             long amount = Long.parseLong(params.get("vnp_Amount"));
             if (amount < 500000) {
-                System.err.println("❌ Amount too low: " + amount + " (should be >= 500000)");
+                System.err.println("Amount too low: " + amount + " (should be >= 500000)");
             }
         } catch (Exception e) {
-            System.err.println("❌ Invalid amount format: " + params.get("vnp_Amount"));
+            System.err.println("Invalid amount format: " + params.get("vnp_Amount"));
         }
 
         // Check date format
         String createDate = params.get("vnp_CreateDate");
         if (createDate == null || createDate.length() != 14) {
-            System.err.println("❌ Invalid vnp_CreateDate format: " + createDate);
+            System.err.println("Invalid vnp_CreateDate format: " + createDate);
         }
 
         String expireDate = params.get("vnp_ExpireDate");
         if (expireDate == null || expireDate.length() != 14) {
-            System.err.println("❌ Invalid vnp_ExpireDate format: " + expireDate);
+            System.err.println("Invalid vnp_ExpireDate format: " + expireDate);
         }
 
         System.out.println("=== VALIDATION COMPLETE ===");

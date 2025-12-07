@@ -55,7 +55,7 @@ public class GHNService {
     public double calculateShippingFee(String toProvinceCode, String toCommuneCode,
                                      Integer weight, Double totalValue) {
         try {
-            System.out.println("🚀 GHNService.calculateShippingFee() called with:");
+            System.out.println("GHNService.calculateShippingFee() called with:");
             System.out.println("   - Province Code: " + toProvinceCode);
             System.out.println("   - Commune Code: " + toCommuneCode);
             System.out.println("   - Weight: " + weight + "g");
@@ -65,7 +65,7 @@ public class GHNService {
             Optional<Commune> communeOpt = communeRepository.findById(toCommuneCode);
 
             if (!communeOpt.isPresent()) {
-                System.out.println("❌ Commune not found in database: " + toCommuneCode);
+                System.out.println("Commune not found in database: " + toCommuneCode);
                 return getDefaultShippingFee();
             }
 
@@ -78,37 +78,37 @@ public class GHNService {
 
             // Nếu chưa có GHN Ward Code trong DB, fallback sang cách cũ
             if (toWardCode == null || toDistrictId == null) {
-                System.out.println("⚠️ GHN data not in DB, using fallback method...");
+                System.out.println("GHN data not in DB, using fallback method...");
                 return calculateShippingFeeFallback(toProvinceCode, toCommuneCode, weight, totalValue);
             }
 
-            // Gọi API tính phí với dữ liệu chính xác từ DB
+            // Gọi API tính phí với dữ liệu từ DB
             double fee = calculateFeeFromGHN(toDistrictId.toString(), toWardCode,
                                              weight != null ? weight : 500,
                                              totalValue != null ? totalValue : 0);
-            System.out.println("✅ GHN returned fee: " + fee);
+            System.out.println("GHN returned fee: " + fee);
             return fee;
 
         } catch (Exception e) {
-            System.err.println("❌ Error calculating shipping fee with GHN: " + e.getMessage());
+            System.err.println("Error calculating shipping fee with GHN: " + e.getMessage());
             e.printStackTrace();
             return getDefaultShippingFee();
         }
     }
 
     /**
-     * Fallback method - sử dụng khi chưa có GHN Ward Code trong DB
+     * Fallback method
      */
     private double calculateShippingFeeFallback(String toProvinceCode, String toCommuneCode,
                                                 Integer weight, Double totalValue) {
         try {
-            System.out.println("📌 Using fallback method to get GHN data...");
+            System.out.println("Using fallback method to get GHN data...");
 
             // Bước 1: Lấy Province ID từ Province Code
             Integer toProvinceId = convertProvinceCodeToGHNId(toProvinceCode);
             System.out.println("   - Province ID from Province Code: " + toProvinceId);
             if (toProvinceId == null) {
-                System.out.println("❌ Province ID is null, returning default 30000");
+                System.out.println("Province ID is null, returning default 30000");
                 return getDefaultShippingFee();
             }
 
@@ -116,25 +116,26 @@ public class GHNService {
             String toWardCode = getWardCodeFromCommuneByProvince(toCommuneCode, toProvinceId);
             System.out.println("   - Ward Code from Commune: " + toWardCode);
             if (toWardCode == null) {
-                System.out.println("❌ Ward Code is null, returning default 30000");
+                System.out.println("Ward Code is null, returning default 30000");
                 return getDefaultShippingFee();
             }
 
-            // Bước 3: Lấy District ID từ Province (GHN fee API vẫn cần district_id)
+            // Bước 3: Lấy District ID từ Province (GHN fee API
+            // cần district_id)
             String toDistrictId = getDistrictIdFromProvince(toProvinceCode);
             System.out.println("   - District ID from Province: " + toDistrictId);
             if (toDistrictId == null) {
-                System.out.println("⚠️ District ID is null but continuing with fee calculation");
+                System.out.println("District ID is null but continuing with fee calculation");
             }
 
             // Bước 4: Gọi API tính phí
             double fee = calculateFeeFromGHN(toDistrictId != null ? toDistrictId : toProvinceId.toString(), toWardCode, weight != null ? weight : 500,
                                      totalValue != null ? totalValue : 0);
-            System.out.println("✅ GHN returned fee: " + fee);
+            System.out.println("GHN returned fee: " + fee);
             return fee;
 
         } catch (Exception e) {
-            System.err.println("❌ Error in fallback method: " + e.getMessage());
+            System.err.println("Error in fallback method: " + e.getMessage());
             e.printStackTrace();
             return getDefaultShippingFee();
         }
@@ -143,11 +144,11 @@ public class GHNService {
     private String getDistrictIdFromProvince(String provinceCode) {
         try {
             Integer provinceId = convertProvinceCodeToGHNId(provinceCode);
-            System.out.println("   📌 System Province Code: " + provinceCode + " → GHN Province ID: " + provinceId);
+            System.out.println("System Province Code: " + provinceCode + " → GHN Province ID: " + provinceId);
 
             // GHN API endpoint - URL không có /v2
             String url = ghnApiUrl.replace("/v2", "") + "/master-data/district";
-            System.out.println("   📤 Request URL: " + url);
+            System.out.println("Request URL: " + url);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -166,7 +167,7 @@ public class GHNService {
                 JsonNode data = jsonNode.get("data");
 
                 if (data != null && data.isArray() && data.size() > 0) {
-                    // Lấy district đầu tiên (thường là thành phố chính của tỉnh)
+                    // Lấy district đầu tiên
                     return data.get(0).get("DistrictID").asText();
                 }
             }
@@ -178,20 +179,18 @@ public class GHNService {
 
     private String getWardCodeFromCommuneByProvince(String communeCode, Integer provinceId) {
         try {
-            // GHN API không hỗ trợ lấy ward trực tiếp từ province
-            // Thay vào đó, sử dụng phương pháp fallback: gọi district endpoint với province_id
-            System.out.println("   📌 Getting district from province ID: " + provinceId);
+            System.out.println(" Getting district from province ID: " + provinceId);
 
             // URL không có /v2
             String districtUrl = ghnApiUrl.replace("/v2", "") + "/master-data/district";
-            System.out.println("   📤 Request URL: " + districtUrl);
+            System.out.println("Request URL: " + districtUrl);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Token", ghnToken);
             headers.set("ShopId", ghnShopId);
 
-            // Request body với province_id (POST body, không phải query parameter)
+            // Request body với province_id (POST body)
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("province_id", provinceId);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
@@ -205,9 +204,9 @@ public class GHNService {
                 if (data != null && data.isArray() && data.size() > 0) {
                     // Lấy district ID đầu tiên
                     String districtId = data.get(0).get("DistrictID").asText();
-                    System.out.println("   📌 Got district ID: " + districtId + ", now fetching wards...");
+                    System.out.println("Got district ID: " + districtId + ", now fetching wards...");
 
-                    // Bây giờ gọi ward endpoint với district_id
+                    //Gọi ward endpoint với district_id
                     return getWardCodeFromDistrict(communeCode, districtId);
                 }
             }
@@ -248,9 +247,6 @@ public class GHNService {
         }
         return null;
     }
-
-    // ============ DEPRECATED METHODS (Keeping for backward compatibility) ============
-    // Giữ lại để không làm broken các method khác nếu có gọi
 
     private String getWardCodeFromCommune(String communeCode, String districtId) {
         try {

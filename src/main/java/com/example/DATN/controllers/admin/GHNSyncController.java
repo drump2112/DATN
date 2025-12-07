@@ -77,7 +77,7 @@ public class GHNSyncController {
     @ResponseBody
     public ResponseEntity<?> syncProvinceData(@PathVariable Integer provinceId) {
         try {
-            System.out.println("🔄 Starting sync for Province ID: " + provinceId);
+            System.out.println("Starting sync for Province ID: " + provinceId);
             int totalUpdated = 0;
 
             // Bước 1: Lấy tất cả districts của province
@@ -88,7 +88,7 @@ public class GHNSyncController {
                 Integer districtId = (Integer) district.get("DistrictID");
                 String districtName = (String) district.get("DistrictName");
 
-                System.out.println("🔍 Processing District: " + districtName + " (ID: " + districtId + ")");
+                System.out.println("Processing District: " + districtName + " (ID: " + districtId + ")");
 
                 // Bước 2: Lấy tất cả wards của district
                 List<Map<String, Object>> wards = getWardsFromGHN(districtId);
@@ -107,7 +107,7 @@ public class GHNSyncController {
                         commune.setGhnDistrictId(districtId);
                         communeRepository.save(commune);
 
-                        System.out.println("   ✅ Updated: " + commune.getCommuneName() +
+                        System.out.println("   Updated: " + commune.getCommuneName() +
                                          " -> Ward: " + wardCode + ", District: " + districtId);
                         totalUpdated++;
                     }

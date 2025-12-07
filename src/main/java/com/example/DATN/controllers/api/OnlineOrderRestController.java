@@ -66,7 +66,7 @@ public class OnlineOrderRestController {
 
             // Gọi GHNService để tính phí
             double fee = ghnService.calculateShippingFee(provinceCode, communeCode, weight, totalValue);
-            System.out.println("📦 Returning fee: " + fee);
+            System.out.println("Returning fee: " + fee);
 
             return ResponseEntity.ok(Map.of(
                 "fee", fee,
@@ -123,7 +123,6 @@ public class OnlineOrderRestController {
                         throw new RuntimeException("Không thể tạo liên kết thanh toán VNPay");
                     }
                 } catch (Exception vnpayException) {
-                    // Log lỗi chi tiết
                     System.err.println("VNPay Error: " + vnpayException.getMessage());
                     vnpayException.printStackTrace();
 

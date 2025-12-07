@@ -1229,6 +1229,15 @@ $(document).ready(function () {
             return;
         }
 
+        // Disable nút và hiển thị spinner
+        const $btnVerify = $("#btnVerifyOtp");
+        const $btnCancel = $(".modern-btn-secondary");
+        const originalText = $btnVerify.html();
+
+        $btnVerify.prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
+        $btnCancel.prop("disabled", true);
+        $("#otpCode").prop("disabled", true);
+
         $.ajax({
             url: "/api/orders/confirm-otp",
             type: "POST",
@@ -1244,12 +1253,20 @@ $(document).ready(function () {
                         "Sai OTP",
                         res.message || "Mã OTP không hợp lệ hoặc đã hết hạn."
                     );
+                    // Reset lại nút khi có lỗi
+                    $btnVerify.prop("disabled", false).html(originalText);
+                    $btnCancel.prop("disabled", false);
+                    $("#otpCode").prop("disabled", false);
                 }
             },
             error: function (err) {
                 console.error(err);
                 const errorMsg = err.responseJSON?.message || "Không thể xác nhận OTP. Vui lòng thử lại.";
                 SwalUtils.error("Lỗi!", errorMsg);
+                // Reset lại nút khi có lỗi
+                $btnVerify.prop("disabled", false).html(originalText);
+                $btnCancel.prop("disabled", false);
+                $("#otpCode").prop("disabled", false);
             }
         });
     });
