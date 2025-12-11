@@ -5,6 +5,7 @@ import com.example.DATN.dtos.OrderDetailResponse;
 import com.example.DATN.models.*;
 import com.example.DATN.repositories.*;
 import com.example.DATN.request.OrderRequest;
+import com.example.DATN.services.GHNService;
 import com.example.DATN.services.OrderService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +28,48 @@ public class OnlineOrderRestController {
 
     @Autowired
     private VNPayService vnPayService;
+
+    @Autowired
+    private GHNService ghnService;
+
+    @PostMapping("/calculate-shipping-fee")
+    public ResponseEntity<?> calculateShippingFee(@RequestBody Map<String, Object> request) {
+        try {
+            String provinceCode = (String) request.get("provinceCode");
+            String communeCode = (String) request.get("communeCode");
+            Integer weight = request.get("weight") != null ? ((Number) request.get("weight")).intValue() : 500;
+            Double totalValue = request.get("totalValue") != null ? ((Number) request.get("totalValue")).doubleValue() : 0.0;
+
+            System.out.println("=== OnlineOrderRestController.calculateShippingFee() ===");
+            System.out.println("Province Code: " + provinceCode);
+            System.out.println("Commune Code: " + communeCode);
+            System.out.println("Weight: " + weight);
+            System.out.println("Total Value: " + totalValue);
+
+            if (provinceCode == null || communeCode == null) {
+                System.out.println("Missing province or commune code, returning default 30000");
+                return ResponseEntity.ok(Map.of(
+                    "fee", 30000,
+                    "message", "Vui lòng chọn địa chỉ giao hàng"
+                ));
+            }
+
+            double fee = ghnService.calculateShippingFee(provinceCode, communeCode, weight, totalValue);
+            System.out.println("Calculated Fee: " + fee + " VND");
+
+            return ResponseEntity.ok(Map.of(
+                "fee", fee,
+                "message", "Tính phí giao hàng thành công"
+            ));
+        } catch (Exception e) {
+            System.err.println("Error calculating shipping fee: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.ok(Map.of(
+                "fee", 30000,
+                "message", "Lỗi tính phí, sử dụng phí mặc định"
+            ));
+        }
+    }
 
     @PostMapping("/validate-stock")
     public ResponseEntity<?> validateStock(@RequestBody List<CartItemDTO> items) {
