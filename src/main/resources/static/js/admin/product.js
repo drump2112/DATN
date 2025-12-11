@@ -1,5 +1,5 @@
 // === QUẢN LÝ SẢN PHẨM ===
-(function() {
+(function () {
     'use strict';
 
     Dropzone.autoDiscover = false;
@@ -52,7 +52,7 @@
 
         // Force binding when modal shows
         $('#myModal').off('shown.bs.modal.productModule').on('shown.bs.modal.productModule', function () {
-            setTimeout(function() {
+            setTimeout(function () {
                 bindModalEvents();
             }, 100);
         });
@@ -82,18 +82,18 @@
 
     // === SETUP OTHER EVENTS ===
     function setupOtherEvents() {
-        $(document).on("change.productFilter", "#statusFilter", function() {
+        $(document).on("change.productFilter", "#statusFilter", function () {
             searchProduct(0); // Reset to page 0 when filter changes
         });
 
-        $(document).on("keypress.productSearch", "#searchInput", function(e) {
+        $(document).on("keypress.productSearch", "#searchInput", function (e) {
             if (e.which === 13) { // Enter key
                 searchProduct(0);
             }
         });
 
         // Reset filter button
-        $(document).on("click.productReset", "#resetFilterBtn", function() {
+        $(document).on("click.productReset", "#resetFilterBtn", function () {
             $("#searchInput").val('');
             $("#statusFilter").val('');
             currentProductPage = 0;
@@ -173,7 +173,7 @@
         );
 
 
-            $.validator.addMethod(
+        $.validator.addMethod(
             "notBlank",
             function (value, element) {
                 return value != null && $.trim(value).length > 0;
@@ -185,20 +185,20 @@
         $("#productForm").validate({
             ignore: [],
             rules: {
-                tenSp: { required: true, maxlength: 100 },
-                danhMuc: { select2Required: true },
-                thuongHieu: { select2Required: true },
-                avatar: { required: true },
-                description: { required: true, minlength: 10, notBlank: true },
+                tenSp: {required: true, maxlength: 100},
+                danhMuc: {select2Required: true},
+                thuongHieu: {select2Required: true},
+                avatar: {required: true},
+                description: {required: true, minlength: 10, notBlank: true},
             },
             messages: {
                 tenSp: {
                     required: "Vui lòng nhập tên sản phẩm",
                     maxlength: "Tên sản phẩm không quá 100 ký tự",
                 },
-                danhMuc: { select2Required: "Vui lòng chọn danh mục" },
-                thuongHieu: { select2Required: "Vui lòng chọn thương hiệu" },
-                avatar: { required: "Vui lòng chọn ảnh sản phẩm" },
+                danhMuc: {select2Required: "Vui lòng chọn danh mục"},
+                thuongHieu: {select2Required: "Vui lòng chọn thương hiệu"},
+                avatar: {required: "Vui lòng chọn ảnh sản phẩm"},
                 description: {
                     required: "Vui lòng nhập mô tả sản phẩm",
                     minlength: "Mô tả phải có ít nhất 10 ký tự",
@@ -354,8 +354,8 @@
                                     url: "/admin/color/select2",
                                     dataType: "json",
                                     delay: 50,
-                                    data: (params) => ({ q: params.term }),
-                                    processResults: (data) => ({ results: data }),
+                                    data: (params) => ({q: params.term}),
+                                    processResults: (data) => ({results: data}),
                                     cache: true,
                                 },
                             })
@@ -415,8 +415,8 @@
                                     url: "/admin/size/select2",
                                     dataType: "json",
                                     delay: 50,
-                                    data: (params) => ({ q: params.term }),
-                                    processResults: (data) => ({ results: data }),
+                                    data: (params) => ({q: params.term}),
+                                    processResults: (data) => ({results: data}),
                                     cache: true,
                                 },
                             })
@@ -442,8 +442,8 @@
                 url: "/admin/categories/select2",
                 dataType: "json",
                 delay: 50,
-                data: (params) => ({ q: params.term }),
-                processResults: (data) => ({ results: data }),
+                data: (params) => ({q: params.term}),
+                processResults: (data) => ({results: data}),
                 cache: true,
             },
         });
@@ -456,8 +456,8 @@
                 url: "/admin/brand/select2",
                 dataType: "json",
                 delay: 50,
-                data: (params) => ({ q: params.term }),
-                processResults: (data) => ({ results: data }),
+                data: (params) => ({q: params.term}),
+                processResults: (data) => ({results: data}),
                 cache: true,
             },
         });
@@ -528,7 +528,7 @@
             const validator = $("#ProductVariantsForm").validate();
             if (validator) validator.resetForm();
 
-            $("#price").val("").trigger("touchspin.updatesettings", { initval: "" });
+            $("#price").val("").trigger("touchspin.updatesettings", {initval: ""});
 
             // Reset wizard về bước 1
             $(".steps ul li:first a").click();
@@ -546,7 +546,7 @@
             $("#tensanPham, #mauSac, #kichCo").val(null).trigger("change.select2");
             const validator = $("#ProductVariantsForm").validate();
             if (validator) validator.resetForm();
-            $("#price").val("").trigger("touchspin.updatesettings", { initval: "" });
+            $("#price").val("").trigger("touchspin.updatesettings", {initval: ""});
             $(".steps ul li:first a").click();
             $(".steps ul li").removeClass("error done current");
             $(".steps ul li:first").addClass("current");
@@ -728,21 +728,21 @@
                 onkeyup: false,
                 onclick: false,
                 rules: {
-                    tensanPham: { required: true },
-                    mauSac: { required: true },
-                    "kichCo[]": { required: true },
-                    price: { required: true, min: 1000 },
-                    status: { required: true },
+                    tensanPham: {required: true},
+                    mauSac: {required: true},
+                    "kichCo[]": {required: true},
+                    price: {required: true, min: 1000},
+                    status: {required: true},
                 },
                 messages: {
-                    tensanPham: { required: "Vui lòng chọn sản phẩm" },
-                    mauSac: { required: "Vui lòng chọn màu sắc" },
-                    "kichCo[]": { required: "Vui lòng chọn ít nhất một kích cỡ" },
+                    tensanPham: {required: "Vui lòng chọn sản phẩm"},
+                    mauSac: {required: "Vui lòng chọn màu sắc"},
+                    "kichCo[]": {required: "Vui lòng chọn ít nhất một kích cỡ"},
                     price: {
                         required: "Vui lòng nhập giá",
                         min: "Giá phải lớn hơn hoặc bằng 1000",
                     },
-                    status: { required: "Vui lòng chọn trạng thái" },
+                    status: {required: "Vui lòng chọn trạng thái"},
                 },
                 errorPlacement: function (error, element) {
                     var formGroup = element.closest(".form-group");
@@ -804,7 +804,7 @@
             avatarDropzone.createThumbnailFromUrl(mockFile, thumbnail, () => console.log("Thumbnail loaded"), () => SwalUtils.error("Lỗi", "Không thể tải ảnh thumbnail!"));
             avatarDropzone.files.push(mockFile);
             const dt = new DataTransfer();
-            const dummyFile = new File([""], mockFile.name, { type: mockFile.type });
+            const dummyFile = new File([""], mockFile.name, {type: mockFile.type});
             dt.items.add(dummyFile);
             $("#myModal #avatarInput").prop("files", dt.files);
             $("#myModal #avatarInput").valid();
@@ -829,7 +829,7 @@
         $.ajax({
             url: "/admin/product/search",
             type: "GET",
-            data: { page, keyword, isActive },
+            data: {page, keyword, isActive},
             success: function (response) {
                 $("#productTableContainer").html(response);
             },
@@ -849,8 +849,8 @@
                 url: "/admin/product/select2",
                 dataType: "json",
                 delay: 50,
-                data: (params) => ({ q: params.term }),
-                processResults: (data) => ({ results: data }),
+                data: (params) => ({q: params.term}),
+                processResults: (data) => ({results: data}),
                 cache: true,
             },
         }).val(null).trigger("change.select2");
@@ -862,8 +862,8 @@
                 url: "/admin/color/select2",
                 dataType: "json",
                 delay: 50,
-                data: (params) => ({ q: params.term }),
-                processResults: (data) => ({ results: data }),
+                data: (params) => ({q: params.term}),
+                processResults: (data) => ({results: data}),
                 cache: true,
             },
         }).val(null).trigger("change.select2");
@@ -876,8 +876,8 @@
                 url: "/admin/size/select2",
                 dataType: "json",
                 delay: 50,
-                data: (params) => ({ q: params.term }),
-                processResults: (data) => ({ results: data }),
+                data: (params) => ({q: params.term}),
+                processResults: (data) => ({results: data}),
                 cache: true,
             },
         }).val(null).trigger("change.select2");
@@ -888,10 +888,8 @@
         const formData = new FormData();
         formData.append("price", Number($("#price").val()));
         formData.append("status", $("#status").val());
-        formData.append("productId", $("#productIdsp").val());
+        formData.append("productId", $("#productIdSp").val());
         formData.append("colorId", $("#mauSac").val());
-
-
 
 
         const selectedSizes = $("#kichCo").select2("data");
@@ -912,8 +910,8 @@
 
     // submitProductVariantUpdate cho #ProductVariantsForm
     async function submitaddProductVariant(formData) {
-
-
+        // const idproduct = $("#productIdSp").val();
+        console.log("tới đây", $("#productIdSp").val());
         for (let [key, value] of formData.entries()) {
             console.log(`${key}: ${value}`);
         }
@@ -927,15 +925,14 @@
                 success: function (res) {
                     SwalUtils.success("Thành công!", res.message);
                     resolve(res);
+                    // làm mới form
+                    $("#ProductVariantsForm")[0].reset();
+                    $("#tensanPham, #mauSac, #kichCo, #status").val(null).trigger("change.select2");
+                    $("#ProductVariantsForm fieldset").eq(1).find(".row").empty();
                     // load lại bảng danh sách sản phẩm chi tiết trong modal bằng id của sp
-                    const idproduct = $("#productIdsp").val();
-                    const variantPagination = $("#variantPagination ul.pagination");
-                    let currentPage = 0;
-                    if (variantPagination.length > 0) {
-                        currentPage = parseInt(variantPagination.data("current-page")) || 0;
-                    }
-                    console.log("Reloading variants with page:", currentPage);
-                    getProductVariants(idproduct, currentPage, 5);
+                    const idproduct = $("#productIdSp").val();
+                    console.log("tới đây 2", idproduct);
+                    handleVariantDetailClick($(this).data("id", idproduct))
                 },
                 error: function (xhr) {
                     SwalUtils.error(
@@ -951,7 +948,7 @@
 
     window.handleVariantDetailClick = function (button) {
         const id = $(button).data("id");
-        $("#productIdsp").val(id);
+        $("#productIdSp").val(id);
         $("#myModalProductVariants").modal("show");
         $("#ProductVariantsForm").data("current-page", currentProductPage); // Lưu trang hiện tại để reload sau
 
@@ -968,7 +965,7 @@
                 // Reset form và wizard trước khi fill
                 $("#ProductVariantsForm")[0].reset();
                 $("#tensanPham, #mauSac, #kichCo").val(null).trigger("change.select2");
-                $("#price").val("").trigger("touchspin.updatesettings", { initval: "" });
+                $("#price").val("").trigger("touchspin.updatesettings", {initval: ""});
                 $("#status").val("1"); // Default Kinh Doanh
                 // Reset wizard về bước 1 (manual, tránh setStep vì không được implement)
                 $(".steps ul li:first a").click();
@@ -977,8 +974,9 @@
                 $("#ProductVariantsForm fieldset").eq(1).find(".row").empty();
 
 
-                $("#codeProduct").val(product.productCode || "");
+                $("#productIdSp").val(product.id || "");
 
+                $("#codeProduct").val(product.productCode || "");
                 $("#nameProduct").val(product.name || "");
                 getProductVariants(id, currentPage, 5);
                 $("#myModalProductVariants").modal("show");
@@ -995,7 +993,7 @@
         $.ajax({
             url: `/admin/productVariant/productvariant-list/${productId}`,
             method: "GET",
-            data: { page: page, size: size },
+            data: {page: page, size: size},
             success: function (response) {
                 const list = response.listProducts;
                 const tbody = $("#variantTableBody");
@@ -1033,7 +1031,7 @@
                 }
 
 
-                // 🧩 Thêm phân trang (phía ngoài bảng)
+                // Thêm phân trang (phía ngoài bảng)
                 renderVariantPagination(productId, response.currentPage, response.totalPages, response.pageSize);
             },
             error: function () {
@@ -1041,8 +1039,6 @@
             },
         });
     }
-
-
 
 
     // hàm phân trangg
@@ -1094,15 +1090,13 @@
     }
 
 
-
-
     // === LEGACY FUNCTIONS THAT STILL NEED TO BE DEFINED ===
     // These functions are still referenced in the HTML templates
 
     function handleVariantDetailClick(button) {
         // Implementation moved from legacy code
         const id = $(button).data("id");
-        $("#productIdsp").val(id);
+        $("#productIdSp").val(id);
         $("#myModalProductVariants").modal("show");
         $("#ProductVariantsForm").data("current-page", currentProductPage);
 
@@ -1113,17 +1107,17 @@
                 $("#modalTitleProductVariants").text("Thêm Sản Phẩm Chi Tiết");
                 $("#ProductVariantsForm")[0].reset();
                 $("#tensanPham, #mauSac, #kichCo").val(null).trigger("change.select2");
-                $("#price").val("").trigger("touchspin.updatesettings", { initval: "" });
+                $("#price").val("").trigger("touchspin.updatesettings", {initval: ""});
                 $("#status").val("1");
                 $(".steps ul li:first a").click();
                 $(".steps ul li").removeClass("error done current");
                 $(".steps ul li:first").addClass("current");
                 $("#ProductVariantsForm fieldset").eq(1).find(".row").empty();
 
-                $("#id").val(product.id);
+                $("#productIdSp").val(product.id);
                 $("#codeProduct").val(product.productCode || "");
                 $("#nameProduct").val(product.name || "");
-                getProductVariants(id, currentProductPage, 5);
+                getProductVariants(id, 0, 5);
                 $("#myModalProductVariants").modal("show");
             },
             error: function () {
@@ -1136,7 +1130,7 @@
         $.ajax({
             url: `/admin/productVariant/productvariant-list/${productId}`,
             method: "GET",
-            data: { page: page, size: size },
+            data: {page: page, size: size},
             success: function (response) {
                 const list = response.listProducts;
                 const tbody = $("#variantTableBody");
@@ -1267,24 +1261,24 @@
     window.getProductVariants = getProductVariants;
 
 
-
     // === WAIT FOR DEPENDENCIES AND INITIALIZE ===
     if (typeof jQuery !== 'undefined' && typeof $ !== 'undefined') {
-        $(document).ready(function() {
+        $(document).ready(function () {
             initializeProductModule();
         });
     } else {
         function waitForJQuery() {
             if (typeof jQuery !== 'undefined' && typeof $ !== 'undefined') {
-                $(document).ready(function() {
+                $(document).ready(function () {
                     initializeProductModule();
                 });
             } else {
                 setTimeout(waitForJQuery, 100);
             }
         }
+
         waitForJQuery();
     }
 
-})(); // Đóng IIFE
+})();
 

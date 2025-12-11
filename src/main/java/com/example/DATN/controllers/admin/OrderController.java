@@ -74,7 +74,7 @@ public class OrderController {
    }
 
    @GetMapping("{orderId}/items")
-   public String getOrderItems(@PathVariable Integer orderId, Model model) {
+   public String getOrderItems(@PathVariable("orderId") Integer orderId, Model model) {
       OrderDTO order = orderService.getOrderById(orderId);
       List<OrderItem> items = orderItemService.getItemsByOrderId(orderId);
       model.addAttribute("order", order);
@@ -84,8 +84,8 @@ public class OrderController {
 
    @PutMapping("/{orderId}/status")
    public ResponseEntity<?> updateOrderStatus(
-         @PathVariable Integer orderId,
-         @RequestParam String status) {
+         @PathVariable("orderId") Integer orderId,
+         @RequestParam("status") String status) {
       try {
          orderService.updateOrderStatus(orderId, status);
          return ResponseEntity.ok(Map.of("message", "Cập nhật trạng thái thành công"));
@@ -106,7 +106,7 @@ public class OrderController {
          HttpServletRequest request,
          Model model) {
 
-      System.out.println("Order search request - Page: " + page + ", Type: " + orderType + ", Keyword: " + keyword);
+      System.out.println("🔍 Order search request - Page: " + page + ", Type: " + orderType + ", Keyword: " + keyword);
 
       // Xác định request đến từ trang nào dựa trên referer
       String referer = request.getHeader("Referer");
@@ -123,7 +123,7 @@ public class OrderController {
             endDate = LocalDate.parse(dateEnd);
          }
       } catch (Exception e) {
-         System.out.println("Invalid date format ignored");
+         System.out.println("⚠️ Invalid date format ignored");
       }
 
       // Chuyển đổi payment method từ frontend sang backend
@@ -141,25 +141,25 @@ public class OrderController {
 
       if (isFromCompletedPage) {
          // Từ trang completed - luôn tìm trong completed orders, có thể filter theo orderType
-         System.out.println("Searching COMPLETED orders from completed page with filter: " + orderType);
+         System.out.println("✅ Searching COMPLETED orders from completed page with filter: " + orderType);
          ordersDTOS = orderService.searchCompletedOrdersWithTypeFilter(keyword, backendPaymentMethod, orderType, startDate, endDate, page, size);
          templatePath = "admin/order/table :: table";
       } else if ("Online".equals(orderType)) {
-         System.out.println("Searching ONLINE orders");
+         System.out.println("📱 Searching ONLINE orders");
          ordersDTOS = orderService.searchOnlineOrders(keyword, backendPaymentMethod, startDate, endDate, page, size);
          templatePath = "admin/order/tableonline :: table";
       } else if ("Offline".equals(orderType)) {
-         System.out.println("Searching OFFLINE orders");
+         System.out.println("🏪 Searching OFFLINE orders");
          ordersDTOS = orderService.searchOfflineOrders(keyword, backendPaymentMethod, startDate, endDate, page, size);
          templatePath = "admin/order/table :: table";
       } else {
          // Fallback - mặc định tìm completed orders
-         System.out.println("Fallback - Searching COMPLETED orders");
+         System.out.println("✅ Fallback - Searching COMPLETED orders");
          ordersDTOS = orderService.searchCompletedOrders(keyword, backendPaymentMethod, startDate, endDate, page, size);
          templatePath = "admin/order/table :: table";
       }
 
-      System.out.println("Found " + ordersDTOS.getTotalElements() + " orders, " + ordersDTOS.getTotalPages() + " pages");
+      System.out.println("📊 Found " + ordersDTOS.getTotalElements() + " orders, " + ordersDTOS.getTotalPages() + " pages");
 
       model.addAttribute("orders", ordersDTOS.getContent());
       model.addAttribute("currentPage", ordersDTOS.getNumber());
@@ -202,10 +202,10 @@ public class OrderController {
    }
 
    /**
-    * Admin xác nhận đơn hàng (PENDING -> SHIPPING)
+    * Admin xác nhận đơn hàng (PENDING -> WAITING_PICKUP)
     */
    @PostMapping("{orderId}/confirm")
-   public ResponseEntity<Map<String, Object>> confirmOrder(@PathVariable Integer orderId) {
+   public ResponseEntity<Map<String, Object>> confirmOrder(@PathVariable("orderId") Integer orderId) {
       try {
          Order order = orderService.findById(orderId);
          if (order == null) {
@@ -224,11 +224,11 @@ public class OrderController {
          }
 
          // Cập nhật trạng thái
-         orderService.updateOrderStatus(orderId, OrderStatus.SHIPPING.name());
+         orderService.updateOrderStatus(orderId, OrderStatus.WAITING_PICKUP.name());
 
          return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", "Đã xác nhận đơn hàng và chuyển sang trạng thái giao hàng"
+            "message", "Đã xác nhận đơn hàng và chuyển sang trạng thái chờ lấy hàng"
          ));
 
       } catch (Exception e) {
@@ -240,10 +240,10 @@ public class OrderController {
    }
 
    /**
-    * Admin hủy đơn hàng (PENDING -> CANCELLED)
+    * Admin xác nhận đã lấy hàng (WAITING_PICKUP -> SHIPPING)
     */
-   @PostMapping("{orderId}/cancel")
-   public ResponseEntity<Map<String, Object>> cancelOrderByAdmin(@PathVariable Integer orderId) {
+   @PostMapping("{orderId}/pickup")
+   public ResponseEntity<Map<String, Object>> pickupOrder(@PathVariable("orderId") Integer orderId) {
       try {
          Order order = orderService.findById(orderId);
          if (order == null) {
@@ -254,10 +254,50 @@ public class OrderController {
          }
 
          // Kiểm tra trạng thái
-         if (!OrderStatus.PENDING.name().equals(order.getStatus())) {
+         if (!OrderStatus.WAITING_PICKUP.name().equals(order.getStatus())) {
             return ResponseEntity.badRequest().body(Map.of(
                "success", false,
-               "message", "Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý"
+               "message", "Chỉ có thể xác nhận đã lấy hàng khi đơn ở trạng thái chờ lấy hàng"
+            ));
+         }
+
+         // Cập nhật trạng thái
+         orderService.updateOrderStatus(orderId, OrderStatus.SHIPPING.name());
+
+         return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "Đã xác nhận lấy hàng và chuyển sang trạng thái giao hàng"
+         ));
+
+      } catch (Exception e) {
+         return ResponseEntity.badRequest().body(Map.of(
+            "success", false,
+            "message", "Có lỗi xảy ra: " + e.getMessage()
+         ));
+      }
+   }
+
+   /**
+    * Admin hủy đơn hàng (PENDING/WAITING_PICKUP -> CANCELLED)
+    */
+   @PostMapping("{orderId}/cancel")
+   public ResponseEntity<Map<String, Object>> cancelOrderByAdmin(@PathVariable("orderId") Integer orderId) {
+      try {
+         Order order = orderService.findById(orderId);
+         if (order == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+               "success", false,
+               "message", "Đơn hàng không tồn tại"
+            ));
+         }
+
+         // Kiểm tra trạng thái
+         String currentStatus = order.getStatus();
+         if (!OrderStatus.PENDING.name().equals(currentStatus) &&
+             !OrderStatus.WAITING_PICKUP.name().equals(currentStatus)) {
+            return ResponseEntity.badRequest().body(Map.of(
+               "success", false,
+               "message", "Chỉ có thể hủy đơn hàng ở trạng thái chờ xử lý hoặc chờ lấy hàng"
             ));
          }
 

@@ -33,7 +33,8 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
                         "WHERE v.isActive = true " +
                         "AND v.startDate <= :now " +
                         "AND v.endDate >= :now " +
-                        "AND (v.minOrderAmount IS NULL OR v.minOrderAmount <= :orderTotal)")
+                        "AND (v.minOrderAmount IS NULL OR v.minOrderAmount <= :orderTotal) " +
+                        "AND (v.quantity IS NULL OR v.quantity > 0)")
         List<Voucher> findValidVouchers(@Param("now") LocalDateTime now,
                         @Param("orderTotal") BigDecimal orderTotal);
 }

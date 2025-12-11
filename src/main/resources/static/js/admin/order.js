@@ -94,7 +94,7 @@ $(document).ready(function () {
         dateEnd: dateEnd
       },
       success: function (response) {
-        console.log("✅ Search successful, response length:", response.length);
+        console.log("Search successful, response length:", response.length);
         console.log("Response preview:", response.substring(0, 200) + "...");
 
         // Đóng loading
@@ -110,7 +110,7 @@ $(document).ready(function () {
         toastr.success('Tìm kiếm thành công!');
       },
       error: function (xhr, status, error) {
-        console.error("❌ Search failed:", {
+        console.error("Search failed:", {
           status: status,
           error: error,
           responseText: xhr.responseText
@@ -234,7 +234,7 @@ $(document).ready(function () {
     toastr.info("Đã xóa bộ lọc ngày tháng");
   }
 
-  // Handle admin order actions (Xác nhận/Hủy cho PENDING orders)
+  // Handle admin order actions (Xác nhận/Hủy cho PENDING orders, Đã lấy hàng cho WAITING_PICKUP orders)
   function handleAdminOrderAction(button) {
     if (button.disabled) return;
 
@@ -250,6 +250,14 @@ $(document).ready(function () {
           text: 'Bạn có chắc muốn xác nhận đơn hàng này?',
           icon: 'question',
           confirmButtonText: 'Xác nhận'
+        };
+        break;
+      case 'pickup':
+        confirmConfig = {
+          title: 'Xác nhận đã lấy hàng',
+          text: 'Bạn có chắc muốn xác nhận đã lấy hàng cho đơn này?',
+          icon: 'question',
+          confirmButtonText: 'Đã lấy hàng'
         };
         break;
       case 'cancel':
@@ -268,7 +276,7 @@ $(document).ready(function () {
       text: confirmConfig.text,
       icon: confirmConfig.icon,
       showCancelButton: true,
-      confirmButtonColor: action === 'confirm' ? '#1ab394' : '#ed5565',
+      confirmButtonColor: (action === 'confirm' || action === 'pickup') ? '#1ab394' : '#ed5565',
       cancelButtonColor: '#6c757d',
       confirmButtonText: confirmConfig.confirmButtonText,
       cancelButtonText: 'Hủy'

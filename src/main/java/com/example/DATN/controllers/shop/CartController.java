@@ -1,12 +1,16 @@
 package com.example.DATN.controllers.shop;
 
 import com.example.DATN.dtos.CartItemDTO;
+import com.example.DATN.dtos.ProductVariantDTO;
+import com.example.DATN.services.ProductVariantService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +19,9 @@ import java.util.Map;
 public class CartController {
 
     private static final String CART_SESSION_KEY = "CART_ITEMS";
+
+    @Autowired
+    private ProductVariantService productVariantService;
 
     @GetMapping
     public String getCart() {
@@ -168,5 +175,85 @@ public class CartController {
                 "status", "available");
 
         return ResponseEntity.ok(stockInfo);
+    }
+
+    /**
+     * Kiểm tra tồn kho của tất cả sản phẩm trong giỏ hàng trước khi checkout
+     * @param session HttpSession chứa thông tin giỏ hàng
+     * @return JSON với valid=true nếu tất cả sản phẩm đều còn hàng,
+     *         hoặc valid=false kèm danh sách sản phẩm hết hàng/không đủ số lượng
+     */
+    @GetMapping("/validate-stock")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> validateCartStock(HttpSession session) {
+        @SuppressWarnings("unchecked")
+        List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute(CART_SESSION_KEY);
+
+        Map<String, Object> response = new HashMap<>();
+        List<Map<String, Object>> outOfStockItems = new ArrayList<>();
+
+        if (cart == null || cart.isEmpty()) {
+            response.put("valid", false);
+            response.put("message", "Giỏ hàng trống");
+            return ResponseEntity.ok(response);
+        }
+
+        for (CartItemDTO item : cart) {
+            try {
+                // Lấy thông tin tồn kho mới nhất từ database
+                ProductVariantDTO variant = productVariantService.findById(item.getVariantId());
+
+                if (variant == null) {
+                    // Sản phẩm không tồn tại
+                    Map<String, Object> outOfStockItem = new HashMap<>();
+                    outOfStockItem.put("variantId", item.getVariantId());
+                    outOfStockItem.put("productName", item.getName());
+                    outOfStockItem.put("variantCode", item.getVariantCode());
+                    outOfStockItem.put("requestedQuantity", item.getQuantity());
+                    outOfStockItem.put("availableQuantity", 0);
+                    outOfStockItems.add(outOfStockItem);
+                } else {
+                    int availableQuantity = variant.getQuantity() != null ? variant.getQuantity() : 0;
+
+                    // Kiểm tra số lượng: nếu tồn kho <= 0 hoặc không đủ số lượng yêu cầu
+                    if (availableQuantity <= 0 || availableQuantity < item.getQuantity()) {
+                        Map<String, Object> outOfStockItem = new HashMap<>();
+                        outOfStockItem.put("variantId", item.getVariantId());
+                        outOfStockItem.put("productName", item.getName());
+                        outOfStockItem.put("variantCode", item.getVariantCode());
+                        outOfStockItem.put("requestedQuantity", item.getQuantity());
+                        outOfStockItem.put("availableQuantity", availableQuantity);
+                        outOfStockItems.add(outOfStockItem);
+
+                        // Cập nhật maxQuantity trong cart item
+                        item.setMaxQuantity(availableQuantity);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error checking stock for variant " + item.getVariantId() + ": " + e.getMessage());
+                // Nếu có lỗi khi kiểm tra, coi như sản phẩm không khả dụng
+                Map<String, Object> outOfStockItem = new HashMap<>();
+                outOfStockItem.put("variantId", item.getVariantId());
+                outOfStockItem.put("productName", item.getName());
+                outOfStockItem.put("variantCode", item.getVariantCode());
+                outOfStockItem.put("requestedQuantity", item.getQuantity());
+                outOfStockItem.put("availableQuantity", 0);
+                outOfStockItems.add(outOfStockItem);
+            }
+        }
+
+        // Cập nhật lại session với thông tin maxQuantity mới
+        session.setAttribute(CART_SESSION_KEY, cart);
+
+        if (outOfStockItems.isEmpty()) {
+            response.put("valid", true);
+            response.put("message", "Tất cả sản phẩm đều còn hàng");
+        } else {
+            response.put("valid", false);
+            response.put("message", "Một số sản phẩm đã hết hàng hoặc không đủ số lượng");
+            response.put("outOfStockItems", outOfStockItems);
+        }
+
+        return ResponseEntity.ok(response);
     }
 }

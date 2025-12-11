@@ -221,10 +221,13 @@
           <td th:switch="${item.paymentMethod}">
             <span th:case="CASH" class="badge badge-primary">Tiền Mặt</span>
             <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
+              <span th:case="VNPAY" class="badge badge-success">VNPay</span>
           </td>
           <td th:switch="${item.status}">
             <span th:case="PENDING" class="badge badge-warning">Chờ xử lý</span>
+            <span th:case="WAITING_PICKUP" class="badge badge-info">Chờ lấy hàng</span>
             <span th:case="PROCESSING" class="badge badge-info">Đang xử lý</span>
+            <span th:case="SHIPPING" class="badge badge-primary">Đang giao</span>
             <span th:case="COMPLETED" class="badge badge-success">Hoàn thành</span>
             <span th:case="CANCELLED" class="badge badge-danger">Đã hủy</span>
           </td>
@@ -235,13 +238,20 @@
             </button>
           </td>
         </tr>
-        <tr th:attr="id='order-items-' + ${item.id}" class="order-detail-row" style="display:none;">
-          <td colspan="11" class="p-0">
-            <div id="order-items-content" class="order-items-container text-center text-muted py-3">
-              <i class="fa fa-spinner fa-spin"></i> Đang tải...
-            </div>
-          </td>
-        </tr>
+<!--        <tr th:attr="id='order-items-' + ${item.id}" class="order-detail-row" style="display:none;">-->
+<!--          <td colspan="11" class="p-0">-->
+<!--            <div class="order-items-container text-center text-muted py-3">-->
+<!--              <i class="fa fa-spinner fa-spin"></i> Đang tải...-->
+<!--            </div>-->
+<!--          </td>-->
+<!--        </tr>-->
+          <tr th:attr="id='order-items-' + ${item.id}" class="order-detail-row" style="display:none;">
+              <td colspan="11" class="p-3">
+                  <div th:replace="admin/order/orderDetailActions :: orderDetail(orderId=${item.id}, orderStatus=${item.status})">
+                      <!-- Fragment sẽ được load ở đây -->
+                  </div>
+              </td>
+          </tr>
       </th:block>
     </tbody>
   </table>

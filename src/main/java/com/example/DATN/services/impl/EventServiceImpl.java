@@ -1,13 +1,8 @@
 package com.example.DATN.services.impl;
 
 import com.example.DATN.dtos.EventsDTO;
-import com.example.DATN.dtos.SaleEventProductDTO;
 import com.example.DATN.models.SalesEvent;
-import com.example.DATN.models.SaleEventProduct;
-import com.example.DATN.models.ProductVariant;
 import com.example.DATN.repositories.EventRepository;
-import com.example.DATN.repositories.SaleEventProductRepository;
-import com.example.DATN.repositories.ProductVariantRepository;
 import com.example.DATN.services.EventService;
 import com.example.DATN.request.EventsRequest;
 import org.modelmapper.ModelMapper;
@@ -21,19 +16,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.math.BigDecimal;
 
 @Service
 public class EventServiceImpl implements EventService {
 
    @Autowired
    private EventRepository eventRepository;
-
-   @Autowired
-   private SaleEventProductRepository saleEventProductRepository;
-
-   @Autowired
-   private ProductVariantRepository productVariantRepository;
 
    @Autowired
    private ModelMapper modelMapper;
@@ -47,26 +35,7 @@ public class EventServiceImpl implements EventService {
        Pageable pageable = PageRequest.of(page, size);
        System.out.println(pageable + "data");
        Page<SalesEvent> events = eventRepository.findAll(pageable);
-       return events.map(entity -> {
-           EventsDTO dto = modelMapper.map(entity, EventsDTO.class);
-           // Load sale event products
-           List<SaleEventProduct> seps = saleEventProductRepository.findBySalesEventId(entity.getId());
-           List<SaleEventProductDTO> sepDtos = seps.stream()
-                   .map(sep -> SaleEventProductDTO.builder()
-                           .id(sep.getId())
-                           .salesEventId(sep.getSalesEvent().getId())
-                           .productVariantId(sep.getProductVariant().getId())
-                           .productVariantName(sep.getProductVariant().getVariantCode()) // Assuming variantCode as name
-                           .finalPrice(sep.getFinalPrice())
-                           .build())
-                   .collect(Collectors.toList());
-           dto.setSaleEventProducts(sepDtos);
-           // Set product variant IDs for easy access in templates
-           dto.setProductVariantIds(seps.stream()
-                   .map(sep -> sep.getProductVariant().getId())
-                   .collect(Collectors.toList()));
-           return dto;
-       });
+       return events.map(entity -> modelMapper.map(entity, EventsDTO.class));
    }
 
    @Override
@@ -86,48 +55,45 @@ public class EventServiceImpl implements EventService {
                        .code(SalesEvent.getCode())
                        .discountValue(SalesEvent.getDiscountValue())
                        .discountType(SalesEvent.getDiscountType())
+                       .maxDiscountValue(SalesEvent.getMaxDiscountValue())
                        .startDate(SalesEvent.getStartDate())
                        .endDate(SalesEvent.getEndDate())
                        .isActive(SalesEvent.getIsActive())
                        .build()).collect(Collectors.toList());
    }
 
-   @Override
+    @Override
+    public EventsDTO findById(Integer id) {
+        SalesEvent existingEvent = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sự kiện với ID: " + id));
+        return EventsDTO.builder()
+                .id(existingEvent.getId())
+                .code(existingEvent.getCode())
+                .name(existingEvent.getName())
+                .discountType(existingEvent.getDiscountType())
+                .discountValue(existingEvent.getDiscountValue())
+                .maxDiscountValue(existingEvent.getMaxDiscountValue())
+                .isActive(existingEvent.getIsActive())
+                .startDate(existingEvent.getStartDate())
+                .endDate(existingEvent.getEndDate())
+                .build();
+    }
+
+    @Override
    public boolean toggleStatus(Integer id) {
-       if (id == null) return false;
-       Optional<SalesEvent> eventOpt = eventRepository.findById(id);
-       if (eventOpt.isPresent()) {
-           SalesEvent events = eventOpt.get();
-           events.setIsActive(!events.getIsActive());
-           eventRepository.save(events);
-           return events.getIsActive();
-       }
-       return false;
+       SalesEvent events = eventRepository.findById(id)
+               .orElseThrow(() -> new RuntimeException("Không tìm thấy mã giảm giá "));
+       events.setIsActive(!events.getIsActive());
+       eventRepository.save(events);
+       return events.getIsActive();
    }
 
    @Override
    public boolean addEvents(EventsRequest eventRequest) {
        try {
            SalesEvent events = fromRequest(eventRequest);
-           events.setDiscountType(eventRequest.getDiscountType());
-           SalesEvent savedEvent = eventRepository.save(events);
-
-           // Save SaleEventProducts if productVariantIds provided
-           if (eventRequest.getProductVariantIds() != null && !eventRequest.getProductVariantIds().isEmpty()) {
-               for (Integer variantId : eventRequest.getProductVariantIds()) {
-                   if (variantId != null) {
-                       Optional<ProductVariant> variantOpt = productVariantRepository.findById(variantId);
-                       if (variantOpt.isPresent()) {
-                           SaleEventProduct sep = new SaleEventProduct();
-                           sep.setSalesEvent(savedEvent);
-                           sep.setProductVariant(variantOpt.get());
-                           sep.setFinalPrice(calculateFinalPrice(variantOpt.get(), events));
-                           saleEventProductRepository.save(sep);
-                       }
-                   }
-               }
-           }
-
+           events.setDiscountType(eventRequest.getDiscountType()); // Nếu model có field type
+           eventRepository.save(events);
            return true;
        } catch (Exception e) {
            e.printStackTrace();
@@ -137,7 +103,6 @@ public class EventServiceImpl implements EventService {
 
    @Override
    public boolean updateEvents(Integer id, EventsRequest eventRequest) {
-       if (id == null) return false;
        try {
            Optional<SalesEvent> optionalEvent = eventRepository.findById(id);
            if (optionalEvent.isPresent()) {
@@ -148,25 +113,7 @@ public class EventServiceImpl implements EventService {
                    events.setCode(eventRequest.getCode());
                }
                events.setDiscountType(eventRequest.getDiscountType()); // Giữ type
-               SalesEvent savedEvent = eventRepository.save(events);
-
-               // Update SaleEventProducts
-               saleEventProductRepository.deleteBySalesEventId(id); // Delete old ones
-               if (eventRequest.getProductVariantIds() != null && !eventRequest.getProductVariantIds().isEmpty()) {
-                   for (Integer variantId : eventRequest.getProductVariantIds()) {
-                       if (variantId != null) {
-                           Optional<ProductVariant> variantOpt = productVariantRepository.findById(variantId);
-                           if (variantOpt.isPresent()) {
-                               SaleEventProduct sep = new SaleEventProduct();
-                               sep.setSalesEvent(savedEvent);
-                               sep.setProductVariant(variantOpt.get());
-                               sep.setFinalPrice(calculateFinalPrice(variantOpt.get(), events));
-                               saleEventProductRepository.save(sep);
-                           }
-                       }
-                   }
-               }
-
+               eventRepository.save(events);
                return true;
            }
            return false;
@@ -186,34 +133,6 @@ public class EventServiceImpl implements EventService {
        return eventRepository.count();
    }
 
-   @Override
-   public EventsDTO findById(Integer id) {
-       if (id == null) return null;
-       Optional<SalesEvent> eventOpt = eventRepository.findById(id);
-       if (eventOpt.isPresent()) {
-           SalesEvent event = eventOpt.get();
-           EventsDTO dto = modelMapper.map(event, EventsDTO.class);
-           // Load sale event products
-           List<SaleEventProduct> seps = saleEventProductRepository.findBySalesEventId(event.getId());
-           List<SaleEventProductDTO> sepDtos = seps.stream()
-                   .map(sep -> SaleEventProductDTO.builder()
-                           .id(sep.getId())
-                           .salesEventId(sep.getSalesEvent().getId())
-                           .productVariantId(sep.getProductVariant().getId())
-                           .productVariantName(sep.getProductVariant().getVariantCode())
-                           .finalPrice(sep.getFinalPrice())
-                           .build())
-                   .collect(Collectors.toList());
-           dto.setSaleEventProducts(sepDtos);
-           // Set product variant IDs for easy access in templates
-           dto.setProductVariantIds(seps.stream()
-                   .map(sep -> sep.getProductVariant().getId())
-                   .collect(Collectors.toList()));
-           return dto;
-       }
-       return null;
-   }
-
    public SalesEvent fromRequest(EventsRequest eventRequest) {
 
 
@@ -225,6 +144,7 @@ public class EventServiceImpl implements EventService {
                        : generateDiscountCode())
                .discountValue(eventRequest.getDiscountValue())
                .discountType(eventRequest.getDiscountType())
+               .maxDiscountValue(eventRequest.getMaxDiscountValue())
                .startDate(eventRequest.getStartDate() != null ? eventRequest.getStartDate().atStartOfDay() : null)
                .endDate(eventRequest.getEndDate() != null ? eventRequest.getEndDate().atTime(23, 59, 59) : null)  // Kết thúc ngày: 23:59:59
                .isActive(eventRequest.getIsActive());
@@ -244,20 +164,6 @@ public class EventServiceImpl implements EventService {
        }
 
        return code.toString();
-   }
-
-   private BigDecimal calculateFinalPrice(ProductVariant variant, SalesEvent event) {
-       BigDecimal originalPrice = variant.getPrice();
-       BigDecimal discountValue = event.getDiscountValue();
-       String discountType = event.getDiscountType();
-
-       if ("PERCENT".equals(discountType)) {
-           BigDecimal discountAmount = originalPrice.multiply(discountValue.divide(BigDecimal.valueOf(100)));
-           return originalPrice.subtract(discountAmount);
-       } else if ("FIXED".equals(discountType)) {
-           return originalPrice.subtract(discountValue);
-       }
-       return originalPrice;
    }
 }
 

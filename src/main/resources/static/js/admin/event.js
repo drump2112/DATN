@@ -5,10 +5,10 @@ window.handleEventDetailClick = function (button) {
        name: $(button).data("name"),
        discountType: $(button).data("discountType"),
        discountValue: $(button).data("discountvalue"),
+       maxDiscountValue: $(button).data("maxdiscountvalue"),
        startDate: $(button).data("startdate"),
        endDate: $(button).data("enddate"),
        isActive: $(button).data("isActive"),
-       productVariantIds: $(button).data("productvariantids") ? $(button).data("productvariantids").toString().split(',').map(id => parseInt(id.trim())) : []
    };
 
    console.log("Event data lấy tu day:", event);
@@ -20,9 +20,7 @@ window.handleEventDetailClick = function (button) {
 
 // Mở modal edit
 function openEventEditModal(data, isEditable) {
-
    clearEventForm();
-   loadProductVariants();
 
    $("#eventId").val(data.id || "");
    $("#eventCode").val(data.code || "").prop("readonly", true);  // Code luôn readonly
@@ -32,7 +30,25 @@ function openEventEditModal(data, isEditable) {
    $("#eventMinOrderAmount").val(Math.round(data.minOrderAmount || ""));
    $("#eventQuantity").val(data.quantity || "");
 
+   const discountType = $("#eventDiscountType").val();
+   const $maxDiscountInput = $("#eventMaxDiscountValue");
+   if (discountType === "FIXED") {
+       $maxDiscountInput.val("").prop("readonly", true);
+   } else {
+       $maxDiscountInput
+           .val(Math.round(data.maxDiscountValue || ""))
+           .prop("disabled", !isEditable);
+   }
+
+
+
+
    console.log("Event data:", data);
+
+
+
+
+
 
    let formattedStartDate = "";
    let formattedEndDate = "";
@@ -53,11 +69,6 @@ function openEventEditModal(data, isEditable) {
        activeVal = "0";
    }
    $("#eventIsActive").val(activeVal);
-
-   // Set selected product variants if available
-   if (data.productVariantIds && Array.isArray(data.productVariantIds)) {
-       $('#eventProductVariants').val(data.productVariantIds).trigger('change');
-   }
 
 
 
@@ -87,34 +98,8 @@ function clearEventForm() {
    $("#eventForm input:not(#eventCode), #eventForm select").val("");
    $("#eventForm").removeData("current-page");
    $(".form-group").removeClass("has-error");
+   $("#eventMaxDiscountValue").prop("readonly", false);
    clearValidationErrors();
-   // Clear product variants selection
-   $("#eventProductVariants").val(null).trigger('change');
-}
-
-function loadProductVariants() {
-   $('#eventProductVariants').select2({
-       placeholder: 'Chọn sản phẩm áp dụng',
-       width: '100%',
-       ajax: {
-           url: '/admin/sales-event/product-variants',
-           dataType: 'json',
-           delay: 250,
-           data: function (params) {
-               return {
-                   q: params.term
-               };
-           },
-           processResults: function (data) {
-               return {
-                   results: data
-               };
-           },
-           cache: true
-       },
-       minimumInputLength: 0,
-       multiple: true
-   });
 }
 
 
@@ -122,7 +107,6 @@ function loadProductVariants() {
 
 $("#btnOpenAddEvent").on("click", function () {
    clearEventForm();
-   loadProductVariants();
    $("#eventCode").val("").prop("readonly", false);  // Cho phép nhập code thủ công
    $("#eventModalTitle").text("Thêm Event Mới");
    $("#eventForm input, #eventForm select").prop("readonly", false).prop("disabled", false);
@@ -138,6 +122,25 @@ $("#btnOpenAddEvent").on("click", function () {
    $("#eventDiscountType").trigger("change");
 });
 
+
+
+
+$(document).on("change", "#eventDiscountType", function () {
+   const discountType = $(this).val();
+   const $maxDiscountInput = $("#eventMaxDiscountValue");
+
+
+
+
+   if (discountType === "FIXED") {
+       $maxDiscountInput.prop("readonly", true).val("");  // Readonly và clear value khi FIXED (optional sau swap)
+       $maxDiscountInput.closest(".form-group").removeClass("has-error");  // Clear lỗi nếu có
+   } else if (discountType === "PERCENT") {
+       $maxDiscountInput.prop("readonly", false).focus();  // Enable và focus để nhập khi PERCENT (bắt buộc sau swap)
+   }
+});
+
+
 function validateEvent() {
    clearValidationErrors();
 
@@ -147,6 +150,8 @@ function validateEvent() {
    const discountType = $("#eventDiscountType").val();
    const discountValueStr = $("#eventDiscountValue").val().trim();
    const discountValue = parseFloat(discountValueStr);
+   const maxDiscountValueStr = $("#eventMaxDiscountValue").val().trim();
+   const maxDiscountValue = parseFloat(maxDiscountValueStr) || null;
    const startDate = $("#eventStartDate").val();
    const endDate = $("#eventEndDate").val();
    const isActive = $("#eventIsActive").val();
@@ -185,6 +190,15 @@ function validateEvent() {
            isValid = false;
        } else if (discountValue > 100) {
            showFieldError("#eventDiscountValue", "Giá trị giảm không được lớn hơn 100%!");
+           isValid = false;
+       }
+
+
+       if (!maxDiscountValueStr || isNaN(maxDiscountValue) || maxDiscountValue <= 0) {
+           showFieldError("#eventMaxDiscountValue", "Giá trị giảm tối đa không để trống khi chọn loại giảm giá phần trăm và phải là số dương!");
+           isValid = false;
+       } else if (maxDiscountValue > 9999999) {
+           showFieldError("#eventMaxDiscountValue", "Giá trị giảm tối đa không được lớn hơn 10 triệu!");
            isValid = false;
        }
    } else if (discountType === "FIXED") {
@@ -289,17 +303,12 @@ $(document).on("click", "#btnSaveEvent", function () {
        if (result.isConfirmed) {
            const formData = new FormData($("#eventForm")[0]);
            formData.append("isActive", $("#eventIsActive").val());
-           // Add selected product variants
-           const selectedVariants = $('#eventProductVariants').val() || [];
-           selectedVariants.forEach(function(variantId) {
-               formData.append('productVariantIds', variantId);
-           });
 
 
 
 
            $.ajax({
-               url: "/admin/sales-event/add",
+               url: "/admin/event/add",
                method: "POST",
                processData: false,
                contentType: false,
@@ -344,17 +353,12 @@ $(document).on("click", "#btnUpdateEvent", function () {
            const formData = new FormData($("#eventForm")[0]);
            const eventId = $("#eventId").val();
            formData.append("isActive", $("#eventIsActive").val());
-           // Add selected product variants
-           const selectedVariants = $('#eventProductVariants').val() || [];
-           selectedVariants.forEach(function(variantId) {
-               formData.append('productVariantIds', variantId);
-           });
 
 
 
 
            $.ajax({
-               url: `/admin/sales-event/${eventId}`,
+               url: `/admin/event/${eventId}`,
                type: "PUT",
                processData: false,
                contentType: false,
@@ -388,7 +392,7 @@ function searchEvent(page = 0) {
    const isActive = $("#eventStatusFilter").val() || null;
    $("#eventPaginationContainer").attr("data-current-page", page);
    $.ajax({
-       url: "/admin/sales-event/search",
+       url: "/admin/event/search",
        type: "GET",
        data: {page, keyword, isActive},
        beforeSend: function () {
@@ -422,7 +426,7 @@ window.toggleEventStatus = function (eventId, isActive) {
    }).then((result) => {
        if (result.isConfirmed) {
            $.ajax({
-               url: `/admin/sales-event/${eventId}/toggle-status`,
+               url: `/admin/event/${eventId}/toggle-status`,
                type: "PUT",
                beforeSend: function () {
                    $(`button[data-id="${eventId}"]`).prop("disabled", true);
@@ -444,7 +448,7 @@ window.toggleEventStatus = function (eventId, isActive) {
 
 
 function refreshEventTable() {
-   $.get("/admin/sales-event/counts").done(function (totalItems) {
+   $.get("/admin/event/counts").done(function (totalItems) {
        const pageSize = 10;  // Giả sử page size, điều chỉnh nếu cần
        const lastPage = Math.max(0, Math.ceil(totalItems / pageSize) - 1);
        searchEvent(lastPage);
@@ -457,7 +461,7 @@ $("#resetFilterBtn").on("click", function () {
    $("#eventSearchInput").val(null).trigger("change");
    console.log("reset filter");
    $.ajax({
-       url: "/admin/sales-event/search",
+       url: "/admin/event/search",
        type: "GET",
        data: {
            page: 0,

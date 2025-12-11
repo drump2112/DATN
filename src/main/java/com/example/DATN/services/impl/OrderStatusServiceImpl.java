@@ -40,6 +40,10 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     public boolean requiresConfirmation(String fromStatus, String toStatus) {
         // Các trường hợp cần confirmation
         if ("PENDING".equals(fromStatus)) {
+            return "WAITING_PICKUP".equals(toStatus) || "CANCELLED".equals(toStatus);
+        }
+
+        if ("WAITING_PICKUP".equals(fromStatus)) {
             return "SHIPPING".equals(toStatus) || "CANCELLED".equals(toStatus);
         }
 
@@ -56,11 +60,19 @@ public class OrderStatusServiceImpl implements OrderStatusService {
 
     @Override
     public String getConfirmationMessage(String fromStatus, String toStatus) {
-        if ("PENDING".equals(fromStatus) && "SHIPPING".equals(toStatus)) {
-            return "Xác nhận đơn hàng và chuyển sang trạng thái giao hàng?";
+        if ("PENDING".equals(fromStatus) && "WAITING_PICKUP".equals(toStatus)) {
+            return "Xác nhận đơn hàng và chuyển sang trạng thái chờ lấy hàng?";
         }
 
         if ("PENDING".equals(fromStatus) && "CANCELLED".equals(toStatus)) {
+            return "Hủy đơn hàng này? Hành động này không thể hoàn tác.";
+        }
+
+        if ("WAITING_PICKUP".equals(fromStatus) && "SHIPPING".equals(toStatus)) {
+            return "Xác nhận đã lấy hàng và chuyển sang trạng thái giao hàng?";
+        }
+
+        if ("WAITING_PICKUP".equals(fromStatus) && "CANCELLED".equals(toStatus)) {
             return "Hủy đơn hàng này? Hành động này không thể hoàn tác.";
         }
 

@@ -60,6 +60,8 @@ public class ProductServiceImpl implements ProductService {
 				dto.setCategoryId(entity.getCategory().getId());
 				dto.setCategoryName(entity.getCategory().getName());
 			}
+			// Tính số lượng biến thể
+			dto.setVariantCount(entity.getVariants() != null ? entity.getVariants().size() : 0);
 			return dto;
 		});
 	}
@@ -108,6 +110,8 @@ public class ProductServiceImpl implements ProductService {
 				dto.setBrandName(entity.getBrand().getName());
 				dto.setCategoryName(entity.getCategory().getName());
 			}
+			// Tính số lượng biến thể
+			dto.setVariantCount(entity.getVariants() != null ? entity.getVariants().size() : 0);
 			return dto;
 		});
 

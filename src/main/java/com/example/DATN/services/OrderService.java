@@ -38,6 +38,8 @@ public interface OrderService {
 
   void updatePaymentStatus(Order order, String status, String transactionNo);
 
+  void deductVoucherForVNPayOrder(Order order);
+
   void processOrderItems(Order order);
 
   Page<OrderDTO> searchOnlineOrders(String keyword, String paymentMethod,

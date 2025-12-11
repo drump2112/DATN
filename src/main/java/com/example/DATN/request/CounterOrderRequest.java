@@ -25,4 +25,10 @@ public class CounterOrderRequest {
   private BigDecimal discountAmount;
 
   private Integer voucherId;
+
+  // Flag để đánh dấu tồn kho đã được trừ trước (từ giỏ hàng offline)
+  private boolean stockAlreadyDeducted;
+
+  // Session ID để xóa thông tin giữ tồn kho sau khi tạo đơn thành công
+  private String offlineCartSessionId;
 }

@@ -1,10 +1,14 @@
 package com.example.DATN.controllers.admin;
 
 import com.example.DATN.dtos.EventsDTO;
+//import com.example.DATN.dtos.ProductToEventDTO;
+import com.example.DATN.dtos.ProductVariantDTO;
+//import com.example.DATN.dtos.SaleEventProductDTO;
 import com.example.DATN.exception.BusinessException;
 import com.example.DATN.models.SalesEvent;
 import com.example.DATN.request.EventsRequest;
 import com.example.DATN.services.EventService;
+import com.example.DATN.services.ProductVariantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -126,4 +130,23 @@ public class EventsController {
   //
   //
   // }
+
+    @GetMapping("/detailEvent/{id}")
+    public String getDetailEvent(@PathVariable Integer id,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "5") int size,
+                                 Model model) {
+
+        Pageable pageable = PageRequest.of(page, size);
+//       lấy ra Eventdetail
+        EventsDTO eventDetail = eventsService.findById(id);
+//        Page<SaleEventProductDTO> saleEventProductDTOS = eventsService.getlistSaleEventProductvariant(id, pageable);
+//        Page<ProductVariantDTO> productVariantPage = productVariantService.getAllProducts(page, size);
+
+//        model.addAttribute("listProducts", productVariantPage.getContent());
+        model.addAttribute("eventDetail", eventDetail);
+//        model.addAttribute("saleEventProductDTOS", saleEventProductDTOS);
+        return "admin/voucher/eventDetail";
+
+    }
 }

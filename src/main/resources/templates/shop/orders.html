@@ -56,6 +56,9 @@
                         <span th:if="${order.status == 'PENDING'}" class="label label-info">
                           <i class="fa fa-hourglass-half"></i> Chờ xử lý
                         </span>
+                        <span th:if="${order.status == 'WAITING_PICKUP'}" class="label label-info">
+                          <i class="fa fa-clock-o"></i> Chờ lấy hàng
+                        </span>
                         <span th:if="${order.status == 'PROCESSING'}" class="label label-primary">
                           <i class="fa fa-cog"></i> Đang xử lý
                         </span>
@@ -76,6 +79,9 @@
                         </span>
                         <span th:if="${order.paymentMethod == 'TRANSFER'}" class="label label-info">
                           <i class="fa fa-bank"></i> Chuyển khoản
+                        </span>
+                          <span th:if="${order.paymentMethod == 'VNPAY'}" class="label label-info">
+                          <i class="fa fa-paypal"></i> VNPAY
                         </span>
                       </div>
 

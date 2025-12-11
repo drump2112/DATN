@@ -119,49 +119,11 @@ $(document).ready(function () {
         });
     }
 
-    // Function riêng cho fallback voucher
+    // Function riêng cho fallback voucher - không sử dụng fake data nữa
     function useFallbackVoucher(subtotal) {
-        const sampleVouchers = [
-            {
-                id: 1,
-                code: "SALE10",
-                discountType: "PERCENT",
-                discountValue: 10,
-                maxDiscountAmount: 50000,
-                minOrderAmount: 100000,
-                discountAmount: 50000,
-            },
-            {
-                id: 2,
-                code: "FLAT50",
-                discountType: "AMOUNT",
-                discountValue: 50000,
-                minOrderAmount: 200000,
-                discountAmount: 50000,
-            },
-            {
-                id: 3,
-                code: "WELCOME20",
-                discountType: "PERCENT",
-                discountValue: 20,
-                maxDiscountAmount: 100000,
-                minOrderAmount: 300000,
-                discountAmount: 100000,
-            },
-        ];
-
-        // Tìm voucher tốt nhất trong sample
-        let best = null;
-        sampleVouchers.forEach((v) => {
-            if (subtotal >= v.minOrderAmount && (!best || v.discountAmount > best.discountAmount)) {
-                best = v;
-            }
-        });
-
-        if (best) {
-            console.log('Using fallback voucher:', best);
-            showVoucherSuggestion(best);
-        }
+        // Không hiển thị gợi ý voucher nếu không có dữ liệu thực từ API
+        console.log('No vouchers available from API for subtotal:', subtotal);
+        hideVoucherSuggestion();
     }
 
     // Hàm hiển thị gợi ý voucher
@@ -962,6 +924,61 @@ $(document).ready(function () {
 
     // Function xử lý đặt hàng sau khi đã kiểm tra giá
     function proceedWithOrder($btn, paymentMethod) {
+        // Nếu có voucher được áp dụng, validate trước
+        if (appliedVoucher && appliedVoucher.id) {
+            validateVoucherBeforeOrder(appliedVoucher.id).then(result => {
+                if (result.valid) {
+                    // Voucher hợp lệ, tiếp tục đặt hàng
+                    confirmAndPlaceOrder($btn, paymentMethod);
+                } else {
+                    // Voucher không hợp lệ, thông báo và yêu cầu chọn voucher khác
+                    SwalUtils.warning(
+                        "Voucher không khả dụng!",
+                        result.message + "\n\nBạn có muốn tiếp tục đặt hàng không có voucher không?"
+                    ).then((swalResult) => {
+                        if (swalResult.isConfirmed) {
+                            // Xóa voucher đã áp dụng và tiếp tục đặt hàng
+                            clearSelectedVoucher();
+                            confirmAndPlaceOrder($btn, paymentMethod);
+                        }
+                    });
+                }
+            }).catch(error => {
+                console.error("Error validating voucher:", error);
+                // Nếu lỗi validate, vẫn cho phép đặt hàng (backend sẽ check lại)
+                confirmAndPlaceOrder($btn, paymentMethod);
+            });
+        } else {
+            // Không có voucher, tiếp tục đặt hàng bình thường
+            confirmAndPlaceOrder($btn, paymentMethod);
+        }
+    }
+
+    // Function validate voucher trước khi đặt hàng
+    function validateVoucherBeforeOrder(voucherId) {
+        return new Promise((resolve, reject) => {
+            const orderTotal = parseMoney($("#totalAmount").text());
+
+            $.ajax({
+                url: "/api/vouchers/validate",
+                type: "GET",
+                data: {
+                    voucherId: voucherId,
+                    orderTotal: orderTotal
+                },
+                success: function(response) {
+                    resolve(response);
+                },
+                error: function(xhr) {
+                    console.error("Voucher validation error:", xhr);
+                    reject(xhr);
+                }
+            });
+        });
+    }
+
+    // Function confirm và thực hiện đặt hàng
+    function confirmAndPlaceOrder($btn, paymentMethod) {
         // Customize confirm message based on payment method
         let confirmTitle = "Xác nhận đặt hàng?";
         let confirmText = "Bạn có chắc chắn muốn đặt đơn hàng này không?";
@@ -1046,6 +1063,15 @@ $(document).ready(function () {
 
                         if (err.responseJSON && err.responseJSON.message) {
                             errorMsg = err.responseJSON.message;
+
+                            // Nếu lỗi voucher hết lượt sử dụng
+                            if (errorMsg.includes("hết lượt sử dụng") || errorMsg.includes("Voucher")) {
+                                SwalUtils.warning("Voucher không khả dụng!", errorMsg).then(() => {
+                                    // Xóa voucher đã áp dụng
+                                    clearSelectedVoucher();
+                                });
+                                return;
+                            }
 
                             // Nếu lỗi VNPay, suggest fallback
                             if (errorMsg.includes("VNPay") || errorMsg.includes("thanh toán")) {
@@ -1220,6 +1246,8 @@ $(document).ready(function () {
     }
 
     $("#btnVerifyOtp").on("click", function () {
+        const $btn = $(this);
+        const $cancelBtn = $("#otpModal .modern-btn-secondary");
         const orderId = $("#otpOrderId").val();
         const email = $("#otpEmail").val();
         const otp = $("#otpCode").val();
@@ -1229,13 +1257,9 @@ $(document).ready(function () {
             return;
         }
 
-        // Disable nút và hiển thị spinner
-        const $btnVerify = $("#btnVerifyOtp");
-        const $btnCancel = $(".modern-btn-secondary");
-        const originalText = $btnVerify.html();
-
-        $btnVerify.prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
-        $btnCancel.prop("disabled", true);
+        // Disable buttons và hiển thị spinner
+        $btn.prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
+        $cancelBtn.prop("disabled", true);
         $("#otpCode").prop("disabled", true);
 
         $.ajax({
@@ -1253,19 +1277,17 @@ $(document).ready(function () {
                         "Sai OTP",
                         res.message || "Mã OTP không hợp lệ hoặc đã hết hạn."
                     );
-                    // Reset lại nút khi có lỗi
-                    $btnVerify.prop("disabled", false).html(originalText);
-                    $btnCancel.prop("disabled", false);
-                    $("#otpCode").prop("disabled", false);
                 }
             },
             error: function (err) {
                 console.error(err);
                 const errorMsg = err.responseJSON?.message || "Không thể xác nhận OTP. Vui lòng thử lại.";
                 SwalUtils.error("Lỗi!", errorMsg);
-                // Reset lại nút khi có lỗi
-                $btnVerify.prop("disabled", false).html(originalText);
-                $btnCancel.prop("disabled", false);
+            },
+            complete: function() {
+                // Khôi phục trạng thái nút sau khi hoàn thành (thành công hoặc thất bại)
+                $btn.prop("disabled", false).html('<i class="fa fa-check-circle"></i> Xác nhận OTP');
+                $cancelBtn.prop("disabled", false);
                 $("#otpCode").prop("disabled", false);
             }
         });

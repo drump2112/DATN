@@ -1,0 +1,215 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
+<th:block th:fragment="content">
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5 class=""  >Quản lý Sản Phẩm Giảm Giá</h5>
+        </div>
+        <div class="ibox-content">
+            <div class="row">
+                <div class="col-sm-4">
+                    <label style="font-size: 13px;">Mã Sự Kiện Giảm Giá : </label>
+                    <span style="font-size: 15px" th:text=" ${eventDetail.code}"></span>
+                </div>
+
+                <div class="col-sm-4">
+                    <label class="">Giá Trị Giảm : </label>
+                    <span class="badge bg-danger" style="font-size: 15px; margin-bottom: 5px"
+                          th:text="${#numbers.formatDecimal(eventDetail.discountValue, 0, 0)} + ' ' + (${#strings.toUpperCase(eventDetail.discountType)} == 'FIXED' ? 'VNĐ' : '%')"></span>
+                </div>
+                <div class="col-sm-4">
+                    <label class="">Giá Trị Giảm Tối Đa : </label>
+                    <span class="badge bg-success" style="font-size: 15px; margin-bottom: 5px"
+                          th:text="${eventDetail.maxDiscountValue != null ? #numbers.formatDecimal(eventDetail.maxDiscountValue, 0, 0) + ' VNĐ' : '0 VNĐ'}"></span>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-sm-4">
+                    <label class="">Tên Sự Kiện Giảm Giá : </label>
+                    <span style="font-size: 15px" th:text=" ${eventDetail.name}"></span>
+                </div>
+
+                <div class="col-sm-2">
+                    <label class="">Bắt đầu từ :</label>
+                    <span th:text=" ${#temporals.format(eventDetail.startDate, 'dd/MM/yyyy')}"></span>
+
+                </div>
+                <div class="col-sm-2">
+                    <label class="">Kết thúc : </label>
+                    <span th:text="${#temporals.format(eventDetail.endDate, 'dd/MM/yyyy')}"></span>
+
+                </div>
+            </div>
+            <div class="row">
+                <br>
+                <div class="ibox float-e-margins">
+                    <div class="ibox collapsed">
+                        <div class="ibox-title">
+                                <div class="ibox-tools">
+                                    <h5>Chọn sản phẩm giảm giá</h5>
+                                    <a class="collapse-link">
+                                        <i class="fa fa-chevron-up"> Xem thêm</i>
+                                    </a>
+                                </div>
+
+                            <br>
+                            <div class="row">
+                                <div class="col-sm-2 sm-b-xs">
+                                    <select class="input-sm form-control input-s-sm inline" id="colorFilter">
+                                    </select>
+                                </div>
+                                <div class="col-sm-2 m-b-xs">
+                                    <select class="input-sm form-control input-s-sm inline" id="sizeFilter">
+                                    </select>
+                                </div>
+                                <div class="col-sm-2 m-b-xs">
+                                    <select class="input-sm form-control input-s-sm inline" id="brandFilter">
+                                    </select>
+                                </div>
+                                <div class="col-sm-2 m-b-xs">
+                                    <select class="input-sm form-control input-s-sm inline" id="cateFilter">
+                                    </select>
+                                </div>
+                                <div class="col-sm-3 m-b-xs">
+                                    <div class="input-group">
+                                        <input type="text"
+                                               placeholder="Tìm Kiếm (Mã SP, Tên SP, Thương Hiệu)" class="input-sm form-control"
+                                               id="searchInput" style="height: 34px;border-radius: 5px 0 0 5px;">
+                                        <span class="input-group-btn">
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            onclick="searchProductVariants(0)"
+                                            style="height: 34px;border-radius:0 5px 5px 0;"><i
+                                            class="fa fa-search"></i></button>
+                                </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-1">
+                                    <button id="resetFilterBtn" class="btn btn-info" type="button"><i
+                                            class="fa fa-mail-reply-all"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ibox-content">
+                            <div class="row">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th>
+                                            <input class="icheckbox_square-green" type="checkbox" id="checkAll" >
+                                            <label>STT</label>
+                                        </th>
+                                        <th>ID</th>
+                                        <th>Ảnh</th>
+                                        <th>Mã Sản Phẩm</th>
+                                        <th>Tên Sản Phẩm</th>
+                                        <th>Thương Hiệu</th>
+                                        <th>Danh Mục</th>
+                                        <th>Màu Sắc</th>
+                                        <th>Kích Thước</th>
+                                        <th>Giá</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each=" item : ${listProducts}">
+                                        <td th:text="${item.id}">1</td>
+                                        <td>
+                                            <img
+                                                    th:if="${item.imageUrls != null and !item.imageUrls.isEmpty()}"
+                                                    th:src="${item.imageUrls.get(0)}"
+                                                    alt="Ảnh"
+                                                    width="60"
+                                                    height="60"
+                                            />
+                                            <span th:if="${item.imageUrls == null or item.imageUrls.isEmpty()}"
+                                            >No Image</span
+                                            >
+                                        </td>
+                                        <td th:text="${item.variantCode}">SP001</td>
+                                        <td th:text="${item.productName}">Sản phẩm A</td>
+                                        <td th:text="${item.brandName}">Thương hiệu A</td>
+                                        <td th:text="${item.categoryName}">Danh mục A</td>
+                                        <td th:text="${item.colorName}">Đỏ</td>
+                                        <td th:text="${item.sizeName}">L</td>
+                                        <td th:text="${item.price}">L</td>
+                                        <td>
+                                            <button
+                                                    class="btn btn-success dim"
+                                                    type="button"
+                                                    th:attr="data-id=${item.id},
+                                                    data-idevent = ${eventDetail.id}"
+                                                    th:title="'Thêm sản phẩ vào danh sách sản phẩm giảm giá'"
+                                                        onclick="addProductToEvent(this)"
+                                            >
+                                                <i class="fa fa-plus-square"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ibox-title">
+                    <h5>Danh sách đã thêm</h5>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ảnh</th>
+                        <th>Mã SPCt</th>
+                        <th>Tên SPCT</th>
+                        <th>Màu sắc</th>
+                        <th>Kích thước</th>
+                        <th>Giá Gốc</th>
+                        <th>Giá Sau Giảm</th>
+                        <th>Hành Động</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${saleEventProductDTOS}">
+                        <td th:text="${item.id}"></td>
+                        <td>
+                            <img th:if="${item.productAvatar != null and !item.productAvatar.isEmpty()}"
+                                 th:src="${item.productAvatar}"
+                                 alt="Ảnh"
+                                 width="60"
+                                 height="60"
+                            />
+                            <span th:if="${item.productAvatar == null or item.productAvatar.isEmpty()}"
+                            >No Image</span
+                            >
+                        </td>
+                        <td th:text="${item.variantCode}">
+                        </td>
+                        <td th:text="${item.productName}"></td>
+                        <td th:text="${item.color}"></td>
+                        <td th:text="${item.size}"></td>
+                        <td th:text="${item.price}"></td>
+                        <td th:text="${item.finalPrice}"></td>
+                        <td>
+                            <button
+                                    class="btn btn-danger dim"
+                                    type="button"
+                                    th:attr="data-id=${item.id},
+                                                    data-idevent = ${eventDetail.id}"
+                                    th:title="'Xóa sản phẩm khỏi danh sách sản phẩm giảm giá'"
+                                    onclick="handleDetailClick(this)"
+                            >
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <th:block th:fragment="script">
+        <script th:src="@{/js/admin/eventDetail.js}"></script>
+    </th:block>
+</th:block>
+</html>

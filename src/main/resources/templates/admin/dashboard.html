@@ -64,69 +64,67 @@
             <h5>Phương thức thanh toán</h5>
           </div>
           <div class="ibox-content">
-            <div id="paymentMethodStats">
-              <div class="payment-method-item" style="margin-bottom: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-size: 12px; color: #7f8c8d;">
-                    <i class="fa fa-money" style="color: #27ae60; margin-right: 5px;"></i>Tiền mặt
-                  </span>
-                  <span id="cashPercent" style="font-weight: bold; color: #27ae60;">0%</span>
-                </div>
-                <div class="progress progress-mini" style="margin-bottom: 0;">
+            <div id="paymentMethodStats" style="display: flex; justify-content: space-between; text-align: center;">
+              <div class="payment-method-item" style="flex: 1;">
+                <h2 class="no-margins" id="cashPercent" style="color: #27ae60;">0%</h2>
+                <div class="progress progress-mini" style="margin: 5px 10px 0 0;">
                   <div style="width: 0%;" class="progress-bar progress-bar-success" id="cashProgressBar"></div>
                 </div>
+                <small><i class="fa fa-money" style="color: #27ae60;"></i> Tiền mặt</small>
               </div>
-              <div class="payment-method-item" style="margin-bottom: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-size: 12px; color: #7f8c8d;">
-                    <i class="fa fa-bank" style="color: #3498db; margin-right: 5px;"></i>Chuyển khoản
-                  </span>
-                  <span id="transferPercent" style="font-weight: bold; color: #3498db;">0%</span>
-                </div>
-                <div class="progress progress-mini" style="margin-bottom: 0;">
+              <div class="payment-method-item" style="flex: 1; border-left: 1px solid #e7eaec; border-right: 1px solid #e7eaec;">
+                <h2 class="no-margins" id="transferPercent" style="color: #3498db;">0%</h2>
+                <div class="progress progress-mini" style="margin: 5px 10px 0 10px;">
                   <div style="width: 0%;" class="progress-bar progress-bar-primary" id="transferProgressBar"></div>
                 </div>
+                <small><i class="fa fa-bank" style="color: #3498db;"></i> Chuyển khoản</small>
               </div>
-              <div class="payment-method-item">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-size: 12px; color: #7f8c8d;">
-                    <i class="fa fa-credit-card" style="color: #e74c3c; margin-right: 5px;"></i>VNPay
-                  </span>
-                  <span id="vnpayPercent" style="font-weight: bold; color: #e74c3c;">0%</span>
-                </div>
-                <div class="progress progress-mini" style="margin-bottom: 0;">
+              <div class="payment-method-item" style="flex: 1;">
+                <h2 class="no-margins" id="vnpayPercent" style="color: #e74c3c;">0%</h2>
+                <div class="progress progress-mini" style="margin: 5px 0 0 10px;">
                   <div style="width: 0%;" class="progress-bar progress-bar-danger" id="vnpayProgressBar"></div>
                 </div>
+                <small><i class="fa fa-credit-card" style="color: #e74c3c;"></i> VNPay</small>
               </div>
             </div>
-            <small>Tỷ lệ phương thức thanh toán</small>
           </div>
         </div>
       </div>
     </div>
 
     <div class="row">
-      <!-- Biểu đồ doanh thu theo tháng -->
+      <!-- Biểu đồ doanh thu -->
       <div class="col-lg-12">
         <div class="ibox float-e-margins">
           <div class="ibox-title">
-            <h5>Doanh thu theo tháng <span id="currentYear"></span></h5>
+            <h5>Thống kê doanh thu</h5>
             <div class="pull-right">
-              <div style="display: flex; align-items: center; gap: 10px; margin-right: 10px;">
-                <label style="margin: 0; font-weight: 500;">Từ ngày:</label>
-                <input type="date" id="chartStartDate" class="form-control" style="width: 150px; padding: 4px 8px; font-size: 12px;">
-                <label style="margin: 0; font-weight: 500;">Đến ngày:</label>
-                <input type="date" id="chartEndDate" class="form-control" style="width: 150px; padding: 4px 8px; font-size: 12px;">
-                <button type="button" class="btn btn-xs btn-primary" id="filterChartBtn" style="padding: 4px 12px;">
-                  <i class="fa fa-filter"></i> Lọc
-                </button>
-                <button type="button" class="btn btn-xs btn-default" id="resetChartFilterBtn" style="padding: 4px 12px;">
-                  <i class="fa fa-refresh"></i> Reset
-                </button>
+              <div class="btn-group" style="margin-right: 10px;">
+                <button type="button" class="btn btn-xs btn-white chart-preset active" data-preset="year">Năm nay</button>
+                <button type="button" class="btn btn-xs btn-white chart-preset" data-preset="month">Tháng này</button>
+                <button type="button" class="btn btn-xs btn-white chart-preset" data-preset="7days">7 ngày</button>
+                <button type="button" class="btn btn-xs btn-white chart-preset" data-preset="30days">30 ngày</button>
+                <button type="button" class="btn btn-xs btn-white chart-preset" data-preset="custom">Tùy chọn</button>
               </div>
             </div>
           </div>
           <div class="ibox-content">
+            <!-- Custom date range picker -->
+            <div id="customDateRange" class="row m-b-md" style="display: none;">
+              <div class="col-md-3">
+                <label>Từ ngày:</label>
+                <input type="date" id="chartStartDate" class="form-control input-sm">
+              </div>
+              <div class="col-md-3">
+                <label>Đến ngày:</label>
+                <input type="date" id="chartEndDate" class="form-control input-sm">
+              </div>
+              <div class="col-md-2" style="padding-top: 24px;">
+                <button type="button" class="btn btn-primary btn-sm" id="applyDateRange">
+                  <i class="fa fa-filter"></i> Lọc
+                </button>
+              </div>
+            </div>
             <div class="row">
               <div class="col-lg-9">
                 <div class="flot-chart">
@@ -155,6 +153,10 @@
                       <div style="width: 0%;" class="progress-bar progress-bar-danger" id="cancellationProgressBar"></div>
                     </div>
                   </li>
+                  <li>
+                    <h2 class="no-margins text-info" id="chartTotalRevenue">0 VNĐ</h2>
+                    <small>Tổng doanh thu khoảng thời gian</small>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -168,14 +170,14 @@
       <div class="col-lg-4">
         <div class="ibox float-e-margins">
           <div class="ibox-title">
-            <h5>Sản phẩm bán chạy</h5>
+            <h5>Top 5 sản phẩm bán chạy <small class="text-muted">(tháng này)</small></h5>
             <div class="ibox-tools">
               <a class="collapse-link">
                 <i class="fa fa-chevron-up"></i>
               </a>
             </div>
           </div>
-          <div class="ibox-content">
+          <div class="ibox-content" style="max-height: 350px; overflow-y: auto;">
             <div id="topProductsList">
               <!-- Danh sách sản phẩm bán chạy sẽ được load bằng JS -->
             </div>
@@ -202,7 +204,7 @@
           <div class="col-lg-6">
             <div class="ibox float-e-margins">
               <div class="ibox-title">
-                <h5>Sản phẩm bán chạy theo quý</h5>
+                <h5>Sản phẩm bán chạy nhất mỗi quý <span id="quarterlyYear"></span></h5>
               </div>
               <div class="ibox-content">
                 <div id="quarterlyProductChart" style="height: 200px;"></div>
@@ -227,14 +229,10 @@
     <script th:src="@{/assets/js/plugins/peity/jquery.peity.min.js}"></script>
 
     <script>
+      var currentChartPreset = 'year';
+
       $(document).ready(function() {
         $('#currentYear').text(new Date().getFullYear());
-
-        // Set default date range (last 12 months)
-        const today = new Date();
-        const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-        $('#chartEndDate').val(today.toISOString().split('T')[0]);
-        $('#chartStartDate').val(lastYear.toISOString().split('T')[0]);
 
         loadRealDashboardData();
 
@@ -243,40 +241,184 @@
           loadRevenueByPeriod(selectedPeriod);
         });
 
-        // Chart filter events
-        $('#filterChartBtn').click(function() {
-          const startDate = $('#chartStartDate').val();
-          const endDate = $('#chartEndDate').val();
+        // Chart preset buttons
+        $('.chart-preset').click(function() {
+          $('.chart-preset').removeClass('active');
+          $(this).addClass('active');
+          currentChartPreset = $(this).data('preset');
 
-          if (!startDate || !endDate) {
-            if (typeof toastr !== 'undefined') {
-              toastr.warning('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc');
-            } else {
-              alert('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc');
-            }
-            return;
+          if (currentChartPreset === 'custom') {
+            $('#customDateRange').slideDown();
+          } else {
+            $('#customDateRange').slideUp();
+            loadChartByPreset(currentChartPreset);
           }
-
-          if (new Date(startDate) > new Date(endDate)) {
-            if (typeof toastr !== 'undefined') {
-              toastr.warning('Ngày bắt đầu không được lớn hơn ngày kết thúc');
-            } else {
-              alert('Ngày bắt đầu không được lớn hơn ngày kết thúc');
-            }
-            return;
-          }
-
-          loadChartByDateRange(startDate, endDate);
         });
 
-        $('#resetChartFilterBtn').click(function() {
-          const today = new Date();
-          const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-          $('#chartEndDate').val(today.toISOString().split('T')[0]);
-          $('#chartStartDate').val(lastYear.toISOString().split('T')[0]);
-          loadRealDashboardData();
+        // Apply custom date range
+        $('#applyDateRange').click(function() {
+          var startDate = $('#chartStartDate').val();
+          var endDate = $('#chartEndDate').val();
+          if (startDate && endDate) {
+            loadRevenueByDateRange(startDate, endDate);
+          } else {
+            alert('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc');
+          }
         });
+
+        // Set default dates for custom range
+        var today = new Date();
+        var thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        $('#chartEndDate').val(today.toISOString().split('T')[0]);
+        $('#chartStartDate').val(thirtyDaysAgo.toISOString().split('T')[0]);
       });
+
+      function loadChartByPreset(preset) {
+        var today = new Date();
+        var startDate, endDate;
+
+        endDate = today.toISOString().split('T')[0];
+
+        switch(preset) {
+          case 'year':
+            // Load monthly data for current year (default behavior)
+            loadRealDashboardData();
+            return;
+          case 'month':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            break;
+          case '7days':
+            startDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            break;
+          case '30days':
+            startDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            break;
+          default:
+            loadRealDashboardData();
+            return;
+        }
+
+        loadRevenueByDateRange(startDate, endDate);
+      }
+
+      function loadRevenueByDateRange(startDate, endDate) {
+        $('#flot-dashboard-chart').html('<div class="text-center" style="padding: 80px;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>');
+
+        $.ajax({
+          url: '/admin/api/dashboard/revenue-by-range',
+          method: 'GET',
+          data: { startDate: startDate, endDate: endDate },
+          success: function(data) {
+            console.log('Daily revenue data:', data);
+            renderDailyRevenueChart(data);
+          },
+          error: function(xhr, status, error) {
+            console.error('Error loading daily revenue:', error);
+            $('#flot-dashboard-chart').html('<div class="text-center text-danger" style="padding: 80px;"><i class="fa fa-exclamation-triangle"></i> Không thể tải dữ liệu</div>');
+          }
+        });
+      }
+
+      function renderDailyRevenueChart(dailyData) {
+        var revenueData = [];
+        var orderCountData = [];
+        var totalRevenue = 0;
+
+        dailyData.forEach(function(item) {
+          var dateParts = item.date.split('-');
+          var timestamp = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getTime();
+          var revenue = parseFloat(item.revenue) || 0;
+          revenueData.push([timestamp, revenue]);
+          orderCountData.push([timestamp, item.orderCount || 0]);
+          totalRevenue += revenue;
+        });
+
+        // Update total revenue display
+        $('#chartTotalRevenue').text(formatCurrency(totalRevenue));
+
+        if (revenueData.length === 0) {
+          $('#flot-dashboard-chart').html('<div class="text-center" style="padding: 80px; color: #999;"><i class="fa fa-bar-chart fa-3x"></i><p>Không có dữ liệu trong khoảng thời gian này</p></div>');
+          return;
+        }
+
+        var dataset = [{
+          label: "Doanh thu (VNĐ)",
+          data: revenueData,
+          color: "#1ab394",
+          lines: {
+            show: true,
+            fill: true,
+            fillColor: {
+              colors: [{ opacity: 0.1 }, { opacity: 0.3 }]
+            }
+          },
+          points: { show: true, radius: 3 }
+        }, {
+          label: "Số đơn hàng",
+          data: orderCountData,
+          yaxis: 2,
+          color: "#1C84C6",
+          lines: { show: true, lineWidth: 2 },
+          points: { show: true, radius: 2 }
+        }];
+
+        var options = {
+          xaxis: {
+            mode: "time",
+            tickLength: 0,
+            axisLabel: "Ngày",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Arial',
+            axisLabelPadding: 10,
+            color: "#d5d5d5",
+            timeformat: "%d/%m"
+          },
+          yaxes: [{
+            position: "left",
+            color: "#d5d5d5",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Arial',
+            axisLabelPadding: 3,
+            tickFormatter: function(val) {
+              if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M';
+              if (val >= 1000) return (val / 1000).toFixed(0) + 'K';
+              return val;
+            }
+          }, {
+            position: "right",
+            color: "#d5d5d5",
+            axisLabelUseCanvas: true,
+            axisLabelFontSizePixels: 12,
+            axisLabelFontFamily: 'Arial',
+            axisLabelPadding: 67
+          }],
+          legend: {
+            noColumns: 2,
+            labelBoxBorderColor: "#000000",
+            position: "nw"
+          },
+          grid: {
+            hoverable: true,
+            borderWidth: 0,
+            color: '#e5e5e5'
+          },
+          tooltip: {
+            show: true,
+            content: function(label, x, y) {
+              var date = new Date(x);
+              var dateStr = date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear();
+              if (label.indexOf('Doanh thu') >= 0) {
+                return dateStr + ': ' + formatCurrency(y);
+              }
+              return dateStr + ': ' + y + ' đơn';
+            }
+          }
+        };
+
+        $.plot($("#flot-dashboard-chart"), dataset, options);
+      }
 
       function loadRealDashboardData() {
         showLoadingState();
@@ -312,42 +454,6 @@
               console.error('Failed to clear payment stats after API error:', e);
             }
             showErrorMessage('Không thể tải dữ liệu dashboard. Lỗi: ' + error);
-          }
-        });
-      }
-
-      function loadChartByDateRange(startDate, endDate) {
-        $('#flot-dashboard-chart').html('<div class="text-center" style="padding: 40px;"><i class="fa fa-spinner fa-spin fa-2x"></i><br><small>Đang tải dữ liệu...</small></div>');
-
-        $.ajax({
-          url: '/admin/api/dashboard/revenue-by-date-range',
-          method: 'GET',
-          data: {
-            startDate: startDate,
-            endDate: endDate
-          },
-          success: function(data) {
-            console.log('Chart data received:', data);
-            if (data.monthlyRevenue && data.monthlyRevenue.length > 0) {
-              renderMonthlyRevenueChart(data.monthlyRevenue);
-            } else {
-              $('#flot-dashboard-chart').html(
-                '<div class="text-center" style="padding: 40px; color: #999;">' +
-                  '<i class="fa fa-bar-chart" style="font-size: 48px; margin-bottom: 10px;"></i>' +
-                  '<p>Không có dữ liệu trong khoảng thời gian này</p>' +
-                '</div>'
-              );
-            }
-          },
-          error: function(xhr, status, error) {
-            console.error('Chart API failed:', error);
-            $('#flot-dashboard-chart').html(
-              '<div class="text-center" style="padding: 40px; color: #dc3545;">' +
-                '<i class="fa fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 10px;"></i>' +
-                '<p>Không thể tải dữ liệu: ' + error + '</p>' +
-              '</div>'
-            );
-            showErrorMessage('Không thể tải dữ liệu biểu đồ: ' + error);
           }
         });
       }
@@ -526,53 +632,31 @@
         );
       }
 
-      function updateDashboardStats(data) {
-        // Update basic stats
-        $('#totalOrders').text(formatNumber(data.totalOrders));
-        $('#totalRevenue').text(formatCurrency(data.totalRevenue));
-        $('#totalProducts').text(formatNumber(data.totalProducts));
-        $('#totalCustomers').text(formatNumber(data.totalCustomers));
-
-        // Update rates
-        $('#completionRate').text(data.completionRate.toFixed(1) + '%');
-        $('#cancellationRate').text(data.cancellationRate.toFixed(1) + '%');
-
-        // Update progress bars
-        $('#completionProgressBar').css('width', data.completionRate + '%');
-        $('#cancellationProgressBar').css('width', data.cancellationRate + '%');
-      }
-
       function updatePaymentMethodStats(paymentStats) {
         console.log('Payment method stats received:', paymentStats);
         // Log all keys and values for debug
         Object.keys(paymentStats).forEach(function(key) {
           console.log('Key:', key, 'Value:', paymentStats[key]);
         });
-        // Calculate total orders for percentage calculation
-        var totalPayments = Object.values(paymentStats).reduce(function(sum, count) {
-          return sum + (count || 0);
-        }, 0);
-        console.log('Total payments calculated:', totalPayments);
 
-        if (totalPayments === 0) {
-          $('#cashPercent').text('0%');
-          $('#transferPercent').text('0%');
-          $('#vnpayPercent').text('0%');
-          $('#cashProgressBar').css('width', '0%');
-          $('#transferProgressBar').css('width', '0%');
-          $('#vnpayProgressBar').css('width', '0%');
-          return;
+        // Helper function to find value by multiple possible keys
+        function getValueByKeys(obj, keys) {
+          for (var i = 0; i < keys.length; i++) {
+            if (obj.hasOwnProperty(keys[i]) && obj[keys[i]] != null) {
+              return Number(obj[keys[i]]) || 0;
+            }
+          }
+          return 0;
         }
 
-        // Calculate percentages
-        // Defensive: ensure all keys are present and log raw data
-        var cashCount = Number(paymentStats['Tiền mặt']) || 0;
-        var transferCount = Number(paymentStats['Chuyển khoản']) || 0;
-        var vnpayCount = Number(paymentStats['VNPay']) || 0;
+        // Calculate percentages with multiple possible key names
+        var cashCount = getValueByKeys(paymentStats, ['Tiền mặt', 'CASH', 'Cash', 'cash', 'COUNTER', 'Counter', 'counter']);
+        var transferCount = getValueByKeys(paymentStats, ['Chuyển khoản', 'TRANSFER', 'Transfer', 'transfer', 'BANK_TRANSFER', 'Bank_Transfer', 'bank_transfer']);
+        var vnpayCount = getValueByKeys(paymentStats, ['VNPay', 'VNPAY', 'vnpay', 'VN_PAY', 'Vnpay']);
 
         var totalPayments = cashCount + transferCount + vnpayCount;
         console.log('Raw paymentStats:', paymentStats);
-        console.log('Counts:', { cashCount, transferCount, vnpayCount, totalPayments });
+        console.log('Counts:', { cashCount: cashCount, transferCount: transferCount, vnpayCount: vnpayCount, totalPayments: totalPayments });
 
         var cashPercent = totalPayments > 0 ? (cashCount / totalPayments * 100) : 0;
         var transferPercent = totalPayments > 0 ? (transferCount / totalPayments * 100) : 0;
@@ -608,12 +692,18 @@
       function renderMonthlyRevenueChart(monthlyData) {
         var revenueData = [];
         var orderCountData = [];
+        var totalRevenue = 0;
 
         monthlyData.forEach(function(item, index) {
           var timestamp = new Date(item.year, item.month - 1, 1).getTime();
-          revenueData.push([timestamp, parseFloat(item.revenue)]);
+          var revenue = parseFloat(item.revenue) || 0;
+          revenueData.push([timestamp, revenue]);
           orderCountData.push([timestamp, item.orderCount]);
+          totalRevenue += revenue;
         });
+
+        // Update total revenue display
+        $('#chartTotalRevenue').text(formatCurrency(totalRevenue));
 
         var dataset = [{
           label: "Doanh thu (VNĐ)",
@@ -758,6 +848,7 @@
 
         var statusColors = {
           'PENDING': '#f8ac59',
+          'WAITING_PICKUP': '#17a2b8',
           'CONFIRMED': '#1ab394',
           'SHIPPING': '#23c6c8',
           'COMPLETED': '#1c84c6',
@@ -766,6 +857,7 @@
 
         var statusLabels = {
           'PENDING': 'Chờ xử lý',
+          'WAITING_PICKUP': 'Chờ lấy hàng',
           'CONFIRMED': 'Đã xác nhận',
           'SHIPPING': 'Đang giao',
           'COMPLETED': 'Hoàn thành',
@@ -809,45 +901,38 @@
 
       function renderQuarterlyChart(quarterlyData) {
         var html = '';
+        var currentYear = new Date().getFullYear();
+        $('#quarterlyYear').text('(' + currentYear + ')');
+
         if (quarterlyData.length === 0) {
           html = '<div class="text-center" style="padding: 40px; color: #999;">' +
-                   '<i class="fa fa-bar-chart" style="font-size: 48px; margin-bottom: 10px;"></i>' +
-                   '<p>Chưa có dữ liệu theo quý</p>' +
+                   '<i class="fa fa-trophy" style="font-size: 48px; margin-bottom: 10px;"></i>' +
+                   '<p>Chưa có dữ liệu bán hàng trong năm nay</p>' +
                  '</div>';
         } else {
-          html = '<div class="table-responsive">' +
-                   '<table class="table table-striped table-hover">' +
-                     '<thead style="background: #f8f9fa;">' +
-                       '<tr>' +
-                         '<th style="border-top: none;"><i class="fa fa-calendar"></i> Quý</th>' +
-                         '<th style="border-top: none;"><i class="fa fa-cube"></i> Sản phẩm</th>' +
-                         '<th style="border-top: none; text-align: center;"><i class="fa fa-shopping-cart"></i> Số lượng</th>' +
-                       '</tr>' +
-                     '</thead>' +
-                     '<tbody>';
+          html = '<div class="row" style="text-align: center;">';
 
-          quarterlyData.slice(0, 8).forEach(function(item, index) {
-            var quarterName = 'Quý ' + (item.quarter || 'N/A') + '/' + (item.year || new Date().getFullYear());
-            var productName = item.productName || 'Sản phẩm không xác định';
-            var totalSold = item.totalSold || 0;
-            var bgClass = index % 2 === 0 ? '' : 'style="background: #fafafa;"';
+          // Create cards for each quarter (max 4)
+          var quarterColors = ['#1ab394', '#23c6c8', '#f8ac59', '#ed5565'];
+          var quarterIcons = ['fa-leaf', 'fa-sun-o', 'fa-cloud', 'fa-snowflake-o'];
 
-            html += '<tr ' + bgClass + '>' +
-                      '<td><strong>' + quarterName + '</strong></td>' +
-                      '<td>' +
-                        '<div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + productName + '">' +
-                          productName +
-                        '</div>' +
-                      '</td>' +
-                      '<td style="text-align: center;">' +
-                        '<span class="label label-primary" style="font-size: 12px; padding: 6px 12px;">' +
-                          formatNumber(totalSold) +
-                        '</span>' +
-                      '</td>' +
-                    '</tr>';
-          });
+          for (var q = 1; q <= 4; q++) {
+            var quarterData = quarterlyData.find(function(item) { return item.quarter === q; });
+            var productName = quarterData ? quarterData.productName : 'Chưa có dữ liệu';
+            var totalSold = quarterData ? quarterData.totalSold : 0;
+            var color = quarterColors[q - 1];
+            var icon = quarterIcons[q - 1];
 
-          html += '</tbody></table></div>';
+            html += '<div class="col-xs-6 col-md-3" style="padding: 5px;">' +
+                      '<div style="background: ' + color + '; color: white; border-radius: 5px; padding: 10px;">' +
+                        '<div style="font-size: 14px; font-weight: bold;"><i class="fa ' + icon + '"></i> Quý ' + q + '</div>' +
+                        '<div style="font-size: 20px; font-weight: bold; margin: 5px 0;">' + formatNumber(totalSold) + '</div>' +
+                        '<div style="font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="' + productName + '">' + productName + '</div>' +
+                      '</div>' +
+                    '</div>';
+          }
+
+          html += '</div>';
         }
 
         $('#quarterlyProductChart').html(html);

@@ -42,4 +42,6 @@ public class ProductDTO {
 	private Double minPrice;
 
 	private Double maxPrice;
+
+	private Integer variantCount;
 }

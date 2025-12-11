@@ -1,4 +1,4 @@
-<th:block th:fragment="orderDetail">
+<th:block th:fragment="orderDetail(orderId, orderStatus)">
   <div class="order-detail-container">
 
     <!-- Header Bar with Status & Quick Actions -->
@@ -22,6 +22,22 @@
                   onclick="handleAdminOrderAction(this)"
                   title="Xác nhận đơn hàng">
             <i class="fa fa-check"></i> Xác nhận
+          </button>
+          <button class="btn btn-danger btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='cancel'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Hủy đơn hàng">
+            <i class="fa fa-times"></i> Hủy
+          </button>
+        </div>
+
+        <!-- WAITING_PICKUP Actions -->
+        <div th:if="${orderStatus == 'WAITING_PICKUP'}" class="action-group">
+          <button class="btn btn-primary btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='pickup'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Đã lấy hàng">
+            <i class="fa fa-truck"></i> Đã lấy hàng
           </button>
           <button class="btn btn-danger btn-action"
                   th:attr="data-order-id=${orderId}, data-action='cancel'"
@@ -55,11 +71,15 @@
     </div>
 
     <!-- Customer Actions Info -->
-    <div th:if="${orderStatus == 'PENDING' || orderStatus == 'SHIPPING' || orderStatus == 'COMPLETED'}"
+    <div th:if="${orderStatus == 'PENDING' || orderStatus == 'WAITING_PICKUP' || orderStatus == 'SHIPPING' || orderStatus == 'COMPLETED'}"
          class="customer-actions-info">
       <div class="info-item" th:if="${orderStatus == 'PENDING'}">
         <i class="fa fa-user text-primary"></i>
         <span class="info-text">Khách hàng có thể hủy đơn hàng từ trang cá nhân</span>
+      </div>
+      <div class="info-item" th:if="${orderStatus == 'WAITING_PICKUP'}">
+        <i class="fa fa-clock-o text-warning"></i>
+        <span class="info-text">Đơn hàng đang chờ lấy hàng</span>
       </div>
       <div class="info-item" th:if="${orderStatus == 'SHIPPING'}">
         <i class="fa fa-user text-info"></i>

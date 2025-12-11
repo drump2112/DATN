@@ -3,6 +3,7 @@ package com.example.DATN.enums;
 public enum OrderStatus {
     PENDING("PENDING", "Chờ xử lý"),
     PROCESSING("PROCESSING", "Đang xử lý"),
+    WAITING_PICKUP("WAITING_PICKUP", "Chờ lấy hàng"),
     SHIPPING("SHIPPING", "Đang giao hàng"),
     COMPLETED("COMPLETED", "Hoàn thành"),
     CANCELLED("CANCELLED", "Đã hủy"),
@@ -43,10 +44,13 @@ public enum OrderStatus {
                 return newStatus == PENDING || newStatus == CANCELLED;
 
             case PENDING:
-                return newStatus == PROCESSING || newStatus == SHIPPING || newStatus == CANCELLED;
+                return newStatus == PROCESSING || newStatus == WAITING_PICKUP || newStatus == CANCELLED;
 
             case PROCESSING:
-                return newStatus == SHIPPING || newStatus == COMPLETED || newStatus == CANCELLED;
+                return newStatus == WAITING_PICKUP || newStatus == SHIPPING || newStatus == COMPLETED || newStatus == CANCELLED;
+
+            case WAITING_PICKUP:
+                return newStatus == SHIPPING || newStatus == CANCELLED;
 
             case SHIPPING:
                 return newStatus == COMPLETED || newStatus == RETURN;

@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -78,12 +77,15 @@ public class OrderServiceImpl implements OrderService {
     public Order createCounterOrder(CounterOrderRequest request) {
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        for (OrderItemDTO dto : request.getItems()) {
-            ProductVariant pv = productVariantRepository.findById(Integer.valueOf(dto.getProductVariantId()))
-                    .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại"));
+        // Nếu tồn kho chưa được trừ trước (stockAlreadyDeducted = false), kiểm tra tồn kho
+        if (!request.isStockAlreadyDeducted()) {
+            for (OrderItemDTO dto : request.getItems()) {
+                ProductVariant pv = productVariantRepository.findById(Integer.valueOf(dto.getProductVariantId()))
+                        .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại"));
 
-            if (dto.getQuantity() > pv.getQuantity()) {
-                throw new RuntimeException("Sản phẩm " + pv.getProduct().getName() + " vượt quá tồn kho!");
+                if (dto.getQuantity() > pv.getQuantity()) {
+                    throw new RuntimeException("Sản phẩm " + pv.getProduct().getName() + " vượt quá tồn kho!");
+                }
             }
         }
 
@@ -99,7 +101,6 @@ public class OrderServiceImpl implements OrderService {
             order.setUser(user);
 
             order.setCustomerName(user.getFullName());
-            order.setShippingPhone(user.getPhone());
         } else {
             order.setCustomerName("Khách Lẻ");
         }
@@ -126,11 +127,18 @@ public class OrderServiceImpl implements OrderService {
         if (request.getVoucherId() != null) {
             order.setDiscountAmount(request.getDiscountAmount());
             discountAmount = request.getDiscountAmount();
-            order.setVoucher(voucherRepository.findById(request.getVoucherId()).orElse(null));
+            Voucher voucher = voucherRepository.findById(request.getVoucherId()).orElse(null);
+            order.setVoucher(voucher);
+
+            // Trừ số lượng voucher khi áp dụng cho đơn hàng tại quầy
+            if (voucher != null && voucher.getQuantity() != null && voucher.getQuantity() > 0) {
+                voucher.setQuantity(voucher.getQuantity() - 1);
+                voucherRepository.save(voucher);
+                System.out.println("✅ Voucher quantity decreased for counter order: " + voucher.getCode() + ", remaining: " + voucher.getQuantity());
+            }
         } else {
             order.setDiscountAmount(BigDecimal.ZERO);
             order.setVoucher(null);
-
         }
 
         order.setItems(items);
@@ -139,15 +147,50 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Ghi lại stock movement cho đơn hàng tại quầy
-        processOrderItems(savedOrder);
+        // Chỉ ghi stock movement nếu tồn kho chưa được trừ trước
+        // Nếu stockAlreadyDeducted = true, tồn kho đã được trừ khi thêm vào giỏ hàng offline
+        if (!request.isStockAlreadyDeducted()) {
+            processOrderItems(savedOrder);
+        } else {
+            // Vẫn cần ghi stock movement để theo dõi lịch sử, nhưng không trừ tồn kho
+            processOrderItemsWithoutDeductingStock(savedOrder);
+        }
 
         return savedOrder;
     }
 
+    /**
+     * Ghi lại stock movement cho đơn hàng mà không trừ tồn kho
+     * (dùng khi tồn kho đã được trừ trước từ giỏ hàng offline)
+     */
+    private void processOrderItemsWithoutDeductingStock(Order order) {
+        System.out.println("📦 Recording stock movement for order (stock already deducted): " + order.getId());
+
+        for (OrderItem item : order.getItems()) {
+            ProductVariant variant = item.getProductVariant();
+            Integer orderQuantity = item.getQuantity();
+
+            System.out.println("  📝 Recording movement for: " + variant.getProduct().getName() +
+                              ", Size: " + variant.getSize().getName() +
+                              ", Color: " + variant.getColor().getName() +
+                              ", Quantity: " + orderQuantity);
+
+            try {
+                // Chỉ ghi lại movement mà không trừ tồn kho
+                stockMovementService.recordSaleMovementOnly(variant.getId(), orderQuantity, order.getOrderCode(), "SYSTEM");
+                System.out.println("✅ Stock movement recorded for variant: " + variant.getId());
+            } catch (Exception e) {
+                System.err.println("❌ Error recording stock movement for variant " + variant.getId() + ": " + e.getMessage());
+                // Không throw exception vì đây chỉ là ghi log
+            }
+        }
+
+        System.out.println("✅ Stock movement recording completed for order: " + order.getId());
+    }
+
     @Override
     public void validateStockBeforeOrder(List<CartItemDTO> items) throws Exception {
-        System.out.println("Validating stock for " + items.size() + " items before creating order...");
+        System.out.println("🔍 Validating stock for " + items.size() + " items before creating order...");
 
         for (CartItemDTO item : items) {
             ProductVariant variant = productVariantRepository.findById(item.getVariantId())
@@ -156,15 +199,13 @@ public class OrderServiceImpl implements OrderService {
             if (variant.getQuantity() == null || variant.getQuantity() < item.getQuantity()) {
                 String productName = variant.getProduct().getName();
                 String variantInfo = variant.getColor().getName() + " - " + variant.getSize().getName();
-                throw new Exception("Sản phẩm \"" + productName + " (" + variantInfo + ")\" đã hết hàng hoặc không đủ số lượng. " +
-                                  "Có sẵn: " + (variant.getQuantity() != null ? variant.getQuantity() : 0) +
-                                  ", Cần: " + item.getQuantity());
+                throw new Exception("Sản phẩm \"" + productName + " (" + variantInfo + ")\" đã hết hàng ");
             }
 
-            System.out.println(variant.getProduct().getName() + " - Stock: " + variant.getQuantity() + ", Requested: " + item.getQuantity());
+            System.out.println(" " + variant.getProduct().getName() + " - Stock: " + variant.getQuantity() + ", Requested: " + item.getQuantity());
         }
 
-        System.out.println("All items have sufficient stock");
+        System.out.println(" All items have sufficient stock");
     }
 
     @Override
@@ -196,12 +237,20 @@ public class OrderServiceImpl implements OrderService {
                     throw new RuntimeException("Voucher không tồn tại với ID: " + dto.getVoucherId() + " hoặc code: " + dto.getVoucherCode());
                 }
             }
+            // Validate số lượng voucher còn khả dụng
+            if (voucher.getQuantity() != null && voucher.getQuantity() <= 0) {
+                throw new RuntimeException("Voucher \"" + voucher.getCode() + "\" đã hết lượt sử dụng. Vui lòng chọn voucher khác.");
+            }
             order.setVoucher(voucher);
         } else if (dto.getVoucherCode() != null && !dto.getVoucherCode().isEmpty()) {
             discountAmount = dto.getDiscountAmount();
             voucher = voucherRepository.findByCode(dto.getVoucherCode());
             if (voucher == null) {
                 throw new RuntimeException("Voucher không tồn tại với code: " + dto.getVoucherCode());
+            }
+            // Validate số lượng voucher còn khả dụng
+            if (voucher.getQuantity() != null && voucher.getQuantity() <= 0) {
+                throw new RuntimeException("Voucher \"" + voucher.getCode() + "\" đã hết lượt sử dụng. Vui lòng chọn voucher khác.");
             }
             order.setVoucher(voucher);
         } else {
@@ -210,6 +259,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setUser(user);
+
+
         order.setCustomerName(dto.getCustomerName());
         order.setShippingAddress(dto.getShippingAddress());
         order.setShippingPhone(dto.getShippingPhone());
@@ -229,6 +280,7 @@ public class OrderServiceImpl implements OrderService {
             order.setStatus("PENDING");
         }
         order = orderRepository.save(order);
+
 
         List<OrderItem> orderItems = new ArrayList<>();
         for (CartItemDTO item : dto.getItems()) {
@@ -279,11 +331,21 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Đơn hàng không ở trạng thái chờ OTP");
         }
 
+        // Trừ số lượng voucher ngay khi confirm OTP thành công (đơn COD)
+        if (order.getVoucher() != null) {
+            Voucher voucher = order.getVoucher();
+            if (voucher.getQuantity() != null && voucher.getQuantity() > 0) {
+                voucher.setQuantity(voucher.getQuantity() - 1);
+                voucherRepository.save(voucher);
+                System.out.println("✅ Voucher quantity decreased after OTP confirm: " + voucher.getCode() + ", remaining: " + voucher.getQuantity());
+            }
+        }
+
         order.setStatus("PENDING");
         orderRepository.save(order);
 
         System.out.println("=== OTP CONFIRMED - ORDER NOW PENDING ===");
-        System.out.println("Order will be processed when admin confirms (PENDING -> SHIPPING)");
+        System.out.println("Voucher already deducted. Order will be processed when admin confirms (PENDING -> SHIPPING)");
         emailService.sendOrderConfirmation(order);
 
         return true;
@@ -342,14 +404,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderDTO> getOnlineOrders(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
+        Pageable pageable = PageRequest.of(page, size);
         Page<Order> orders = orderRepository.findByOrderType("ONLINE", pageable);
         return orders.map(this::mapToOrderDTO);
     }
 
     @Override
     public Page<OrderDTO> getOfflineOrders(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
+        Pageable pageable = PageRequest.of(page, size);
         Page<Order> orders = orderRepository.findByOrderType("COUNTER", pageable);
         return orders.map(this::mapToOrderDTO);
     }
@@ -396,7 +458,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
-        if (!status.matches("PENDING|PROCESSING|SHIPPING|COMPLETED|CANCELLED|RETURN")) {
+        if (!status.matches("PENDING|PROCESSING|WAITING_PICKUP|SHIPPING|COMPLETED|CANCELLED|RETURN")) {
             throw new RuntimeException("Trạng thái không hợp lệ");
         }
 
@@ -407,8 +469,22 @@ public class OrderServiceImpl implements OrderService {
             restoreVoucherQuantity(order);
         }
 
-        // Nếu admin xác nhận đơn hàng (PENDING -> SHIPPING), thì trừ kho
-        if ("PENDING".equals(oldStatus) && "SHIPPING".equals(status)) {
+        // Nếu hủy đơn từ trạng thái WAITING_PICKUP, hoàn lại kho (vì kho đã bị trừ)
+        if ("WAITING_PICKUP".equals(oldStatus) && "CANCELLED".equals(status)) {
+            System.out.println("Cancelling order from WAITING_PICKUP - restoring stock...");
+            for (OrderItem item : order.getItems()) {
+                stockMovementService.processReturn(
+                    item.getProductVariant().getId(),
+                    item.getQuantity(),
+                    order.getOrderCode(),
+                    "SYSTEM"
+                );
+            }
+            System.out.println("Stock restored for cancelled order: " + order.getOrderCode());
+        }
+
+        // Nếu admin xác nhận đơn hàng (PENDING -> WAITING_PICKUP), thì trừ kho
+        if ("PENDING".equals(oldStatus) && "WAITING_PICKUP".equals(status)) {
             System.out.println("Admin confirming order - checking stock before deducting...");
 
             // Kiểm tra tồn kho trước khi trừ
@@ -459,7 +535,22 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentStatus("PAID");
         order.setTransactionNo(transactionNo);
         orderRepository.save(order);
+    }
 
+    /**
+     * Trừ số lượng voucher cho đơn hàng VNPay sau khi thanh toán thành công
+     */
+    @Override
+    @Transactional
+    public void deductVoucherForVNPayOrder(Order order) {
+        if (order.getVoucher() != null) {
+            Voucher voucher = order.getVoucher();
+            if (voucher.getQuantity() != null && voucher.getQuantity() > 0) {
+                voucher.setQuantity(voucher.getQuantity() - 1);
+                voucherRepository.save(voucher);
+                System.out.println("✅ Voucher quantity decreased for VNPay order: " + voucher.getCode() + ", remaining: " + voucher.getQuantity());
+            }
+        }
     }
 
     @Override
@@ -471,15 +562,11 @@ public class OrderServiceImpl implements OrderService {
         System.out.println("Has voucher: " + (order.getVoucher() != null ? order.getVoucher().getCode() : "No"));
         System.out.println("Number of items: " + (order.getItems() != null ? order.getItems().size() : 0));
 
-        // Chỉ trừ voucher khi admin xác nhận đơn hàng (PENDING -> SHIPPING)
-        // cho cả COD và VNPay
-        if (order.getVoucher() != null && "SHIPPING".equals(order.getStatus())) {
-            Voucher voucher = order.getVoucher();
-            if (voucher.getQuantity() != null && voucher.getQuantity() > 0) {
-                voucher.setQuantity(voucher.getQuantity() - 1);
-                voucherRepository.save(voucher);
-            }
-        }
+        // Voucher đã được trừ trước đó:
+        // - Đơn COUNTER: trừ khi tạo đơn (createCounterOrder)
+        // - Đơn ONLINE COD: trừ sau confirm OTP (confirmOtp)
+        // - Đơn ONLINE VNPay: trừ sau thanh toán thành công (deductVoucherForVNPayOrder)
+        // => Không cần trừ voucher ở đây nữa
 
         // Xử lý tồn kho sản phẩm
         for (OrderItem item : order.getItems()) {
@@ -496,7 +583,7 @@ public class OrderServiceImpl implements OrderService {
                 String createdBy = "SYSTEM";
                 stockMovementService.processSale(variant.getId(), orderQuantity, order.getOrderCode(), createdBy);
 
-                System.out.println("Stock updated and movement recorded for variant: " + variant.getId());
+                System.out.println("✅ Stock updated and movement recorded for variant: " + variant.getId());
             } catch (Exception e) {
                 System.err.println("❌ Error processing stock for variant " + variant.getId() + ": " + e.getMessage());
                 throw new RuntimeException("Lỗi xử lý kho: " + e.getMessage());
@@ -510,7 +597,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchOnlineOrders(String keyword, String paymentMethod,
                                            LocalDate dateStart, LocalDate dateEnd,
                                            int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
+        Pageable pageable = PageRequest.of(page, size);
         System.out.println(" Searching ONLINE orders - This should NOT be called for completed page!");
 
         // Convert LocalDate to LocalDateTime for database query
@@ -525,7 +612,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchOfflineOrders(String keyword, String paymentMethod,
                                             LocalDate dateStart, LocalDate dateEnd,
                                             int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
+        Pageable pageable = PageRequest.of(page, size);
         System.out.println(" Searching OFFLINE orders - This should NOT be called for completed page!");
 
         // Convert LocalDate to LocalDateTime for database query
@@ -539,7 +626,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderDTO> getCompletedOrders(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        System.out.println("Getting completed orders - page: " + page + ", size: " + size);
+        System.out.println("🔍 Getting completed orders - page: " + page + ", size: " + size);
         Page<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc("COMPLETED", pageable);
         System.out.println(" Found " + orders.getTotalElements() + " completed orders");
         // Debug: in ra một số order đầu tiên
@@ -553,7 +640,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchCompletedOrders(String keyword, String paymentMethod,
                                               LocalDate dateStart, LocalDate dateEnd,
                                               int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
+        Pageable pageable = PageRequest.of(page, size);
         System.out.println(" Searching completed orders with keyword: " + keyword + ", paymentMethod: " + paymentMethod);
 
         // Convert LocalDate to LocalDateTime for database query
@@ -573,7 +660,7 @@ public class OrderServiceImpl implements OrderService {
     public Page<OrderDTO> searchCompletedOrdersWithTypeFilter(String keyword, String paymentMethod, String orderTypeFilter,
                                                              LocalDate dateStart, LocalDate dateEnd,
                                                              int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
+        Pageable pageable = PageRequest.of(page, size);
         System.out.println(" Searching completed orders with type filter: " + orderTypeFilter);
 
         // Convert LocalDate to LocalDateTime for database query

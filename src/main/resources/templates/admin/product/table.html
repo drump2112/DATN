@@ -8,6 +8,7 @@
         <th>Tên Sản Phẩm</th>
         <th>Thương Hiệu</th>
         <th>Danh Mục</th>
+        <th>Số lượng</th>
         <th>Mô Tả</th>
         <th>Trạng Thái</th>
         <th>Hành Động</th>
@@ -28,6 +29,7 @@
         <td th:text="${item.name}"></td>
         <td th:text="${item.brandName}"></td>
         <td th:text="${item.categoryName}"></td>
+        <td th:text="${item.variantCount}"></td>
         <td th:text="${item.description}"></td>
         <td th:switch="${item.isActive}">
           <span th:case="true" class="badge badge-primary">Đang Kinh Doanh</span>
@@ -41,7 +43,7 @@
 
 
           <button class="btn btn-warning dim" type="button" th:attr="data-id=${item.id}"
-            th:title="'Thêm mới Sản Phẩm chi tiết'" onclick="handleVariantDetailClick (this)">
+            th:title="'Thêm mới Sản Phẩm chi tiết'" onclick="handleVariantDetailClick(this)">
             <i class="fa fa-plus-square"></i>
           </button>
 

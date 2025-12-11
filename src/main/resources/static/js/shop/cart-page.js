@@ -280,4 +280,68 @@ $(document).ready(function () {
         console.error("Debug failed:", xhr);
       });
   });
+
+  // Xử lý nút Đặt Hàng - kiểm tra số lượng tồn kho trước khi chuyển trang checkout
+  $(document).on("click", "#btnProceedCheckout", function(e) {
+    e.preventDefault();
+
+    const $btn = $(this);
+    const checkoutUrl = $btn.data("checkout-url");
+
+    // Kiểm tra giỏ hàng từ server để lấy số lượng tồn kho mới nhất
+    $.get("/cart/validate-stock")
+      .done(function(response) {
+        if (response.valid) {
+          // Tất cả sản phẩm đều còn hàng, chuyển đến trang checkout
+          window.location.href = checkoutUrl;
+        } else {
+          // Có sản phẩm hết hàng hoặc không đủ số lượng
+          let itemsHtml = '<div class="stock-error-list" style="text-align: left; margin-top: 15px;">';
+          response.outOfStockItems.forEach(function(item) {
+            if (item.availableQuantity <= 0) {
+              itemsHtml += `
+                <div class="stock-error-item" style="padding: 10px; margin-bottom: 8px; background: #fff5f5; border-left: 3px solid #dc3545; border-radius: 4px;">
+                  <div style="font-weight: 600; color: #333;">${item.productName}</div>
+                  <div style="font-size: 13px; color: #666;">Mã: ${item.variantCode}</div>
+                  <div style="font-size: 13px; color: #dc3545; margin-top: 4px;">
+                    <i class="fa fa-times-circle"></i> Sản phẩm tạm hết hàng
+                  </div>
+                </div>`;
+            } else {
+              itemsHtml += `
+                <div class="stock-error-item" style="padding: 10px; margin-bottom: 8px; background: #fff8e6; border-left: 3px solid #ffc107; border-radius: 4px;">
+                  <div style="font-weight: 600; color: #333;">${item.productName}</div>
+                  <div style="font-size: 13px; color: #666;">Mã: ${item.variantCode}</div>
+                  <div style="font-size: 13px; color: #856404; margin-top: 4px;">
+                    <i class="fa fa-exclamation-triangle"></i> Chỉ còn <strong>${item.availableQuantity}</strong> sản phẩm (Số lượng yêu cầu: ${item.requestedQuantity})
+                  </div>
+                </div>`;
+            }
+          });
+          itemsHtml += '</div>';
+          itemsHtml += '<div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 13px; color: #666;"><i class="fa fa-info-circle"></i> Vui lòng điều chỉnh số lượng hoặc xóa sản phẩm không còn hàng để tiếp tục đặt hàng.</div>';
+
+          Swal.fire({
+            title: '<i class="fa fa-shopping-cart" style="color: #dc3545;"></i> Không thể tiến hành đặt hàng',
+            html: itemsHtml,
+            icon: null,
+            confirmButtonText: 'Cập nhật giỏ hàng',
+            confirmButtonColor: '#1ab394',
+            showClass: {
+              popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp'
+            }
+          });
+
+          // Reload lại giỏ hàng để cập nhật số lượng mới nhất
+          loadCart();
+        }
+      })
+      .fail(function(xhr) {
+        console.error("Error validating cart stock:", xhr);
+        toastr.error("Có lỗi xảy ra khi kiểm tra tồn kho. Vui lòng thử lại!", "Lỗi");
+      });
+  });
 });

@@ -122,6 +122,16 @@ public class StockMovementServiceImpl implements StockMovementService {
     }
 
     @Override
+    public void recordSaleMovementOnly(Integer productVariantId, Integer quantity, String orderCode, String createdBy) {
+        ProductVariant variant = productVariantRepository.findById(productVariantId)
+            .orElseThrow(() -> new RuntimeException("Product variant not found: " + productVariantId));
+
+        // Chỉ ghi lại chuyển động, KHÔNG trừ kho (vì đã trừ trước từ giỏ hàng offline)
+        String note = "Bán hàng tại quầy - Đơn: " + orderCode + " (tồn kho đã trừ trước)";
+        recordStockMovement(variant, quantity, "SALE", note, createdBy);
+    }
+
+    @Override
     public void processReturn(Integer productVariantId, Integer quantity, String orderCode, String createdBy) {
         ProductVariant variant = productVariantRepository.findById(productVariantId)
             .orElseThrow(() -> new RuntimeException("Product variant not found: " + productVariantId));

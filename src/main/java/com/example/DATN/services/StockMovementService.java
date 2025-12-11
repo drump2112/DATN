@@ -55,6 +55,12 @@ public interface StockMovementService {
     void processSale(Integer productVariantId, Integer quantity, String orderCode, String createdBy);
 
     /**
+     * Chỉ ghi lại stock movement cho bán hàng mà không trừ tồn kho
+     * (dùng khi tồn kho đã được trừ trước từ giỏ hàng offline)
+     */
+    void recordSaleMovementOnly(Integer productVariantId, Integer quantity, String orderCode, String createdBy);
+
+    /**
      * Xử lý hoàn trả (cộng kho)
      */
     void processReturn(Integer productVariantId, Integer quantity, String orderCode, String createdBy);

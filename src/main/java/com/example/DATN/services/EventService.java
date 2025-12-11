@@ -13,6 +13,8 @@ public interface EventService {
 
   List<EventsDTO> getEvents(String keyword);
 
+    EventsDTO findById(Integer id);
+
   boolean toggleStatus(Integer id);
 
   boolean addEvents(EventsRequest eventsRequest);
@@ -22,6 +24,4 @@ public interface EventService {
   Page<EventsDTO> searchEvents(String keyword, Boolean isActive, Pageable pageable);
 
   long countAll();
-
-  EventsDTO findById(Integer id);
 }

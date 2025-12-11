@@ -28,7 +28,7 @@ public class AdminStockMovementController {
     public String stockMovementsPage(Model model,
                                    @RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "10") int size) {
-        System.out.println("AdminStockMovementController.stockMovementsPage() called");
+        System.out.println("🚀 AdminStockMovementController.stockMovementsPage() called");
         try {
             Pageable pageable = PageRequest.of(page, size);
             Page<StockMovementDTO> movements = stockMovementService.getAllStockMovements(pageable);
@@ -93,7 +93,7 @@ public class AdminStockMovementController {
      */
     @GetMapping("/stock-movements-test")
     public String stockMovementsTest(Model model) {
-        System.out.println("Test endpoint works!");
+        System.out.println("🔥 Test endpoint works!");
         model.addAttribute("message", "Controller routing hoạt động!");
         return "admin/stock-movements/list";
     }

@@ -60,6 +60,9 @@ public class VNPayController {
                         order.setTransactionNo(transactionNo);
                         orderRepository.save(order);
 
+                        // Trừ số lượng voucher sau khi thanh toán VNPay thành công
+                        orderService.deductVoucherForVNPayOrder(order);
+
                         System.out.println("VNPay IPN: Order " + orderId + " payment updated successfully - Status: " + order.getStatus() + ", PaymentStatus: " + order.getPaymentStatus());
                         return "RspCode=00&Message=Confirm Success"; // Trả về cho VNPay
                     } else {
@@ -67,12 +70,12 @@ public class VNPayController {
                         return "RspCode=00&Message=Order Already Processed";
                     }
                 } catch (Exception e) {
-                    System.err.println("❌ VNPay IPN Error processing order: " + e.getMessage());
+                    System.err.println("VNPay IPN Error processing order: " + e.getMessage());
                     e.printStackTrace();
                     return "RspCode=99&Message=Unknown error";
                 }
             } else {
-                System.err.println("❌ VNPay IPN: Invalid signature or failed payment - ResponseCode: " + responseCode + ", ValidSignature: " + isValidSignature);
+                System.err.println("VNPay IPN: Invalid signature or failed payment - ResponseCode: " + responseCode + ", ValidSignature: " + isValidSignature);
 
                 // Xử lý khi thanh toán thất bại - hủy đơn hàng
                 try {
@@ -86,13 +89,13 @@ public class VNPayController {
                         System.out.println("VNPay IPN: Order " + orderId + " cancelled due to failed payment");
                     }
                 } catch (Exception e) {
-                    System.err.println("❌ VNPay IPN Error cancelling failed order: " + e.getMessage());
+                    System.err.println("VNPay IPN Error cancelling failed order: " + e.getMessage());
                 }
 
                 return "RspCode=97&Message=Invalid Signature";
             }
         } catch (Exception e) {
-            System.err.println("❌ VNPay IPN Exception: " + e.getMessage());
+            System.err.println("VNPay IPN Exception: " + e.getMessage());
             return "RspCode=99&Message=Unknown error";
         }
     }
@@ -128,6 +131,9 @@ public class VNPayController {
                             order.setPaymentStatus("PAID");
                             order.setTransactionNo(transactionNo);
                             orderRepository.save(order);
+
+                            // Trừ số lượng voucher sau khi thanh toán VNPay thành công (nếu IPN chưa xử lý)
+                            orderService.deductVoucherForVNPayOrder(order);
                         } else {
                             System.out.println("VNPay Return: Order " + orderId + " already has paymentStatus = PAID");
                         }

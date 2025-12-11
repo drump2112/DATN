@@ -158,11 +158,17 @@
                       <span th:if="${order.status == 'PENDING'}">
                         <span class="label label-warning">Chờ xác nhận</span>
                       </span>
+                      <span th:if="${order.status == 'WAITING_PICKUP'}">
+                        <span class="label label-info">Chờ lấy hàng</span>
+                      </span>
                       <span th:if="${order.status == 'CONFIRMED'}">
                         <span class="label label-primary">Đã xác nhận</span>
                       </span>
                       <span th:if="${order.status == 'PROCESSING'}">
                         <span class="label label-info">Đang xử lý</span>
+                      </span>
+                      <span th:if="${order.status == 'SHIPPING'}">
+                        <span class="label label-primary">Đang giao hàng</span>
                       </span>
                       <span th:if="${order.status == 'COMPLETED'}">
                         <span class="label label-success">Hoàn thành</span>

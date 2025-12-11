@@ -131,6 +131,18 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
          "AND CAST(ord.OrderDate AS DATE) = :date", nativeQuery = true)
   BigDecimal findRevenueByDate(@Param("date") String date);
 
+  // Query to get daily revenue within a date range - SQL Server compatible
+  @Query(value = "SELECT FORMAT(ord.OrderDate, 'yyyy-MM-dd') as orderDate, " +
+         "ISNULL(SUM(ord.finalAmount), 0) as revenue, " +
+         "COUNT(*) as orderCount " +
+         "FROM Orders ord " +
+         "WHERE ord.Status = 'COMPLETED' " +
+         "AND ord.OrderDate >= :startDate " +
+         "AND ord.OrderDate <= DATEADD(DAY, 1, CAST(:endDate AS DATETIME)) " +
+         "GROUP BY FORMAT(ord.OrderDate, 'yyyy-MM-dd') " +
+         "ORDER BY FORMAT(ord.OrderDate, 'yyyy-MM-dd')", nativeQuery = true)
+  List<Object[]> findDailyRevenueInRange(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
   long countByStatus(String status);
 
   @Query(value = "SELECT MONTH(ord.OrderDate) as month, COALESCE(SUM(ord.finalAmount), 0) as revenue, COUNT(*) as orderCount " +
@@ -148,7 +160,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
   @Query(value = "SELECT DISTINCT YEAR(ord.OrderDate) as year FROM Orders ord WHERE ord.Status = 'COMPLETED' ORDER BY year DESC", nativeQuery = true)
   List<Integer> findAvailableYears();
 
-  @Query(value = "SELECT TOP 10 p.id, p.Name, p.ProductCode, SUM(oi.quantity) as totalSold, " +
+  @Query(value = "SELECT TOP 5 p.id, p.Name, p.ProductCode, SUM(oi.quantity) as totalSold, " +
          "c.Name as colorName, c.ColorCode, pvi.ImageUrl, p.thumbnail " +
          "FROM OrderItems oi " +
          "INNER JOIN ProductVariants pv ON oi.ProductVariantId = pv.id " +
@@ -157,6 +169,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
          "LEFT JOIN ProductVariantImage pvi ON p.id = pvi.ProductId AND c.id = pvi.ColorId AND pvi.SortOrder = 1 " +
          "INNER JOIN Orders ord ON oi.OrderId = ord.id " +
          "WHERE ord.Status = 'COMPLETED' " +
+         "AND MONTH(ord.OrderDate) = MONTH(GETDATE()) " +
+         "AND YEAR(ord.OrderDate) = YEAR(GETDATE()) " +
          "GROUP BY p.id, p.Name, p.ProductCode, c.Name, c.ColorCode, pvi.ImageUrl, p.thumbnail " +
          "ORDER BY SUM(oi.quantity) DESC", nativeQuery = true)
   List<Object[]> findTopProducts();
@@ -164,40 +178,42 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
   @Query("SELECT o.status, COUNT(o) FROM Order o GROUP BY o.status")
   List<Object[]> findOrderStatusCounts();
 
-  // Payment method statistics - get all status types for now
-  @Query("SELECT o.paymentMethod, COUNT(o) FROM Order o WHERE o.paymentMethod IS NOT NULL GROUP BY o.paymentMethod")
+  // Payment method statistics - only count COMPLETED orders
+  @Query("SELECT o.paymentMethod, COUNT(o) FROM Order o WHERE o.paymentMethod IS NOT NULL AND o.status = 'COMPLETED' GROUP BY o.paymentMethod")
   List<Object[]> findPaymentMethodCounts();
 
-  @Query(value = "SELECT " +
-         "CASE " +
-         "  WHEN MONTH(ord.OrderDate) IN (1,2,3) THEN 1 " +
-         "  WHEN MONTH(ord.OrderDate) IN (4,5,6) THEN 2 " +
-         "  WHEN MONTH(ord.OrderDate) IN (7,8,9) THEN 3 " +
-         "  ELSE 4 " +
-         "END as quarter, " +
-         "p.Name, SUM(oi.quantity) as totalSold " +
-         "FROM OrderItems oi " +
-         "INNER JOIN ProductVariants pv ON oi.ProductVariantId = pv.id " +
-         "INNER JOIN Products p ON pv.ProductID = p.id " +
-         "INNER JOIN Orders ord ON oi.OrderId = ord.id " +
-         "WHERE YEAR(ord.OrderDate) = :year AND ord.Status = 'COMPLETED' " +
-         "GROUP BY " +
-         "CASE " +
-         "  WHEN MONTH(ord.OrderDate) IN (1,2,3) THEN 1 " +
-         "  WHEN MONTH(ord.OrderDate) IN (4,5,6) THEN 2 " +
-         "  WHEN MONTH(ord.OrderDate) IN (7,8,9) THEN 3 " +
-         "  ELSE 4 " +
-         "END, p.id, p.Name " +
-         "ORDER BY quarter, SUM(oi.quantity) DESC", nativeQuery = true)
+  @Query(value = "WITH QuarterlySales AS ( " +
+         "  SELECT " +
+         "    CASE " +
+         "      WHEN MONTH(ord.OrderDate) IN (1,2,3) THEN 1 " +
+         "      WHEN MONTH(ord.OrderDate) IN (4,5,6) THEN 2 " +
+         "      WHEN MONTH(ord.OrderDate) IN (7,8,9) THEN 3 " +
+         "      ELSE 4 " +
+         "    END as quarter, " +
+         "    p.Name as productName, " +
+         "    SUM(oi.quantity) as totalSold, " +
+         "    ROW_NUMBER() OVER ( " +
+         "      PARTITION BY CASE " +
+         "        WHEN MONTH(ord.OrderDate) IN (1,2,3) THEN 1 " +
+         "        WHEN MONTH(ord.OrderDate) IN (4,5,6) THEN 2 " +
+         "        WHEN MONTH(ord.OrderDate) IN (7,8,9) THEN 3 " +
+         "        ELSE 4 " +
+         "      END " +
+         "      ORDER BY SUM(oi.quantity) DESC " +
+         "    ) as rn " +
+         "  FROM OrderItems oi " +
+         "  INNER JOIN ProductVariants pv ON oi.ProductVariantId = pv.id " +
+         "  INNER JOIN Products p ON pv.ProductID = p.id " +
+         "  INNER JOIN Orders ord ON oi.OrderId = ord.id " +
+         "  WHERE YEAR(ord.OrderDate) = :year AND ord.Status = 'COMPLETED' " +
+         "  GROUP BY " +
+         "    CASE " +
+         "      WHEN MONTH(ord.OrderDate) IN (1,2,3) THEN 1 " +
+         "      WHEN MONTH(ord.OrderDate) IN (4,5,6) THEN 2 " +
+         "      WHEN MONTH(ord.OrderDate) IN (7,8,9) THEN 3 " +
+         "      ELSE 4 " +
+         "    END, p.id, p.Name " +
+         ") " +
+         "SELECT quarter, productName, totalSold FROM QuarterlySales WHERE rn = 1 ORDER BY quarter", nativeQuery = true)
   List<Object[]> findQuarterlyProductSales(@Param("year") int year);
-
-  @Query(value = "SELECT MONTH(ord.OrderDate) as month, YEAR(ord.OrderDate) as year, " +
-         "SUM(ord.TotalAmount) as revenue, COUNT(ord.id) as orderCount " +
-         "FROM Orders ord " +
-         "WHERE ord.Status = 'COMPLETED' " +
-         "AND CAST(ord.OrderDate AS DATE) >= CAST(:startDate AS DATE) " +
-         "AND CAST(ord.OrderDate AS DATE) <= CAST(:endDate AS DATE) " +
-         "GROUP BY MONTH(ord.OrderDate), YEAR(ord.OrderDate) " +
-         "ORDER BY year ASC, month ASC", nativeQuery = true)
-  List<Object[]> findMonthlyRevenueByDateRange(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

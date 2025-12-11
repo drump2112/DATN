@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+
 
 
 @Data
@@ -38,8 +38,7 @@ public class EventsDTO {
 
    private Boolean isActive;
 
-   private List<SaleEventProductDTO> saleEventProducts;
-
-   private List<Integer> productVariantIds;
+//chưa có chức năng tạo sự kiện giảm giá theo sản phẩm
+//    private List<SaleEventProduct> saleEventProducts;
 }
 

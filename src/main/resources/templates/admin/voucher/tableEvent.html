@@ -1,102 +1,128 @@
 <th:block th:fragment="table">
-   <table class="table table-striped">
-       <thead>
-       <tr>
-           <th>ID</th>
-           <th>Mã Sự Kiện Giảm Giá</th>
-           <th>Tên Sự Kiện</th>
-           <th>Kiểu Giảm</th>
-           <th>Giá Trị Giảm</th>
-           <th>Giá Trị Giảm Tối Đa</th>
-           <th>Ngày Bắt Đầu</th>
-           <th>Ngày Kết Thúc</th>
-           <th>Trạng Thái</th>
-           <th>Hành Động</th>
-       </tr>
-       </thead>
-       <tbody>
-       <tr th:each="item : ${events}">
-           <td th:text="${item.id}"></td>
-           <td th:text="${item.code}"></td>
-           <td th:text="${item.name}"></td>
-           <td th:switch="${item.discountType}">
-               <span th:case="'FIXED'" class="badge badge-success">Cố Định</span>
-               <span th:case="'PERCENT'" class="badge badge-info">Theo %</span>
-               <span th:case="*">Unknown</span>
-           </td>
-           <td
-                   th:text="${#numbers.formatDecimal(item.discountValue, 0, 0)} + ' ' + (${#strings.toUpperCase(item.discountType)} == 'FIXED' ? 'VNĐ' : '%')">
-           </td>
-           <td th:text="${item.maxDiscountValue != null ? #numbers.formatDecimal(item.maxDiscountValue, 0, 0) + ' VNĐ' : '0 VNĐ'}"></td>
-           <td th:text="${#temporals.format(item.startDate, 'dd/MM/yyyy')}"></td>
-           <td th:text="${#temporals.format(item.endDate, 'dd/MM/yyyy')}"></td>
-           <td th:switch="${item.isActive}">
-               <span th:case="true" class="badge badge-primary">Hoạt Động</span>
-               <span th:case="false" class="badge badge-danger">Ngừng</span>
-           </td>
-           <td>
-               <button
-                       class="btn btn-info dim"
-                       type="button"
-                       th:attr="data-id=${item.id},
-                                data-code=${item.code},
-                                data-name=${item.name},
-                                data-discounttype=${item.discountType},
-                                data-discountvalue=${item.discountValue},
-                                data-maxdiscountvalue=${item.maxDiscountValue},
-                                data-startdate=${item.startDate},
-                                data-enddate=${item.endDate},
-                                data-isactive=${item.isActive},
-                                data-productvariantids=${#strings.arrayJoin(item.productVariantIds, ',')}"
-                       th:title="'Thông tin và cập nhật'"
-                       onclick="handleEventDetailClick(this)"
-               >
-                   <i class="fa fa-eye"></i>
-               </button>
-               <button
-                       th:id="'btn-status-' + ${item.id}"
-                       th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
-                       th:onclick="|toggleEventStatus( ${item.id}, ${item.isActive} )|"
-                       th:title="${item.isActive} ? 'Khóa mã giảm giá' : 'Kích hoạt mã giảm giá'"
-               >
-                   <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
-               </button>
-           </td>
-       </tr>
-       </tbody>
-   </table>
-   <div class="text-center" th:if="${eventTotalPages > 1}">
-       <ul class="pagination">
-           <li th:class="${eventCurrentPage == 0} ? 'disabled' : ''">
-               <a th:if="${eventCurrentPage > 0}" href="#" th:onclick="'searchEvent(' + (${eventCurrentPage - 1}) + ')'">
-                   <i class="fa fa-angle-left"></i> Trước
-               </a>
-               <span th:if="${eventCurrentPage == 0}" class="disabled">
-                   <i class="fa fa-angle-left"></i> Trước
-               </span>
-           </li>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Mã Sự Kiện Giảm Giá</th>
+            <th>Tên Sự Kiện</th>
+            <th>Kiểu Giảm</th>
+            <th>Giá Trị Giảm</th>
+            <th>Giá Trị Giảm Tối Đa</th>
+            <th>Ngày Bắt Đầu</th>
+            <th>Ngày Kết Thúc</th>
+            <th>Trạng Thái</th>
+            <th>Hành Động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${events}">
+            <td th:text="${item.id}"></td>
+            <td th:text="${item.code}"></td>
+            <td th:text="${item.name}"></td>
+            <td th:switch="${item.discountType}">
+                <span th:case="'FIXED'" class="badge badge-success">Cố Định</span>
+                <span th:case="'PERCENT'" class="badge badge-info">Theo %</span>
+                <span th:case="*">Unknown</span>
+            </td>
+            <td
+                    th:text="${#numbers.formatDecimal(item.discountValue, 0, 0)} + ' ' + (${#strings.toUpperCase(item.discountType)} == 'FIXED' ? 'VNĐ' : '%')">
+            </td>
+            <td th:text="${item.maxDiscountValue != null ? #numbers.formatDecimal(item.maxDiscountValue, 0, 0) + ' VNĐ' : '0 VNĐ'}"></td>
+            <td th:text="${#temporals.format(item.startDate, 'dd/MM/yyyy')}"></td>
+            <td th:text="${#temporals.format(item.endDate, 'dd/MM/yyyy')}"></td>
+            <td th:switch="${item.isActive}">
+                <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+                <span th:case="false" class="badge badge-danger">Ngừng</span>
+            </td>
+            <td>
+                <button
+                        class="btn btn-info dim"
+                        type="button"
+                        th:attr="data-id=${item.id},
+                                 data-code=${item.code},
+                                 data-name=${item.name},
+                                 data-discounttype=${item.discountType},
+                                 data-discountvalue=${item.discountValue},
+                                 data-maxdiscountvalue=${item.maxDiscountValue},
+                                 data-startdate=${item.startDate},
+                                 data-enddate=${item.endDate},
+                                 data-isactive=${item.isActive}"
+                        th:title="'Thông tin và cập nhật'"
+                        onclick="handleEventDetailClick(this)"
+                >
+                    <i class="fa fa-eye"></i>
+                </button>
+                <a th:href="@{/admin/event/detailEvent/{id}(id=${item.id})}"
+                   th:title="'Thêm sản phẩm giảm giá'">
+                    <button type="button" class="btn btn-warning dim">
+                        <i class="fa fa-plus-square"></i>
+                    </button>
+                </a>
+                <button
+                        th:id="'btn-status-' + ${item.id}"
+                        th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+                        th:onclick="|toggleEventStatus( ${item.id}, ${item.isActive} )|"
+                        th:title="${item.isActive} ? 'Khóa mã giảm giá' : 'Kích hoạt mã giảm giá'"
+                >
+                    <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="dataTables_paginate paging_simple_numbers"
+         id="DataTables_Table_0_paginate"
+         th:if="${eventTotalPages > 0}"
+         style="text-align: right">
 
-           <li th:each="i : ${#numbers.sequence(0, eventTotalPages - 1)}"
-               th:class="${i == eventCurrentPage} ? 'active' : ''">
-               <a href="#" th:onclick="'searchEvent(' + (${i}) + ')'" th:text="${i + 1}">1</a>
-           </li>
+        <ul class="pagination"
+            id="paginationContainer"
+            th:attr="data-total-pages=${eventTotalPages}, data-current-page=${eventCurrentPage}">
 
-           <li th:class="${eventCurrentPage == eventTotalPages - 1} ? 'disabled' : ''">
-               <a th:if="${eventCurrentPage < eventTotalPages - 1}" href="#" th:onclick="'searchEvent(' + (${eventCurrentPage + 1}) + ')'">
-                   Sau <i class="fa fa-angle-right"></i>
-               </a>
-               <span th:if="${eventCurrentPage == eventTotalPages - 1}" class="disabled">
-                   Sau <i class="fa fa-angle-right"></i>
-               </span>
-           </li>
-       </ul>
-       <p class="text-muted">
-           Hiển thị trang <strong th:text="${eventCurrentPage + 1}">1</strong>
-           / <strong th:text="${eventTotalPages}">1</strong>
-           (Tổng <strong th:text="${eventTotalItems}">0</strong> sự kiện)
-       </p>
-   </div>
+            <!-- Nút Previous -->
+            <li class="paginate_button previous"
+                th:classappend="${eventCurrentPage == 0} ? ' disabled'">
+                <a href="#"
+                   tabindex="0"
+                   th:if="${eventCurrentPage > 0}"
+                   th:onclick="'searchEvent(' + (${eventCurrentPage - 1}) + ')'"
+                >Trước</a>
+                <a href="#"
+                   tabindex="0"
+                   th:if="${eventCurrentPage == 0}"
+                   style="pointer-events: none; opacity: 0.5;">Trước</a>
+            </li>
 
+            <!-- Nút số trang -->
+            <li class="paginate_button"
+                th:each="i : ${#numbers.sequence(1, eventTotalPages)}"
+                th:classappend="${i - 1 == eventCurrentPage} ? ' active'">
+                <a href="#"
+                   tabindex="0"
+                   th:text="${i}"
+                   th:onclick="'searchEvent(' + (${i} - 1) + ')'"
+                ></a>
+            </li>
+
+            <!-- Nút Next -->
+            <li class="paginate_button next"
+                th:classappend="${eventCurrentPage + 1 == eventTotalPages} ? ' disabled'">
+                <a href="#"
+                   tabindex="0"
+                   th:if="${eventCurrentPage + 1 < eventTotalPages}"
+                   th:onclick="'searchEvent(' + (${eventCurrentPage + 1}) + ')'"
+                >Sau</a>
+                <a href="#"
+                   tabindex="0"
+                   th:if="${eventCurrentPage + 1 == eventTotalPages} "
+                   style="pointer-events: none; opacity: 0.5;">Sau</a>
+            </li>
+        </ul>
+        <p class="text-muted">
+            Hiển thị trang <strong th:text="${eventCurrentPage + 1}">1</strong>
+            / <strong th:text="${eventTotalPages}">1</strong>
+            (Tổng <strong th:text="${eventTotalItem}">0</strong> voucher)
+        </p>
+    </div>
 
 </th:block>
-

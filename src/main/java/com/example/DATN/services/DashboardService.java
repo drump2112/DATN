@@ -94,39 +94,35 @@ public class DashboardService {
         }
     }
 
-    public DashboardStatsDto getDashboardStatsByDateRange(String startDate, String endDate) {
-        logger.info("Getting dashboard stats for date range: {} to {}", startDate, endDate);
-
+    public List<DailyRevenueDto> getDailyRevenueInRange(String startDate, String endDate) {
         try {
-            List<MonthlyRevenueDto> monthlyRevenue = getMonthlyRevenueByDateRange(startDate, endDate);
+            logger.info("Getting daily revenue from {} to {}", startDate, endDate);
+            List<Object[]> results = orderRepository.findDailyRevenueInRange(startDate, endDate);
+            logger.info("Found {} daily revenue records", results.size());
 
-            DashboardStatsDto stats = DashboardStatsDto.builder()
-                    .monthlyRevenue(monthlyRevenue)
-                    .build();
+            List<DailyRevenueDto> dtoList = new ArrayList<>();
+            for (Object[] result : results) {
+                try {
+                    String dateStr = result[0] != null ? result[0].toString() : "";
+                    // Handle java.sql.Date format
+                    if (dateStr.contains(" ")) {
+                        dateStr = dateStr.split(" ")[0]; // Get only date part YYYY-MM-DD
+                    }
+                    BigDecimal revenue = result[1] != null ? new BigDecimal(result[1].toString()) : BigDecimal.ZERO;
+                    Long orderCount = result[2] != null ? ((Number) result[2]).longValue() : 0L;
 
-            logger.info("Dashboard stats for date range collected: monthlyRevenue.size={}", monthlyRevenue.size());
-            return stats;
+                    dtoList.add(DailyRevenueDto.builder()
+                            .date(dateStr)
+                            .revenue(revenue)
+                            .orderCount(orderCount)
+                            .build());
+                } catch (Exception e) {
+                    logger.error("Error parsing result row: {}", e.getMessage());
+                }
+            }
+            return dtoList;
         } catch (Exception e) {
-            logger.error("Error getting dashboard stats for date range", e);
-            return DashboardStatsDto.builder()
-                    .monthlyRevenue(new ArrayList<>())
-                    .build();
-        }
-    }
-
-    private List<MonthlyRevenueDto> getMonthlyRevenueByDateRange(String startDate, String endDate) {
-        try {
-            List<Object[]> results = orderRepository.findMonthlyRevenueByDateRange(startDate, endDate);
-            return results.stream()
-                    .map(result -> MonthlyRevenueDto.builder()
-                            .month(((Number) result[0]).intValue())
-                            .year(((Number) result[1]).intValue())
-                            .revenue((BigDecimal) result[2])
-                            .orderCount(((Number) result[3]).longValue())
-                            .build())
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            logger.error("Error getting monthly revenue by date range", e);
+            logger.error("Error getting daily revenue for range {} to {}: {}", startDate, endDate, e.getMessage(), e);
             return new ArrayList<>();
         }
     }
@@ -139,6 +135,11 @@ public class DashboardService {
         try {
             List<Object[]> results = orderRepository.findPaymentMethodCounts();
             Map<String, Long> paymentStats = new HashMap<>();
+
+            // Initialize with default keys to ensure they always exist
+            paymentStats.put("Tiền mặt", 0L);
+            paymentStats.put("Chuyển khoản", 0L);
+            paymentStats.put("VNPay", 0L);
 
             logger.info("Found {} payment method records", results.size());
 

@@ -47,7 +47,7 @@ public class HomeController {
 	public String getProducts(Model model) {
 
 		List<ProductDTO> list = service.getProductActive();
-		List<ProductVariantDTO> bestSellingVariants = variantService.getBestSellingVariants(8);
+		List<ProductVariantDTO> bestSellingVariants = variantService.getBestSellingVariants(5);
 		List<ProductVariantDTO> newestVariants = variantService.getNewestVariants(8);
 
 		model.addAttribute("listProducts", list);
@@ -105,7 +105,7 @@ public class HomeController {
 				.collect(java.util.stream.Collectors.toList());
 		}
 
-		List<ProductVariantDTO> bestSellingVariants = variantService.getBestSellingVariants(8);
+		List<ProductVariantDTO> bestSellingVariants = variantService.getBestSellingVariants(5);
 		List<ProductVariantDTO> newestVariants = variantService.getNewestVariants(8);
 
 		// Populate filter options

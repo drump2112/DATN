@@ -81,10 +81,10 @@
               </div>
 
               <div class="cart-actions">
-                <a th:href="@{/customer/auth/(redirectUrl='/checkout')}" class="btn-checkout">
+                <button type="button" id="btnProceedCheckout" class="btn-checkout" data-checkout-url="/customer/auth/?redirectUrl=/checkout">
                   <i class="fa fa-credit-card"></i>
                   <span>Đặt Hàng</span>
-                </a>
+                </button>
                 <button class="btn-continue-shopping">
                   <i class="fa fa-shopping-bag"></i>
                   Tiếp Tục Mua Sắm

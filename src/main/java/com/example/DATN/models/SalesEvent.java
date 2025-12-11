@@ -41,6 +41,9 @@ public class SalesEvent {
    @Column(name = "DiscountValue", precision = 10, scale = 2)
    private BigDecimal discountValue;
 
+   @Column(name = "MaxDiscountValue", precision = 10, scale = 2)
+   private BigDecimal maxDiscountValue;
+
    @Column(name = "IsActive")
    private Boolean isActive;
 

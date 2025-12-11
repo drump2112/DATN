@@ -70,6 +70,7 @@
     }
 
     .status-pending { background: #f39c12; color: white; }
+    .status-waiting_pickup { background: #17a2b8; color: white; }
     .status-shipping { background: #3498db; color: white; }
     .status-completed { background: #27ae60; color: white; }
     .status-cancelled { background: #e74c3c; color: white; }
@@ -491,11 +492,12 @@
           <td th:switch="${item.paymentMethod}">
             <span th:case="CASH" class="badge badge-primary">Tiền Mặt</span>
             <span th:case="TRANSFER" class="badge badge-info">Chuyển Khoản</span>
-            <span th:case="VNPAY" class="badge badge-primary">VNPay</span>
+            <span th:case="VNPAY" class="badge badge-success">VNPay</span>
           </td>
           <td th:switch="${item.status}">
             <span th:case="WAITING_OTP" class="badge badge-warning">Xác nhận OTP</span>
             <span th:case="PENDING" class="badge badge-warning">Chờ xử lý</span>
+            <span th:case="WAITING_PICKUP" class="badge badge-info">Chờ lấy hàng</span>
             <span th:case="PROCESSING" class="badge badge-info">Đang xử lý</span>
             <span th:case="SHIPPING" class="badge badge-primary">Đang giao</span>
             <span th:case="COMPLETED" class="badge badge-success">Hoàn thành</span>

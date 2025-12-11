@@ -69,6 +69,9 @@
                     <span th:if="${order.status == 'PENDING'}" class="label label-info" style="font-size: 13px;">
                       <i class="fa fa-hourglass-half"></i> Chờ xử lý
                     </span>
+                    <span th:if="${order.status == 'WAITING_PICKUP'}" class="label label-info" style="font-size: 13px;">
+                      <i class="fa fa-clock-o"></i> Chờ lấy hàng
+                    </span>
                     <span th:if="${order.status == 'PROCESSING'}" class="label label-primary" style="font-size: 13px;">
                       <i class="fa fa-cog"></i> Đang xử lý
                     </span>

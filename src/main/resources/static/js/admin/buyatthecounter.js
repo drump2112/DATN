@@ -54,6 +54,100 @@ $(document).ready(function () {
   let tabIndex = 1; // chỉ đếm thứ tự thực tế
   const MAX_TABS = 6;
 
+  // Session ID duy nhất để theo dõi việc giữ tồn kho
+  const offlineCartSessionId = 'offline-cart-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  console.log('Offline cart session ID:', offlineCartSessionId);
+
+  // ====== API functions để giữ/hoàn lại tồn kho ======
+  async function holdStockInDB(variantId, quantity) {
+    try {
+      const response = await fetch('/api/offline-cart/hold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          variantId: variantId,
+          quantity: quantity,
+          sessionId: offlineCartSessionId
+        })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Lỗi khi giữ tồn kho:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  async function releaseStockInDB(variantId, quantity) {
+    try {
+      const response = await fetch('/api/offline-cart/release', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          variantId: variantId,
+          quantity: quantity,
+          sessionId: offlineCartSessionId
+        })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Lỗi khi hoàn lại tồn kho:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  async function updateStockHoldInDB(variantId, oldQuantity, newQuantity) {
+    try {
+      const response = await fetch('/api/offline-cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          variantId: variantId,
+          oldQuantity: oldQuantity,
+          newQuantity: newQuantity,
+          sessionId: offlineCartSessionId
+        })
+      });
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Lỗi khi cập nhật tồn kho:', error);
+      return { success: false, message: error.message };
+    }
+  }
+
+  function releaseAllStockInDB() {
+    // Thu thập tất cả sản phẩm đang giữ từ tất cả các tab
+    const items = [];
+    for (let tabId in orders) {
+      if (orders[tabId].items) {
+        orders[tabId].items.forEach(item => {
+          items.push({
+            variantId: item.id,
+            quantity: item.quantity
+          });
+        });
+      }
+    }
+
+    if (items.length === 0) return;
+
+    // Sử dụng navigator.sendBeacon để đảm bảo request được gửi khi đóng trang
+    const data = JSON.stringify({
+      sessionId: offlineCartSessionId,
+      items: items
+    });
+
+    navigator.sendBeacon('/api/offline-cart/release-all', new Blob([data], { type: 'application/json' }));
+    console.log('Đã gửi yêu cầu hoàn lại tồn kho khi đóng trang');
+  }
+
+  // Hoàn lại tồn kho khi reload hoặc đóng trang
+  window.addEventListener('beforeunload', function(e) {
+    releaseAllStockInDB();
+  });
+
 
 
   // ====== Hàm tính số lượng còn lại so với tồn kho và các tab khác ======
@@ -132,12 +226,21 @@ $(document).ready(function () {
 
 
   // ========== Xóa tab ==========
-  $(document).on("click", ".close-tab", function (e) {
+  $(document).on("click", ".close-tab", async function (e) {
     e.stopPropagation();
     const tabId = $(this).data("tab");
+    const tabIdKey = tabId.replace("#", "");
+
+    // Hoàn lại tồn kho của các sản phẩm trong tab này trước khi xóa
+    if (orders[tabIdKey] && orders[tabIdKey].items && orders[tabIdKey].items.length > 0) {
+      for (const item of orders[tabIdKey].items) {
+        await releaseStockInDB(item.id, item.quantity);
+      }
+    }
+
     $(`a[href='${tabId}']`).closest("li").remove();
     $(tabId).remove();
-    delete orders[tabId.replace("#", "")];
+    delete orders[tabIdKey];
 
     // Nếu không còn tab nào thì tạo lại tab đầu tiên
     if (Object.keys(orders).length === 0) {
@@ -225,7 +328,7 @@ $(document).ready(function () {
   });
 
   // ========== Chọn sản phẩm từ kết quả tìm kiếm ==========
-  $(document).on("click", "#searchResults a", function (e) {
+  $(document).on("click", "#searchResults a", async function (e) {
     e.preventDefault();
 
     const quantityAvailable = parseInt($(this).data("quantity"));
@@ -241,6 +344,14 @@ $(document).ready(function () {
     const tbody = $(`#table-${activeTabId} tbody`);
     const price = parseFloat($(this).data("price"));
     const variantCode = $(this).data("code");
+    const variantId = parseInt($(this).data("id"));
+
+    // Gọi API để trừ tồn kho trong DB trước
+    const holdResult = await holdStockInDB(variantId, 1);
+    if (!holdResult.success) {
+      toastr.error("<b>Không thể thêm sản phẩm!</b><br>" + (holdResult.message || "Hết hàng hoặc lỗi hệ thống"));
+      return;
+    }
 
     // Tính tổng số lượng đã thêm ở tất cả các tab
     let totalAdded = 0;
@@ -250,10 +361,6 @@ $(document).ready(function () {
     }
 
     const remainingQuantity = quantityAvailable - totalAdded;
-    if (remainingQuantity <= 0) {
-      toastr.warning("Sản phẩm này đã hết hàng theo tồn kho thực tế!");
-      return;
-    }
 
     // find existing in this tab
     const existingItem = orders[activeTabId].items.find((i) => i.code === variantCode);
@@ -261,19 +368,15 @@ $(document).ready(function () {
       // Remove empty cart message when updating existing product
       tbody.find('.empty-cart-row').remove();
 
-      if (existingItem.quantity < remainingQuantity) {
-        existingItem.quantity++;
-        existingItem.total = existingItem.price * existingItem.quantity;
+      existingItem.quantity++;
+      existingItem.total = existingItem.price * existingItem.quantity;
 
-        const row = tbody.find(`tr[data-code="${variantCode}"]`);
-        row.find(".quantity-input").val(existingItem.quantity);
-        row.find(".total").text(existingItem.total.toLocaleString() + "đ");
+      const row = tbody.find(`tr[data-code="${variantCode}"]`);
+      row.find(".quantity-input").val(existingItem.quantity);
+      row.find(".total").text(existingItem.total.toLocaleString() + "đ");
 
-        // Show update notification
-        toastr.info(`<b>Đã cập nhật số lượng!</b><br>${$(this).data("name")} - SL: ${existingItem.quantity}`);
-      } else {
-        toastr.warning("Đã đạt tối đa số lượng tồn kho còn lại!");
-      }
+      // Show update notification
+      toastr.info(`<b>Đã cập nhật số lượng!</b><br>${$(this).data("name")} - SL: ${existingItem.quantity}`);
     } else {
       // thêm sản phẩm mới, số lượng khởi tạo = 1
       const product = {
@@ -311,6 +414,12 @@ $(document).ready(function () {
       tbody.append(row);
     }
 
+    // Cập nhật số lượng trong productsCache và re-render danh sách sản phẩm
+    const productInCache = productsCache.find(p => p.id === variantId);
+    if (productInCache && holdResult.remainingStock !== undefined) {
+      productInCache.quantity = holdResult.remainingStock;
+      renderProductList(productsCache);
+    }
 
     $("#searchResults").hide();
     $("#searchInput").val("");
@@ -319,8 +428,10 @@ $(document).ready(function () {
 
 
   // ========== Khi thay đổi số lượng ==========
+  let quantityChangeTimeout = null;
   $(document).on("input", ".quantity-input", function () {
-    const row = $(this).closest("tr");
+    const input = $(this);
+    const row = input.closest("tr");
     const activeTabId = $(".nav-tabs li.active a")
       .attr("href")
       .replace("#", "");
@@ -328,46 +439,72 @@ $(document).ready(function () {
     const product = orders[activeTabId].items[index];
     if (!product) return;
 
-    let newQuantity = parseInt($(this).val());
+    let newQuantity = parseInt(input.val());
+    const oldQuantity = product.quantity;
 
-    // Tính tổng số lượng của sản phẩm này ở các tab khác
-    let totalOtherTabs = 0;
-    for (let tab in orders) {
-      if (tab !== activeTabId) {
-        const item = orders[tab].items.find((i) => i.code === product.code);
-        if (item) totalOtherTabs += item.quantity;
-      }
-    }
-
-    const maxAvailable = product.quantityAvailable - totalOtherTabs;
-
-    if (newQuantity > maxAvailable) {
-      // Hiển thị cảnh báo trước khi reset
-      toastr.warning("Số lượng vượt quá tồn kho thực tế!");
-      newQuantity = maxAvailable;
-    } else if (newQuantity < 1 || isNaN(newQuantity)) {
+    if (newQuantity < 1 || isNaN(newQuantity)) {
       newQuantity = 1;
     }
 
+    // Debounce để tránh gọi API liên tục
+    clearTimeout(quantityChangeTimeout);
+    quantityChangeTimeout = setTimeout(async () => {
+      if (newQuantity === oldQuantity) return;
 
-    product.quantity = newQuantity;
-    product.total = product.price * product.quantity;
+      // Gọi API để cập nhật tồn kho trong DB
+      const updateResult = await updateStockHoldInDB(product.id, oldQuantity, newQuantity);
+      if (!updateResult.success) {
+        toastr.error("<b>Không thể cập nhật số lượng!</b><br>" + (updateResult.message || "Hết hàng"));
+        // Reset lại số lượng cũ
+        input.val(oldQuantity);
+        return;
+      }
 
-    // Cập nhật giao diện
-    row.find(".quantity-input").val(product.quantity);
-    row.find(".total").text(product.total.toLocaleString() + "đ");
+      product.quantity = newQuantity;
+      product.total = product.price * product.quantity;
 
-    updateClientDetail(activeTabId);
+      // Cập nhật giao diện
+      row.find(".quantity-input").val(product.quantity);
+      row.find(".total").text(product.total.toLocaleString() + "đ");
+
+      // Cập nhật số lượng trong productsCache và re-render
+      const productInCache = productsCache.find(p => p.id === product.id);
+      if (productInCache && updateResult.remainingStock !== undefined) {
+        productInCache.quantity = updateResult.remainingStock;
+        renderProductList(productsCache);
+      }
+
+      updateClientDetail(activeTabId);
+    }, 500);
   });
 
   // ========== Xóa dòng sản phẩm ==========
-  $(document).on("click", ".delete-row", function () {
+  $(document).on("click", ".delete-row", async function () {
     const activeTabId = $(".nav-tabs li.active a")
       .attr("href")
       .replace("#", "");
-    const index = $(this).closest("tr").index();
+    const row = $(this).closest("tr");
+    const index = row.index();
+    const product = orders[activeTabId].items[index];
+
+    if (product) {
+      // Gọi API để hoàn lại tồn kho trong DB
+      const releaseResult = await releaseStockInDB(product.id, product.quantity);
+      if (releaseResult.success) {
+        // Cập nhật số lượng trong productsCache và re-render
+        const productInCache = productsCache.find(p => p.id === product.id);
+        if (productInCache && releaseResult.remainingStock !== undefined) {
+          productInCache.quantity = releaseResult.remainingStock;
+          renderProductList(productsCache);
+        }
+      } else {
+        console.error('Lỗi khi hoàn lại tồn kho:', releaseResult.message);
+        // Vẫn tiếp tục xóa khỏi giỏ hàng, server sẽ tự xử lý khi đóng trang
+      }
+    }
+
     orders[activeTabId].items.splice(index, 1);
-    $(this).closest("tr").remove();
+    row.remove();
     updateClientDetail(activeTabId);
   });
 
@@ -562,19 +699,19 @@ $(document).ready(function () {
     });
 
     // Gắn sự kiện thêm sản phẩm vào đơn: truyền toàn bộ object sản phẩm
-    $('.addToOrderBtn').click(function () {
+    $('.addToOrderBtn').click(async function () {
       const idx = $(this).data('idx');
       const product = productsCache[idx];
       if (!product) {
         toastr.error('Sản phẩm không hợp lệ');
         return;
       }
-      addToCurrentOrder(product);
+      await addToCurrentOrder(product);
     });
   }
 
   // Hàm thêm sản phẩm vào đơn hàng giống hành vi khi chọn từ search
-  function addToCurrentOrder(product) {
+  async function addToCurrentOrder(product) {
     // product cần có các trường: id, variantCode (hoặc variant code), productName, imageUrls, colorName, sizeName, price, quantity (tồn kho)
     const activeTabId = $('.nav-tabs li.active a').attr('href').replace('#', '');
     if (!orders[activeTabId]) orders[activeTabId] = { items: [], customerId: null, voucher: null, discountAmount: 0 };
@@ -582,12 +719,26 @@ $(document).ready(function () {
     const tbody = $(`#table-${activeTabId} tbody`);
 
     const variantCode = product.variantCode || product.id || product.variant_code || product.code;
+    const variantId = parseInt(product.id);
     const quantityAvailable = parseInt(product.quantity ?? product.qty ?? 0);
     const price = parseFloat(product.price ?? 0);
 
     if (quantityAvailable === 0) {
       toastr.warning('<b>Sản phẩm này đã hết hàng!</b>');
       return;
+    }
+
+    // Gọi API để trừ tồn kho trong DB trước
+    const holdResult = await holdStockInDB(variantId, 1);
+    if (!holdResult.success) {
+      toastr.error("<b>Không thể thêm sản phẩm!</b><br>" + (holdResult.message || "Hết hàng hoặc lỗi hệ thống"));
+      return;
+    }
+
+    // Cập nhật số lượng trong productsCache
+    const productInCache = productsCache.find(p => p.id === variantId);
+    if (productInCache) {
+      productInCache.quantity = holdResult.remainingStock;
     }
 
     // Tính tổng đã thêm ở các tab
@@ -598,10 +749,6 @@ $(document).ready(function () {
     }
 
     const remainingQuantity = quantityAvailable - totalAdded;
-    if (remainingQuantity <= 0) {
-      toastr.warning('Sản phẩm này đã hết hàng theo tồn kho thực tế!');
-      return;
-    }
 
     // Nếu đã tồn tại trong tab hiện tại, tăng số lượng
     const existingItem = orders[activeTabId].items.find((i) => i.code === variantCode);
@@ -609,19 +756,15 @@ $(document).ready(function () {
       // Remove empty cart message when updating existing product
       tbody.find('.empty-cart-row').remove();
 
-      if (existingItem.quantity < remainingQuantity) {
-        existingItem.quantity++;
-        existingItem.total = existingItem.price * existingItem.quantity;
+      existingItem.quantity++;
+      existingItem.total = existingItem.price * existingItem.quantity;
 
-        const row = tbody.find(`tr[data-code="${variantCode}"]`);
-        row.find('.quantity-input').val(existingItem.quantity);
-        row.find('.total').text(existingItem.total.toLocaleString() + 'đ');
+      const row = tbody.find(`tr[data-code="${variantCode}"]`);
+      row.find('.quantity-input').val(existingItem.quantity);
+      row.find('.total').text(existingItem.total.toLocaleString() + 'đ');
 
-        // Show update notification
-        toastr.info(`<b>Đã cập nhật số lượng!</b><br>${product.productName || product.name} - SL: ${existingItem.quantity}`);
-      } else {
-        toastr.warning('Đã đạt tối đa số lượng tồn kho còn lại!');
-      }
+      // Show update notification
+      toastr.info(`<b>Đã cập nhật số lượng!</b><br>${product.productName || product.name} - SL: ${existingItem.quantity}`);
     } else {
       // Thêm mới
       const prodObj = {
@@ -664,6 +807,9 @@ $(document).ready(function () {
       // Cập nhật lại giá và gợi ý voucher sau khi thêm sản phẩm
       updateClientDetail(activeTabId);
     }
+
+    // Re-render danh sách sản phẩm với số lượng mới từ server
+    renderProductList(productsCache);
 
     updateClientDetail(activeTabId);
   }
@@ -752,6 +898,8 @@ $(document).ready(function () {
         items: orderItems,
         voucherId: voucherId || null,
         discountAmount: discountAmount || 0,
+        stockAlreadyDeducted: true, // Tồn kho đã được trừ khi thêm vào giỏ hàng
+        offlineCartSessionId: offlineCartSessionId
       }),
       success: function (res) {
         if (res.success) {
@@ -768,8 +916,8 @@ $(document).ready(function () {
           $("#discountValue").text("0 VNĐ");
           $("#finalTotal").text("0 VNĐ");
 
-          // Cập nhật số lượng sản phẩm trong cache
-          updateProductQuantitiesAfterOrder(orderItems);
+          // Cập nhật số lượng sản phẩm trong cache (không cần trừ lại vì đã trừ trước)
+          // updateProductQuantitiesAfterOrder(orderItems);
 
           // Reset tab to empty per-tab state
           orders[tabId] = { items: [], customerId: null, voucher: null, discountAmount: 0 };

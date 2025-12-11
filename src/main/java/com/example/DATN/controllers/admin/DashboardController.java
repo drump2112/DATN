@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.DATN.dtos.DashboardStatsDto;
+import com.example.DATN.dtos.DailyRevenueDto;
 import com.example.DATN.services.DashboardService;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -34,14 +36,16 @@ public class DashboardController {
 
 	@GetMapping("/api/dashboard/revenue-by-date")
 	@ResponseBody
-	public BigDecimal getRevenueByDate(@RequestParam String date) {
+	public BigDecimal getRevenueByDate(@RequestParam(value = "date") String date) {
 		return dashboardService.getRevenueByDate(date);
 	}
 
-	@GetMapping("/api/dashboard/revenue-by-date-range")
+	@GetMapping("/api/dashboard/revenue-by-range")
 	@ResponseBody
-	public DashboardStatsDto getRevenueByDateRange(@RequestParam String startDate, @RequestParam String endDate) {
-		return dashboardService.getDashboardStatsByDateRange(startDate, endDate);
+	public List<DailyRevenueDto> getRevenueByRange(
+			@RequestParam(value = "startDate") String startDate,
+			@RequestParam(value = "endDate") String endDate) {
+		return dashboardService.getDailyRevenueInRange(startDate, endDate);
 	}
 
 }

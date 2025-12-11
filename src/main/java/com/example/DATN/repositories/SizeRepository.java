@@ -1,4 +1,4 @@
-        package com.example.DATN.repositories;
+package com.example.DATN.repositories;
 
 import java.util.List;
 
