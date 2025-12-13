@@ -126,14 +126,46 @@
 
     .info-item {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px 12px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #e7eaec;
+      height: 100%;
     }
 
     .info-text {
       color: #495057;
       font-size: 14px;
       font-weight: 500;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #676a6c;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    .detail-label i {
+      margin-right: 6px;
+      color: #1ab394;
+      width: 14px;
+      text-align: center;
+    }
+
+    .detail-value {
+      color: #2c3e50;
+      font-size: 14px;
+      font-weight: 600;
+      word-break: break-word;
+      line-height: 1.4;
+      padding-left: 20px;
     }
 
     /* Order Items Section */

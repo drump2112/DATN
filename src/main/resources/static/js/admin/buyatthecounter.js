@@ -875,13 +875,13 @@ $(document).ready(function () {
     const discountAmount = state.discountAmount || 0;
     const userId = state.customerId || null;
 
+    // Voucher đã được validate và trừ khi nhấn "Áp dụng", không cần check lại
     if (paymentMethod === "TRANSFER") {
       const totalAmount = parseFloat($("#finalTotal").text().replace(/[^\d]/g, "")) || 0;
       const orderCode = "HD" + Date.now();
       const qrUrl = `https://img.vietqr.io/image/970436-0691000350665-compact.png?amount=${totalAmount}&addInfo=${orderCode}`;
 
       showQrModal(qrUrl, orderCode, tabId, userId, paymentMethod, orderItems, voucherId, discountAmount);
-
     } else {
       createCounterOrder(userId, paymentMethod, orderItems, tabId, voucherId, discountAmount);
     }
@@ -1238,11 +1238,12 @@ $(document).ready(function () {
     });
   }
 
-  // Sự kiện áp dụng
+  // Sự kiện áp dụng voucher từ list
   $(document)
     .off("click", ".apply-voucher")
     .on("click", ".apply-voucher", function () {
       const $card = $(this).closest(".voucher-card");
+      const $btn = $(this);
 
       const voucher = $card.data('voucher');
       if (!voucher) return;
@@ -1250,62 +1251,87 @@ $(document).ready(function () {
       const totalOrderAmount =
         parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
 
-      const now = new Date();
-      const start = new Date(voucher.startDate);
-      const end = new Date(voucher.endDate);
+      // Gọi API apply-counter để validate và trừ voucher
+      $btn.prop('disabled', true).text('Đang xử lý...');
 
-      if (totalOrderAmount < voucher.minOrderAmount) {
-        Swal.fire("Không đủ điều kiện!", "Đơn hàng chưa đạt giá trị tối thiểu để áp dụng voucher này.", "warning");
-        return;
-      }
-      if (now < start || now > end) {
-        Swal.fire("Voucher hết hạn hoặc chưa đến ngày áp dụng!", "", "error");
-        return;
-      }
+      $.ajax({
+        url: "/api/vouchers/apply-counter",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+          voucherId: voucher.id,
+          orderTotal: totalOrderAmount
+        }),
+        success: function(response) {
+          if (response.success) {
+            const computedDiscount = parseFloat(response.discountAmount) || 0;
 
-      let computedDiscount = 0;
-      if (voucher.discountType === "PERCENT") {
-        computedDiscount = (totalOrderAmount * voucher.discountValue) / 100;
-        if (voucher.maxDiscountValue && computedDiscount > voucher.maxDiscountValue) {
-          computedDiscount = voucher.maxDiscountValue;
+            $("#voucherModal").modal("hide");
+            $("#showListVoucher").hide();
+
+            $("#voucherDescription").html(
+              `Đang áp dụng: <strong>${voucher.code}</strong> (${voucher.discountType === "PERCENT"
+                ? voucher.discountValue + "%"
+                : voucher.discountValue.toLocaleString() + " VNĐ"
+              })`
+            );
+
+            $("#discountValue").text(computedDiscount.toLocaleString() + " VNĐ");
+            $("#selectedVoucherInfo").show();
+
+            const newTotal = totalOrderAmount - computedDiscount;
+            $("#finalTotal").text(newTotal.toLocaleString() + " VNĐ");
+
+            const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
+            if (orders[activeTabId]) {
+              orders[activeTabId].voucher = voucher;
+              orders[activeTabId].discountAmount = computedDiscount;
+            }
+
+            Swal.fire("Áp dụng thành công!", "Voucher đã được áp dụng vào đơn hàng.", "success");
+          } else {
+            Swal.fire("Không thể áp dụng!", response.message, "error");
+          }
+        },
+        error: function(xhr) {
+          Swal.fire("Lỗi!", xhr.responseJSON?.message || "Có lỗi xảy ra khi áp dụng voucher.", "error");
+        },
+        complete: function() {
+          $btn.prop('disabled', false).text('Áp dụng');
         }
-      } else {
-        computedDiscount = voucher.discountValue;
-      }
-
-      $("#voucherModal").modal("hide");
-      $("#showListVoucher").hide();
-
-      $("#voucherDescription").html(
-        `Đang áp dụng: <strong>${voucher.code}</strong> (${voucher.discountType === "PERCENT"
-          ? voucher.discountValue + "%"
-          : voucher.discountValue.toLocaleString() + " VNĐ"
-        })`
-      );
-
-      $("#discountValue").text(computedDiscount.toLocaleString() + " VNĐ");
-      $("#selectedVoucherInfo").show();
-
-      const newTotal = totalOrderAmount - computedDiscount;
-      $("#finalTotal").text(newTotal.toLocaleString() + " VNĐ");
-
-      const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
-      if (orders[activeTabId]) {
-        orders[activeTabId].voucher = voucher;
-        orders[activeTabId].discountAmount = computedDiscount;
-      }
-
-      Swal.fire("Áp dụng thành công!", "Voucher đã được áp dụng vào đơn hàng.", "success");
+      });
     });
 
   $(document).on("click", "#cancelVoucher", function () {
+    const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
+    const state = orders[activeTabId];
+
+    if (state && state.voucher && state.voucher.id) {
+      // Gọi API release-counter để hoàn lại số lượng voucher
+      $.ajax({
+        url: "/api/vouchers/release-counter",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+          voucherId: state.voucher.id
+        }),
+        success: function(response) {
+          if (response.success) {
+            console.log("✅ Voucher released successfully");
+          }
+        },
+        error: function(xhr) {
+          console.error("Error releasing voucher:", xhr);
+        }
+      });
+    }
+
     $("#selectedVoucherInfo").hide();
     $("#showListVoucher").show();
 
-    const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
-    if (orders[activeTabId]) {
-      orders[activeTabId].voucher = null;
-      orders[activeTabId].discountAmount = 0;
+    if (state) {
+      state.voucher = null;
+      state.discountAmount = 0;
     }
 
     $("#discountValue").text("0 VNĐ");
@@ -1325,20 +1351,51 @@ $(document).ready(function () {
     const activeTabId = $(".nav-tabs li.active a").attr("href").replace("#", "");
     if (!orders[activeTabId]) return;
 
-    $("#voucherSuggest").hide();
-    $("#showListVoucher").hide();
-    $("#voucherDescription").html(
-      `Đang áp dụng: <strong>${suggestion.code}</strong> (${suggestion.discountType === 'PERCENT' ? suggestion.discountValue + '%' : suggestion.discountValue.toLocaleString() + ' VNĐ'})`
-    );
-    $("#selectedVoucherInfo").show();
+    const $btn = $(this);
+    const totalOrderAmount = parseFloat($("#totalOrderAmount").text().replace(/[^\d]/g, "")) || 0;
 
-    $("#discountValue").text(suggestion.discountAmount.toLocaleString() + " VNĐ");
-    $("#finalTotal").text(suggestion.totalAfter.toLocaleString() + " VNĐ");
+    // Gọi API apply-counter để validate và trừ voucher
+    $btn.prop('disabled', true).text('Đang xử lý...');
 
-    orders[activeTabId].voucher = suggestion;
-    orders[activeTabId].discountAmount = suggestion.discountAmount;
+    $.ajax({
+      url: "/api/vouchers/apply-counter",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({
+        voucherId: suggestion.id,
+        orderTotal: totalOrderAmount
+      }),
+      success: function(response) {
+        if (response.success) {
+          const computedDiscount = parseFloat(response.discountAmount) || suggestion.discountAmount;
 
-    toastr.success("Đã áp dụng voucher gợi ý thành công!");
+          $("#voucherSuggest").hide();
+          $("#showListVoucher").hide();
+          $("#voucherDescription").html(
+            `Đang áp dụng: <strong>${suggestion.code}</strong> (${suggestion.discountType === 'PERCENT' ? suggestion.discountValue + '%' : suggestion.discountValue.toLocaleString() + ' VNĐ'})`
+          );
+          $("#selectedVoucherInfo").show();
+
+          $("#discountValue").text(computedDiscount.toLocaleString() + " VNĐ");
+
+          const newTotal = totalOrderAmount - computedDiscount;
+          $("#finalTotal").text(newTotal.toLocaleString() + " VNĐ");
+
+          orders[activeTabId].voucher = suggestion;
+          orders[activeTabId].discountAmount = computedDiscount;
+
+          toastr.success("Đã áp dụng voucher gợi ý thành công!");
+        } else {
+          Swal.fire("Không thể áp dụng!", response.message, "error");
+        }
+      },
+      error: function(xhr) {
+        Swal.fire("Lỗi!", xhr.responseJSON?.message || "Có lỗi xảy ra khi áp dụng voucher.", "error");
+      },
+      complete: function() {
+        $btn.prop('disabled', false).html('<i class="fa fa-check"></i> Áp dụng');
+      }
+    });
   });
 
   $(document).on("input", "#customerMoney", function () {

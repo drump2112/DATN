@@ -43,5 +43,5 @@ public class ProductDTO {
 
 	private Double maxPrice;
 
-	private Integer variantCount;
+	private Integer totalQuantity;
 }

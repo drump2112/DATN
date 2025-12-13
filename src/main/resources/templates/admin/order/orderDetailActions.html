@@ -70,27 +70,6 @@
       </div>
     </div>
 
-    <!-- Customer Actions Info -->
-    <div th:if="${orderStatus == 'PENDING' || orderStatus == 'WAITING_PICKUP' || orderStatus == 'SHIPPING' || orderStatus == 'COMPLETED'}"
-         class="customer-actions-info">
-      <div class="info-item" th:if="${orderStatus == 'PENDING'}">
-        <i class="fa fa-user text-primary"></i>
-        <span class="info-text">Khách hàng có thể hủy đơn hàng từ trang cá nhân</span>
-      </div>
-      <div class="info-item" th:if="${orderStatus == 'WAITING_PICKUP'}">
-        <i class="fa fa-clock-o text-warning"></i>
-        <span class="info-text">Đơn hàng đang chờ lấy hàng</span>
-      </div>
-      <div class="info-item" th:if="${orderStatus == 'SHIPPING'}">
-        <i class="fa fa-user text-info"></i>
-        <span class="info-text">Khách hàng có thể xác nhận đã nhận hàng</span>
-      </div>
-      <div class="info-item" th:if="${orderStatus == 'COMPLETED'}">
-        <i class="fa fa-user text-success"></i>
-        <span class="info-text">Khách hàng có thể mua lại hoặc yêu cầu đổi/trả</span>
-      </div>
-    </div>
-
     <!-- Order Items Section -->
     <div class="order-items-section">
       <div class="section-header">

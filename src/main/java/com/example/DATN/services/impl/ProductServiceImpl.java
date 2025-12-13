@@ -13,6 +13,7 @@ import com.example.DATN.models.Product;
 import com.example.DATN.repositories.BrandRepository;
 import com.example.DATN.repositories.CategoryRepository;
 import com.example.DATN.repositories.ProductRepository;
+import com.example.DATN.repositories.ProductVariantRepository;
 import com.example.DATN.request.ProductRequest;
 import com.example.DATN.services.ImageService;
 import com.example.DATN.services.ProductService;
@@ -33,6 +34,9 @@ public class ProductServiceImpl implements ProductService {
 
 	@Autowired
 	private ProductRepository productRepository;
+
+	@Autowired
+	private ProductVariantRepository productVariantRepository;
 
 	@Autowired
 	private BrandRepository brandRepository;
@@ -60,8 +64,9 @@ public class ProductServiceImpl implements ProductService {
 				dto.setCategoryId(entity.getCategory().getId());
 				dto.setCategoryName(entity.getCategory().getName());
 			}
-			// Tính số lượng biến thể
-			dto.setVariantCount(entity.getVariants() != null ? entity.getVariants().size() : 0);
+			// Tính tổng số lượng tồn kho của tất cả biến thể từ database
+			Integer totalQty = productVariantRepository.getTotalQuantityByProductId(entity.getId());
+			dto.setTotalQuantity(totalQty != null ? totalQty : 0);
 			return dto;
 		});
 	}
@@ -110,8 +115,9 @@ public class ProductServiceImpl implements ProductService {
 				dto.setBrandName(entity.getBrand().getName());
 				dto.setCategoryName(entity.getCategory().getName());
 			}
-			// Tính số lượng biến thể
-			dto.setVariantCount(entity.getVariants() != null ? entity.getVariants().size() : 0);
+			// Tính tổng số lượng tồn kho của tất cả biến thể từ database
+			Integer totalQty = productVariantRepository.getTotalQuantityByProductId(entity.getId());
+			dto.setTotalQuantity(totalQty != null ? totalQty : 0);
 			return dto;
 		});
 

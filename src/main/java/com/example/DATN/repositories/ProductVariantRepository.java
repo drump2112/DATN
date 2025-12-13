@@ -20,6 +20,10 @@ import org.springframework.data.repository.query.Param;
 public interface ProductVariantRepository
 		extends JpaRepository<ProductVariant, Integer>, JpaSpecificationExecutor<ProductVariant> {
 
+	// Tính tổng số lượng tồn kho của tất cả biến thể theo productId
+	@Query("SELECT COALESCE(SUM(pv.quantity), 0) FROM ProductVariant pv WHERE pv.product.id = :productId")
+	Integer getTotalQuantityByProductId(@Param("productId") Integer productId);
+
 	@EntityGraph(attributePaths = {
 			"product",
 			"product.brand",

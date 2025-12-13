@@ -30,18 +30,43 @@
       margin-bottom: 20px;
     }
 
+    /* Info Item - Label trên, Value dưới (xuống dòng) */
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px 12px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #e7eaec;
+      height: 100%;
+    }
+
     .detail-label {
       font-weight: 600;
       color: #676a6c;
-      font-size: 12px;
+      font-size: 11px;
       text-transform: uppercase;
-      margin-bottom: 5px;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    .detail-label i {
+      margin-right: 6px;
+      color: #1ab394;
+      width: 14px;
+      text-align: center;
     }
 
     .detail-value {
-      color: #1c1e21;
+      color: #2c3e50;
       font-size: 14px;
-      margin-bottom: 15px;
+      font-weight: 600;
+      word-break: break-word;
+      line-height: 1.4;
+      padding-left: 20px;
     }
 
     .product-item {

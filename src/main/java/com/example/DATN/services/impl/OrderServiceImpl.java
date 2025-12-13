@@ -125,17 +125,19 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal discountAmount = BigDecimal.ZERO;
         if (request.getVoucherId() != null) {
+            Voucher voucher = voucherRepository.findById(request.getVoucherId()).orElse(null);
+
+            // Voucher đã được validate và trừ số lượng khi nhấn "Áp dụng" ở frontend
+            // Chỉ cần kiểm tra voucher tồn tại
+            if (voucher == null) {
+                throw new RuntimeException("Voucher không tồn tại");
+            }
+
             order.setDiscountAmount(request.getDiscountAmount());
             discountAmount = request.getDiscountAmount();
-            Voucher voucher = voucherRepository.findById(request.getVoucherId()).orElse(null);
             order.setVoucher(voucher);
 
-            // Trừ số lượng voucher khi áp dụng cho đơn hàng tại quầy
-            if (voucher != null && voucher.getQuantity() != null && voucher.getQuantity() > 0) {
-                voucher.setQuantity(voucher.getQuantity() - 1);
-                voucherRepository.save(voucher);
-                System.out.println("✅ Voucher quantity decreased for counter order: " + voucher.getCode() + ", remaining: " + voucher.getQuantity());
-            }
+            System.out.println("✅ Voucher applied for counter order: " + voucher.getCode() + " (already deducted when applied)");
         } else {
             order.setDiscountAmount(BigDecimal.ZERO);
             order.setVoucher(null);
