@@ -7,6 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
@@ -37,11 +40,23 @@ public class ImageService {
 			if (!dest.exists()) {
 				throw new IOException("Tệp không được lưu tại: " + dest.getAbsolutePath());
 			}
+
 			log.info("Tệp đã lưu thành công: {}", dest.getAbsolutePath());
 			return "/uploads/" + subFolder + "/" + uniqueFileName;
 		} catch (IOException e) {
 			log.error("Lỗi lưu ảnh: {}", e.getMessage(), e);
 			throw new IOException("Lỗi lưu ảnh: " + e.getMessage(), e);
+		}
+	}
+
+	public void deleteImage(String imagePath) throws IOException {
+		if (imagePath != null && !imagePath.isEmpty()) {
+			if (imagePath.startsWith("/")) {
+				imagePath = imagePath.substring(1);
+			}
+
+			Path path = Paths.get(imagePath);
+			Files.deleteIfExists(path);
 		}
 	}
 }

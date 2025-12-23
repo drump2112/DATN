@@ -1,0 +1,60 @@
+/* Bộ lọc sản phẩm - Shop */
+.shop-filter-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(26,179,148,0.08);
+  padding: 24px 32px 16px 32px;
+  margin-bottom: 32px;
+}
+.shop-filter-card .form-label {
+  font-weight: 500;
+  color: #1ab394;
+  font-size: 15px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.shop-filter-card .form-select,
+.shop-filter-card .form-control {
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+  font-size: 15px;
+  transition: border-color 0.2s;
+  height: 40px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
+.shop-filter-card .form-select:focus,
+.shop-filter-card .form-control:focus {
+  border-color: #1ab394;
+  box-shadow: none;
+}
+.shop-filter-card .btn-primary {
+  background: linear-gradient(90deg,#1ab394 0,#1ab3e0 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 18px;
+  padding: 12px 0;
+  transition: background 0.2s;
+  min-width: 140px;
+  width: 100%;
+  max-width: 200px;
+  display: inline-block;
+}
+.shop-filter-card .btn-primary:hover {
+  background: linear-gradient(90deg,#1ab3e0 0,#1ab394 100%);
+}
+@media (max-width: 768px) {
+  .shop-filter-card {
+    padding: 16px 8px 8px 8px;
+  }
+  .shop-filter-card .form-label {
+    font-size: 14px;
+  }
+  .shop-filter-card .btn-primary {
+    font-size: 15px;
+    padding: 7px 0;
+  }
+}

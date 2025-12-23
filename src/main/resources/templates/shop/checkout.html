@@ -1,0 +1,2327 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<section class="container features" th:fragment="content" style="width: 80%;">
+  <div class="wrapper wrapper-content animated fadeInRight">
+    <div class="modern-page-header">
+      <h1 class="page-title">
+        <i class="fa fa-credit-card text-success"></i>
+        XÁC NHẬN ĐẶT HÀNG
+      </h1>
+      <p class="page-subtitle">Kiểm tra thông tin và hoàn tất đơn hàng của bạn</p>
+      <div class="header-decoration"></div>
+    </div>
+    <div class="row m-t-md">
+      <div class="col-lg-9">
+        <div class="ibox float-e-margins modern-order-card">
+          <div class="ibox-content">
+            <div class="section-header">
+              <div class="header-content">
+                <h3 class="section-title">
+                  <i class="fa fa-shopping-cart text-primary"></i>
+                  Đơn Hàng
+                </h3>
+                <small class="section-subtitle">Thông tin chi tiết đơn hàng</small>
+              </div>
+            </div>
+            <div class="m-t-sm">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="table table-hover">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Sản Phẩm</th>
+                          <th>Mô Tả</th>
+                          <th>Giá</th>
+                          <th>Số Lượng</th>
+                          <th>Tổng</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="item : ${cartItems}">
+                          <td width="90">
+                            <img th:src="${item.image}" th:alt="${item.name}" style="width:80px;height:auto;" />
+                          </td>
+                          <td>
+                            <h4 th:text="${item.name}"></h4>
+                            <p><small>Màu: <span th:text="${item.colorName}"></span> | Size: <span
+                                  th:text="${item.sizeName}"></span></small></p>
+                          </td>
+                          <td th:text="${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+                          <td th:text="${item.quantity}"></td>
+                          <td
+                            th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <div class="section-header">
+              <div class="header-content">
+                <h3 class="section-title">
+                  <i class="fa fa-map-marker text-danger"></i>
+                  Địa Chỉ Giao Hàng
+                </h3>
+                <small class="section-subtitle">Thông tin giao hàng</small>
+              </div>
+            </div>
+            <div class="address-section-container">
+              <div id="currentAddressView" class="current-address-display">
+                <div class="address-info-card">
+                  <div class="address-header">
+                    <i class="fa fa-home text-primary"></i>
+                    <span class="address-label">Địa chỉ nhận hàng</span>
+                    <button type="button" class="btn-edit-address" onclick="toggleAddressEdit()"
+                      title="Thay đổi địa chỉ">
+                      <i class="fa fa-edit"></i>
+                    </button>
+                  </div>
+                  <div class="address-content" style="font-size: 14px; color: #555;">
+                    <p id="currentFullAddress" class="current-address-text"
+                      th:text="${user.address != null and user.address.fullAddress != null ? user.address.fullAddress : 'Chưa có địa chỉ'}"
+                      th:data-province-code="${user.address != null and user.address.province != null ? user.address.province.provinceCode : ''}"
+                      th:data-commune-code="${user.address != null and user.address.commune != null ? user.address.commune.communeCode : ''}">
+                      Chưa có địa chỉ
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form chỉnh sửa địa chỉ (ẩn ban đầu) -->
+              <div id="addressEditForm" class="address-edit-form" style="display: none;">
+                <div class="address-form-container">
+                  <!-- Header form -->
+                  <div class="form-header">
+                    <h6><i class="fa fa-location-arrow text-info"></i> Cập nhật địa chỉ giao hàng</h6>
+                  </div>
+
+                  <form id="shippingAddressForm">
+                    <!-- Radio buttons để chọn địa chỉ -->
+                    <div class="address-options">
+                      <div class="address-option">
+                        <label class="address-radio-label">
+                          <input type="radio" name="addressType" value="current" checked>
+                          <span class="radio-custom"></span>
+                          <div class="radio-content">
+                            <i class="fa fa-bookmark text-success"></i>
+                            <div class="address-text-content">
+                              <span class="address-option-title">Sử dụng địa chỉ hiện tại</span>
+                              <small class="current-address-preview"
+                                th:text="${user.address != null and user.address.fullAddress != null ? user.address.fullAddress : 'Chưa có địa chỉ'}">
+                                Chưa có địa chỉ
+                              </small>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      <div class="address-option">
+                        <label class="address-radio-label">
+                          <input type="radio" name="addressType" value="new">
+                          <span class="radio-custom"></span>
+                          <div class="radio-content">
+                            <i class="fa fa-plus-circle text-info"></i>
+                            <span>Giao hàng đến địa chỉ khác</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <!-- Form nhập địa chỉ mới -->
+                    <div id="newAddressFields" class="new-address-fields" style="display: none;">
+                      <div class="address-form-row">
+                        <div class="form-field">
+                          <label class="field-label">
+                            <i class="fa fa-map text-primary"></i>
+                            Tỉnh/Thành phố *
+                          </label>
+                          <select class="form-select-modern" id="shippingProvince" name="provinceCode">
+                            <option value="">🏙️ Chọn Tỉnh/Thành phố</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="address-form-row">
+                        <div class="form-field">
+                          <label class="field-label">
+                            <i class="fa fa-building text-success"></i>
+                            Phường/Xã *
+                          </label>
+                          <select class="form-select-modern" id="shippingCommune" name="communeCode" disabled>
+                            <option value="">🏘️ Chọn Phường/Xã</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="address-form-row">
+                        <div class="form-field">
+                          <label class="field-label">
+                            <i class="fa fa-road text-warning"></i>
+                            Địa chỉ cụ thể *
+                          </label>
+                          <input type="text" class="form-input-modern" id="shippingSpecificAddress"
+                            name="specificAddress" placeholder="🏠 Số nhà, tên đường, tòa nhà..." maxlength="500">
+                        </div>
+                      </div>
+
+                      <!-- Shipping fee display -->
+                      <div class="shipping-fee-preview" id="shippingFeePreview" style="display: none;">
+                        <div class="fee-info">
+                          <i class="fa fa-truck text-info"></i>
+                          <span class="fee-label">Phí giao hàng dự kiến:</span>
+                          <span class="fee-amount" id="previewFeeAmount">0 VNĐ</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="form-actions">
+                      <button type="button" class="btn-save-address" onclick="saveShippingAddress()">
+                        <i class="fa fa-check-circle"></i>
+                        <span>Lưu địa chỉ</span>
+                      </button>
+                      <button type="button" class="btn-cancel-address" onclick="cancelAddressEdit()">
+                        <i class="fa fa-times-circle"></i>
+                        <span>Hủy bỏ</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <div class="map-container">
+                <div class="map-header">
+                  <i class="fa fa-map text-success"></i>
+                  <span>Vị trí giao hàng</span>
+                </div>
+                <iframe id="deliveryMap" class="modern-map" aria-hidden="true" frameborder="0" tabindex="-1"
+                  src="https://www.google.com/maps?q=Hanoi, Vietnam&output=embed"></iframe>
+              </div>
+            </div>
+            <div class="section-divider"></div>
+            <!-- Header chung cho Chi Tiết Thanh Toán -->
+            <div class="section-header">
+              <div class="header-content">
+                <h3 class="section-title">
+                  <i class="fa fa-calculator text-info"></i>
+                  Chi Tiết Thanh Toán
+                </h3>
+                <small class="section-subtitle">Mã giảm giá, ưu đãi và tổng kết đơn hàng</small>
+              </div>
+            </div>
+            <div class="m-t-md">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="m-t md">
+                    <div class="row">
+                      <div class="col-xs-2"></div>
+                      <div class="widget style1 navy-bg col-xs-8">
+                        <div class="row">
+                          <div class="col-xs-4">
+                            <i class="fa fa-tags fa-5x"></i>
+                          </div>
+                          <div class="col-xs-8 text-right text-center">
+                            <button id="openVoucherModal" type="button" class="btn btn-w-m btn-info m-t-md"><b>Chọn
+                                Mã Giảm Giá</b></button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xs-2"></div>
+                    </div>
+
+                    <!-- Voucher Suggestion Section -->
+                    <div class="row m-t-md">
+                      <div class="col-xs-2"></div>
+                      <div class="col-xs-8">
+                        <div id="voucherSuggestion" class="voucher-suggestion-card" style="display: none;">
+                          <div class="suggestion-header">
+                            <i class="fa fa-lightbulb-o text-warning"></i>
+                            <span class="suggestion-title">Gợi ý voucher tốt nhất cho bạn</span>
+                          </div>
+                          <div class="suggested-voucher-content">
+                            <div class="voucher-info-detail">
+                              <div class="voucher-code-display">
+                                <i class="fa fa-ticket text-success"></i>
+                                <strong id="suggestedVoucherCode" class="voucher-code"></strong>
+                              </div>
+                              <div class="voucher-description">
+                                <small id="suggestedVoucherDesc" class="voucher-desc"></small>
+                              </div>
+                            </div>
+                            <button id="applySuggestedVoucher" class="btn-apply-suggestion">
+                              <i class="fa fa-check-circle"></i>
+                              <span>Áp dụng ngay</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xs-2"></div>
+                    </div>
+                    <style>
+                      .voucher-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                        gap: 14px;
+                      }
+
+                      .voucher-card {
+                        position: relative;
+                        background: #fff;
+                        border: 1px solid #e6e9ef;
+                        border-radius: 10px;
+                        padding: 12px;
+                        transition: all 0.25s ease;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+                      }
+
+                      .voucher-card:hover {
+                        border-color: #1ab394;
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+                      }
+
+                      .voucher-card.active {
+                        border-color: #1ab394;
+                        background: #e9f9f3;
+                      }
+
+                      .voucher-card.disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                      }
+
+                      .voucher-header b {
+                        font-size: 15px;
+                        color: #1a1a1a;
+                      }
+
+                      .voucher-footer .badge {
+                        background-color: #1ab394 !important;
+                        font-size: 12px;
+                      }
+
+                      .voucher-footer .btn {
+                        font-size: 12px;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                      }
+
+                      .best-badge {
+                        position: absolute;
+                        top: -8px;
+                        left: 12px;
+                        background: #17a185;
+                        color: white;
+                        font-size: 10px;
+                        padding: 2px 6px;
+                        border-radius: 6px;
+                      }
+
+                      #voucherModal .modal-body {
+                        max-height: 60vh;
+                        overflow-y: auto;
+                        background: #f8fafc;
+                      }
+
+                      .voucher-card.selected {
+                        border-color: #1ab394 !important;
+                        background: #e9f9f3 !important;
+                        box-shadow: 0 0 0 2px rgba(26, 179, 148, 0.3);
+                      }
+
+                      #clearVoucherInline {
+                        font-size: 11px;
+                        padding: 3px 8px;
+                        border-radius: 6px;
+                      }
+
+                      /* ===== VOUCHER SUGGESTION STYLING ===== */
+                      .voucher-suggestion-card {
+                        background: linear-gradient(135deg, #e8f5e8, #f0fff0);
+                        border: 2px solid #28a745;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin: 15px 0;
+                        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.15);
+                        transition: all 0.3s ease;
+                        animation: fadeInUp 0.5s ease;
+                      }
+
+                      .voucher-suggestion-card:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.25);
+                      }
+
+                      .suggestion-header {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 15px;
+                        padding-bottom: 10px;
+                        border-bottom: 1px solid rgba(40, 167, 69, 0.2);
+                      }
+
+                      .suggestion-header i {
+                        font-size: 18px;
+                        margin-right: 8px;
+                      }
+
+                      .suggestion-title {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        font-size: 16px;
+                      }
+
+                      .suggested-voucher-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                      }
+
+                      .voucher-info-detail {
+                        flex: 1;
+                      }
+
+                      .voucher-code-display {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 8px;
+                      }
+
+                      .voucher-code-display i {
+                        font-size: 16px;
+                        margin-right: 8px;
+                      }
+
+                      .voucher-code {
+                        font-size: 18px;
+                        color: #28a745;
+                        font-weight: 700;
+                        background: white;
+                        padding: 4px 8px;
+                        border-radius: 6px;
+                        border: 1px solid #28a745;
+                      }
+
+                      .voucher-description {
+                        margin-left: 24px;
+                      }
+
+                      .voucher-desc {
+                        color: #6c757d;
+                        font-size: 14px;
+                        line-height: 1.4;
+                      }
+
+                      .btn-apply-suggestion {
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 15px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        white-space: nowrap;
+                        font-size: 14px;
+                        width: 100%;
+                        margin-top: 10px;
+                      }
+
+                      .btn-apply-suggestion:hover {
+                        background: linear-gradient(135deg, #218838, #17a2b8);
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+                      }
+
+                      .btn-apply-suggestion i {
+                        font-size: 16px;
+                      }
+
+                      @media (max-width: 768px) {
+                        .suggested-voucher-content {
+                          gap: 15px;
+                        }
+
+                        .btn-apply-suggestion {
+                          justify-content: center;
+                          width: 100%;
+                        }
+
+                        .voucher-suggestion-card {
+                          padding: 15px;
+                        }
+
+                        .suggestion-title {
+                          font-size: 14px;
+                        }
+
+                        .voucher-code {
+                          font-size: 16px;
+                        }
+                      }
+
+                      /* Applied voucher area styling */
+                      #appliedVoucherArea {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                      }
+
+                      #defaultDiscountText {
+                        display: inline;
+                      }
+
+                      /* Styling cho address form */
+                      #addressEditForm {
+                        background: #f8f9fa;
+                        border: 1px solid #dee2e6;
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin-top: 10px;
+                      }
+
+                      #addressEditForm .form-group {
+                        margin-bottom: 15px;
+                      }
+
+                      #addressEditForm label {
+                        font-weight: 500;
+                        color: #495057;
+                        margin-bottom: 5px;
+                      }
+
+                      .radio.radio-info {
+                        margin-bottom: 8px;
+                      }
+
+                      .radio.radio-info input[type="radio"]:checked+label:before {
+                        background-color: #1ab394;
+                        border-color: #1ab394;
+                      }
+
+                      #currentAddressView .vertical-timeline-content p {
+                        margin: 5px 0;
+                        font-size: 14px;
+                        line-height: 1.4;
+                      }
+
+                      /* ===== BEAUTIFUL DELIVERY ADDRESS CARD ===== */
+                      .delivery-address-card .ibox-content {
+                        padding: 20px;
+                        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+                        border-radius: 12px;
+                      }
+
+                      .current-address-display {
+                        margin-bottom: 15px;
+                      }
+
+                      .address-info-card {
+                        background: #fff;
+                        border: 2px solid #e3f2fd;
+                        border-radius: 10px;
+                        padding: 16px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                        transition: all 0.3s ease;
+                      }
+
+                      .address-info-card:hover {
+                        border-color: #1ab394;
+                        box-shadow: 0 4px 15px rgba(26, 179, 148, 0.15);
+                      }
+
+                      .address-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 12px;
+                        padding-bottom: 8px;
+                        border-bottom: 1px solid #f0f0f0;
+                      }
+
+                      .address-label {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-left: 8px;
+                        font-size: 20px;
+                      }
+
+                      .btn-edit-address {
+                        background: linear-gradient(135deg, #1ab394, #17a085);
+                        color: white;
+                        border: none;
+                        padding: 6px 12px;
+                        border-radius: 20px;
+                        font-size: 12px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                      }
+
+                      .btn-edit-address:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                        background: linear-gradient(135deg, #17a085, #138f75);
+                      }
+
+                      .current-address-text {
+                        color: #1a1a1a;
+                        font-size: 16px;
+                        line-height: 1.5;
+                        margin: 0;
+                        font-weight: 600;
+                        text-align: center;
+                      }
+
+                      /* ===== ADDRESS EDIT FORM STYLING ===== */
+                      .address-edit-form {
+                        background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+                        border-radius: 12px;
+                        padding: 20px;
+                        border: 2px solid #e8eaf6;
+                        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                      }
+
+                      .address-form-container {
+                        max-width: 100%;
+                      }
+
+                      .form-header {
+                        margin-bottom: 20px;
+                        text-align: center;
+                        padding-bottom: 15px;
+                        border-bottom: 2px solid #f0f0f0;
+                      }
+
+                      .form-header h6 {
+                        color: #2c3e50;
+                        font-weight: 600;
+                        margin: 0;
+                        font-size: 16px;
+                      }
+
+                      /* ===== ADDRESS OPTIONS (RADIO BUTTONS) ===== */
+                      .address-options {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                        margin-bottom: 20px;
+                      }
+
+                      .address-option {
+                        background: white;
+                        border: 2px solid #e9ecef;
+                        border-radius: 10px;
+                        transition: all 0.3s ease;
+                        overflow: hidden;
+                      }
+
+                      .address-option:hover {
+                        border-color: #1ab394;
+                        box-shadow: 0 2px 8px rgba(26, 179, 148, 0.1);
+                      }
+
+                      .address-radio-label {
+                        display: flex;
+                        align-items: flex-start;
+                        padding: 14px 16px;
+                        cursor: pointer;
+                        margin: 0;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                        min-height: 50px;
+                      }
+
+                      .address-radio-label input[type="radio"] {
+                        display: none;
+                      }
+
+                      .radio-custom {
+                        width: 20px;
+                        height: 20px;
+                        border: 2px solid #ddd;
+                        border-radius: 50%;
+                        margin-right: 12px;
+                        margin-top: 2px;
+                        position: relative;
+                        transition: all 0.3s ease;
+                        flex-shrink: 0;
+                      }
+
+                      .address-radio-label input[type="radio"]:checked+.radio-custom {
+                        border-color: #1ab394;
+                        background: #1ab394;
+                      }
+
+                      .address-radio-label input[type="radio"]:checked+.radio-custom::after {
+                        content: '';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        width: 6px;
+                        height: 6px;
+                        background: white;
+                        border-radius: 50%;
+                        transform: translate(-50%, -50%);
+                      }
+
+                      .radio-content {
+                        display: flex;
+                        align-items: center;
+                        color: #2c3e50;
+                        width: 100%;
+                      }
+
+                      .radio-content i {
+                        margin-right: 8px;
+                        font-size: 16px;
+                        flex-shrink: 0;
+                      }
+
+                      .address-text-content {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        flex: 1;
+                      }
+
+                      .address-option-title {
+                        font-weight: 600;
+                        margin-bottom: 3px;
+                        display: block;
+                      }
+
+                      .current-address-preview {
+                        color: #2c3e50;
+                        font-size: 14px;
+                        font-weight: 600;
+                        line-height: 1.4;
+                        display: block;
+                        max-width: 100%;
+                        word-wrap: break-word;
+                        font-style: normal;
+                        text-align: center;
+                      }
+
+                      .address-radio-label input[type="radio"]:checked~.radio-content {
+                        color: #1ab394;
+                        font-weight: 600;
+                      }
+
+                      .address-radio-label input[type="radio"]:checked~.radio-content .address-option-title {
+                        font-weight: 700;
+                        color: #1ab394;
+                      }
+
+                      .address-radio-label input[type="radio"]:checked~.radio-content .current-address-preview {
+                        font-weight: 700;
+                        color: #1ab394;
+                      }
+
+                      .address-option:has(input:checked) {
+                        border-color: #1ab394;
+                        background: linear-gradient(135deg, #f0fdf4, #ffffff);
+                      }
+
+                      /* ===== FORM FIELDS ===== */
+                      .new-address-fields {
+                        background: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        border: 1px solid #e9ecef;
+                        margin-top: 15px;
+                      }
+
+                      .address-form-row {
+                        margin-bottom: 18px;
+                      }
+
+                      .form-field {
+                        position: relative;
+                      }
+
+                      .field-label {
+                        display: flex;
+                        align-items: center;
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 8px;
+                        font-size: 14px;
+                      }
+
+                      .field-label i {
+                        margin-right: 6px;
+                        width: 16px;
+                        text-align: center;
+                      }
+
+                      .form-select-modern,
+                      .form-input-modern {
+                        width: 100%;
+                        padding: 12px 16px;
+                        border: 2px solid #e9ecef;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        transition: all 0.3s ease;
+                        background: white;
+                      }
+
+                      .form-select-modern:focus,
+                      .form-input-modern:focus {
+                        outline: none;
+                        border-color: #1ab394;
+                        box-shadow: 0 0 0 3px rgba(26, 179, 148, 0.1);
+                      }
+
+                      .form-select-modern:disabled {
+                        background: #f8f9fa;
+                        color: #6c757d;
+                        cursor: not-allowed;
+                      }
+
+                      /* ===== SHIPPING FEE PREVIEW ===== */
+                      .shipping-fee-preview {
+                        background: linear-gradient(135deg, #e8f5e8, #f0fff0);
+                        border: 2px solid #28a745;
+                        border-radius: 8px;
+                        padding: 12px 16px;
+                        margin-top: 15px;
+                        animation: fadeInUp 0.5s ease;
+                      }
+
+                      .fee-info {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                      }
+
+                      .fee-label {
+                        font-weight: 600;
+                        color: #155724;
+                      }
+
+                      .fee-amount {
+                        font-weight: 700;
+                        color: #28a745;
+                        font-size: 16px;
+                      }
+
+                      /* ===== ACTION BUTTONS ===== */
+                      .form-actions {
+                        display: flex;
+                        gap: 12px;
+                        margin-top: 25px;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                      }
+
+                      .btn-save-address {
+                        background: linear-gradient(135deg, #1ab394, #20c997);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 15px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 14px;
+                      }
+
+                      .btn-save-address:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+                        background: linear-gradient(135deg, #218838, #17a2b8);
+                      }
+
+                      .btn-cancel-address {
+                        background: linear-gradient(135deg, #6c757d, #5a6268);
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 15px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 14px;
+                      }
+
+                      .btn-cancel-address:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+                        background: linear-gradient(135deg, #5a6268, #495057);
+                      }
+
+                      /* ===== ANIMATIONS ===== */
+                      @keyframes fadeInUp {
+                        from {
+                          opacity: 0;
+                          transform: translateY(20px);
+                        }
+
+                        to {
+                          opacity: 1;
+                          transform: translateY(0);
+                        }
+                      }
+
+                      .address-edit-form {
+                        animation: fadeInUp 0.5s ease;
+                      }
+
+                      /* ===== MODERN CARD STYLING FOR ALL SECTIONS ===== */
+                      .modern-order-card .ibox-content,
+                      .modern-customer-card .ibox-content {
+                        padding: 25px;
+                        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+                        border-radius: 12px;
+                        border: 1px solid #e3f2fd;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                      }
+
+                      .modern-card-title {
+                        background: linear-gradient(135deg, #1ab394, #17a085);
+                        color: white;
+                        border-radius: 12px 12px 0 0;
+                        padding: 15px 20px;
+                        border: none;
+                      }
+
+                      .modern-card-title h5 {
+                        margin: 0;
+                        font-weight: 600;
+                        font-size: 16px;
+                      }
+
+                      .modern-card-content {
+                        border-radius: 0 0 12px 12px;
+                      }
+
+                      /* ===== SECTION HEADERS ===== */
+                      .section-header {
+                        margin-bottom: 20px;
+                        padding-bottom: 15px;
+                        border-bottom: 2px solid #f0f0f0;
+                      }
+
+                      .header-content {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-start;
+                      }
+
+                      .section-title {
+                        display: flex;
+                        align-items: center;
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin: 0 0 5px 0;
+                        font-size: 20px;
+                      }
+
+                      .section-title i {
+                        margin-right: 10px;
+                        width: 24px;
+                        text-align: center;
+                      }
+
+                      .section-subtitle {
+                        color: #6c757d;
+                        font-style: italic;
+                        font-size: 13px;
+                        margin-left: 34px;
+                      }
+
+                      .section-divider {
+                        height: 2px;
+                        background: linear-gradient(90deg, #1ab394, transparent);
+                        margin: 25px 0;
+                        border-radius: 2px;
+                      }
+
+                      /* ===== ORDER TABLE STYLING ===== */
+                      .table-hover {
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                      }
+
+                      .table-hover thead th {
+                        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                        border: none;
+                        padding: 15px;
+                        font-weight: 600;
+                        color: #2c3e50;
+                        font-size: 14px;
+                      }
+
+                      .table-hover tbody td {
+                        padding: 15px;
+                        border: 1px solid #f8f9fa;
+                        vertical-align: middle;
+                      }
+
+                      .table-hover tbody tr:hover {
+                        background: #f8f9ff;
+                      }
+
+                      /* ===== PAYMENT METHODS STYLING ===== */
+                      .payment-methods-container {
+                        margin-top: 20px;
+                      }
+
+                      .payment-options {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                      }
+
+                      .payment-option {
+                        background: white;
+                        border: 2px solid #e9ecef;
+                        border-radius: 10px;
+                        transition: all 0.3s ease;
+                        overflow: hidden;
+                      }
+
+                      .payment-option:hover {
+                        border-color: #1ab394;
+                        box-shadow: 0 2px 8px rgba(26, 179, 148, 0.1);
+                      }
+
+                      .payment-radio-label {
+                        display: flex;
+                        align-items: center;
+                        padding: 18px 20px;
+                        cursor: pointer;
+                        margin: 0;
+                        font-weight: 500;
+                        transition: all 0.3s ease;
+                      }
+
+                      .payment-radio-label input[type="radio"] {
+                        display: none;
+                      }
+
+                      .payment-content {
+                        display: flex;
+                        align-items: center;
+                        width: 100%;
+                      }
+
+                      .payment-content i {
+                        font-size: 24px;
+                        margin-right: 15px;
+                        width: 32px;
+                        text-align: center;
+                      }
+
+                      .payment-text {
+                        display: flex;
+                        flex-direction: column;
+                      }
+
+                      .payment-title {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        font-size: 16px;
+                        margin-bottom: 2px;
+                      }
+
+                      .payment-desc {
+                        color: #6c757d;
+                        font-size: 12px;
+                      }
+
+                      .payment-radio-label input[type="radio"]:checked~.payment-content .payment-title {
+                        color: #1ab394;
+                      }
+
+                      .payment-option:has(input:checked),
+                      .payment-option.active {
+                        border-color: #1ab394 !important;
+                        background: linear-gradient(135deg, #f0fdf4, #ffffff) !important;
+                        box-shadow: 0 4px 15px rgba(26, 179, 148, 0.2) !important;
+                      }
+
+                      .payment-radio-label input[type="radio"] {
+                        position: absolute;
+                        opacity: 0;
+                        cursor: pointer;
+                      }
+
+                      .radio-custom {
+                        width: 20px;
+                        height: 20px;
+                        border: 2px solid #ddd;
+                        border-radius: 50%;
+                        margin-right: 15px;
+                        position: relative;
+                        transition: all 0.3s ease;
+                        flex-shrink: 0;
+                        display: inline-block;
+                      }
+
+                      .payment-radio-label input[type="radio"]:checked+.radio-custom {
+                        border-color: #1ab394;
+                        background: #1ab394;
+                      }
+
+                      .payment-radio-label input[type="radio"]:checked+.radio-custom::after {
+                        content: '';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        width: 6px;
+                        height: 6px;
+                        background: white;
+                        border-radius: 50%;
+                        transform: translate(-50%, -50%);
+                      }
+
+                      /* ===== VOUCHER SECTION STYLING ===== */
+                      .widget.style1.navy-bg {
+                        background: linear-gradient(135deg, #1ab394, #17a085) !important;
+                        border-radius: 12px;
+                        border: none;
+                        box-shadow: 0 4px 15px rgba(26, 179, 148, 0.3);
+                        transition: all 0.3s ease;
+                      }
+
+                      .widget.style1.navy-bg:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(26, 179, 148, 0.4);
+                      }
+
+                      #openVoucherModal {
+                        background: white !important;
+                        color: #1ab394 !important;
+                        border: 2px solid white;
+                        font-weight: 600;
+                        transition: all 0.3s ease;
+                      }
+
+                      #openVoucherModal:hover {
+                        background: #1ab394 !important;
+                        color: white !important;
+                        transform: scale(1.05);
+                      }
+
+                      /* ===== PAYMENT SUMMARY STYLING ===== */
+                      .list-group.clear-list {
+                        background: white;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                        overflow: hidden;
+                      }
+
+                      .list-group-item {
+                        border: none !important;
+                        border-bottom: 1px solid #f8f9fa !important;
+                        padding: 15px 20px;
+                        background: white;
+                        transition: all 0.3s ease;
+                        font-size: 15px;
+                        font-weight: 500;
+                      }
+
+                      .list-group-item:last-child {
+                        border-bottom: none !important;
+                        background: linear-gradient(135deg, #f8f9ff, #ffffff);
+                        font-weight: 600;
+                        color: #2c3e50;
+                        font-size: 16px;
+                      }
+
+                      .list-group-item:hover {
+                        background: #f8f9ff;
+                      }
+
+                      /* ===== CUSTOMER INFO STYLING ===== */
+                      .customer-info-container {
+                        padding: 0;
+                      }
+
+                      .customer-info-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                      }
+
+                      .customer-info-item {
+                        display: flex;
+                        align-items: center;
+                        background: white;
+                        border: 2px solid #e9ecef;
+                        border-radius: 10px;
+                        padding: 15px;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                      }
+
+                      .customer-info-item:hover {
+                        border-color: #1ab394;
+                        box-shadow: 0 4px 12px rgba(26, 179, 148, 0.1);
+                        transform: translateY(-1px);
+                      }
+
+                      .info-icon {
+                        width: 45px;
+                        height: 45px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-right: 15px;
+                        flex-shrink: 0;
+                      }
+
+                      .info-icon i {
+                        font-size: 18px;
+                        color: white;
+                      }
+
+                      .info-content {
+                        flex: 1;
+                      }
+
+                      .info-label {
+                        font-size: 12px;
+                        color: #6c757d;
+                        margin-bottom: 2px;
+                        font-weight: 500;
+                      }
+
+                      .info-value {
+                        font-weight: 600;
+                        color: #2c3e50;
+                        font-size: 14px;
+                        display: block;
+                      }
+
+                      .edit-btn {
+                        color: #1ab394;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        padding: 8px;
+                        border-radius: 50%;
+                        width: 32px;
+                        height: 32px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        flex-shrink: 0;
+                      }
+
+                      .edit-btn:hover {
+                        background: #1ab394;
+                        color: white;
+                        transform: scale(1.1);
+                      }
+
+                      /* Color variations for info icons */
+                      .navy-bg {
+                        background: linear-gradient(135deg, #1ab394, #17a085);
+                      }
+
+                      .blue-bg {
+                        background: linear-gradient(135deg, #3498db, #2980b9);
+                      }
+
+                      .lazur-bg {
+                        background: linear-gradient(135deg, #9b59b6, #8e44ad);
+                      }
+
+                      /* ===== MAP CONTAINER STYLING ===== */
+                      .map-container {
+                        margin-top: 20px;
+                        background: white;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                        border: 2px solid #e9ecef;
+                      }
+
+                      .map-header {
+                        background: linear-gradient(135deg, #1ab394, #20c997);
+                        color: white;
+                        padding: 12px 16px;
+                        font-weight: 600;
+                        font-size: 14px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                      }
+
+                      .modern-map {
+                        width: 100% !important;
+                        height: 200px !important;
+                        border: none;
+                        display: block;
+                      }
+
+                      /* ===== CONFIRM ORDER BUTTON ===== */
+                      #btnConfirmOrder {
+                        background: linear-gradient(135deg, #1ab394, #20c997) !important;
+                        border: none !important;
+                        padding: 15px 25px !important;
+                        font-weight: 600 !important;
+                        font-size: 16px !important;
+                        border-radius: 15px !important;
+                        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
+                        transition: all 0.3s ease !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        gap: 8px !important;
+                        min-height: 50px !important;
+                        white-space: nowrap !important;
+                        color: white !important;
+                      }
+
+                      #btnConfirmOrder:hover {
+                        transform: translateY(-2px) !important;
+                        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4) !important;
+                        background: linear-gradient(135deg, #218838, #17a2b8) !important;
+                        color: white !important;
+                      }
+
+                      #btnConfirmOrder i {
+                        font-size: 16px !important;
+                        line-height: 1 !important;
+                      }
+
+                      #btnConfirmOrder span {
+                        line-height: 1 !important;
+                        font-size: 16px !important;
+                      }
+
+                      /* ===== OTP WAITING AREA STYLING ===== */
+                      .otp-card {
+                        margin-top: 15px;
+                        animation: fadeInUp 0.5s ease;
+                      }
+
+                      .otp-waiting-container {
+                        padding: 0;
+                      }
+
+                      .otp-status-card {
+                        background: linear-gradient(135deg, #fff3cd, #fff);
+                        border: 2px solid #ffc107;
+                        border-radius: 12px;
+                        padding: 20px;
+                        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.1);
+                        width: 100%;
+                        margin: 0;
+                      }
+
+                      .otp-header {
+                        display: none;
+                        /* Ẩn vì đã có title trong ibox-title */
+                      }
+
+                      .otp-title {
+                        font-weight: 600;
+                        color: #856404;
+                        font-size: 18px;
+                        text-align: center;
+                      }
+
+                      .otp-content {
+                        margin-bottom: 20px;
+                      }
+
+                      .otp-message {
+                        color: #6c757d;
+                        font-size: 14px;
+                        line-height: 1.6;
+                        margin-bottom: 20px;
+                        text-align: center;
+                      }
+
+                      .otp-timer-display {
+                        background: white;
+                        border: 2px solid #ffc107;
+                        border-radius: 8px;
+                        padding: 12px 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                        box-shadow: 0 1px 3px rgba(255, 193, 7, 0.1);
+                        margin-bottom: 20px;
+                      }
+
+                      .timer-label {
+                        font-weight: 600;
+                        color: #495057;
+                        font-size: 14px;
+                      }
+
+                      .timer-value {
+                        font-weight: 700;
+                        color: #dc3545;
+                        font-size: 16px;
+                        font-family: 'Courier New', monospace;
+                      }
+
+                      .otp-actions {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 12px;
+                        margin-top: 0;
+                      }
+
+                      .btn-enter-otp,
+                      .btn-resend-otp {
+                        background: linear-gradient(135deg, #ffc107, #e0a800);
+                        color: #212529;
+                        border: none;
+                        padding: 10px 16px;
+                        border-radius: 20px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 2px 6px rgba(255, 193, 7, 0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 6px;
+                        font-size: 13px;
+                        text-decoration: none;
+                        min-height: 40px;
+                      }
+
+                      .btn-enter-otp:hover,
+                      .btn-resend-otp:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+                        background: linear-gradient(135deg, #e0a800, #d39e00);
+                        color: #212529;
+                        text-decoration: none;
+                      }
+
+                      .btn-enter-otp {
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+                      }
+
+                      .btn-enter-otp:hover {
+                        background: linear-gradient(135deg, #218838, #17a2b8);
+                        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+                        color: white;
+                      }
+
+                      .timer-value.urgent {
+                        color: #dc3545;
+                        animation: pulse 1s infinite;
+                      }
+
+                      @keyframes pulse {
+
+                        0%,
+                        100% {
+                          opacity: 1;
+                        }
+
+                        50% {
+                          opacity: 0.7;
+                        }
+                      }
+
+                      /* ===== RESPONSIVE ===== */
+                      @media (max-width: 768px) {
+                        .otp-status-card {
+                          padding: 16px;
+                          margin: 0;
+                        }
+
+                        .otp-actions {
+                          grid-template-columns: 1fr;
+                          gap: 10px;
+                        }
+
+                        .otp-timer-display {
+                          padding: 10px 14px;
+                        }
+
+                        .timer-value {
+                          font-size: 15px;
+                        }
+                      }
+
+                      @media (max-width: 480px) {
+                        .otp-status-card {
+                          padding: 12px;
+                        }
+
+                        .btn-enter-otp,
+                        .btn-resend-otp {
+                          padding: 8px 12px;
+                          font-size: 12px;
+                          min-height: 36px;
+                        }
+
+                        .otp-timer-display {
+                          padding: 8px 12px;
+                          flex-direction: column;
+                          gap: 4px;
+                        }
+
+                        .timer-label {
+                          font-size: 13px;
+                        }
+
+                        .timer-value {
+                          font-size: 14px;
+                        }
+                      }
+
+                      /* ===== RESPONSIVE ===== */
+                      @media (max-width: 768px) {
+                        .address-options {
+                          gap: 8px;
+                        }
+
+                        .form-actions {
+                          flex-direction: column;
+                        }
+
+                        .btn-save-address,
+                        .btn-cancel-address {
+                          justify-content: center;
+                        }
+
+                        .payment-options {
+                          gap: 10px;
+                        }
+
+                        .payment-content {
+                          flex-direction: column;
+                          align-items: flex-start;
+                        }
+
+                        .payment-content i {
+                          margin-bottom: 8px;
+                        }
+
+                        .section-title {
+                          font-size: 18px;
+                        }
+
+                        .vertical-timeline-block {
+                          flex-direction: column;
+                        }
+
+                        .vertical-timeline-icon {
+                          margin-bottom: 10px;
+                          margin-right: 0;
+                        }
+
+                        #currentFullAddress {
+                          font-size: 16px;
+                          color: #2c3e50;
+                        }
+                      }
+                    </style>
+                  </div>
+                </div>
+
+                <!-- Phần tổng kết thanh toán cùng dòng -->
+                <div class="col-sm-6">
+                  <div class="payment-summary-section">
+                    <h4 class="summary-title">
+                      <i class="fa fa-calculator text-success"></i>
+                      Tổng Kết Thanh Toán
+                    </h4>
+                    <ul class="list-group clear-list modern-summary-list">
+                      <li class="list-group-item" style="border-top: none;">
+                        <span class="pull-right" id="totalAmount"
+                          th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                        <b> Tổng Tiền Hàng :</b>
+                      </li>
+                      <li class="list-group-item">
+                        <b>Giảm giá :</b>
+                        <div class="pull-right">
+                          <!-- Applied voucher area -->
+                          <div id="appliedVoucherArea" style="display: none;">
+                            <span id="discountValue" class="me-2">0 VNĐ</span>
+                            <button id="clearVoucherInline" class="btn btn-xs btn-warning">Hủy</button>
+                          </div>
+
+                          <!-- Default state -->
+                          <span id="defaultDiscountText">0 VNĐ</span>
+                        </div>
+                      </li>
+
+                      <li class="list-group-item">
+                        <span class="pull-right" id="shippingValue"
+                          th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"> VNĐ</span>
+                        <b> Phí Vận Chuyển :</b>
+                      </li>
+                      <li class="list-group-item final-total">
+                        <span class="pull-right" id="totalPayment"
+                          th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 3, 'POINT')} + ' VNĐ'">0 VNĐ</span>
+                        <b> Tổng Thanh Toán :</b>
+                      </li>
+                    </ul>
+
+                    <!-- Nút đặt hàng -->
+                    <div class="text-center" style="margin-top: 30px;">
+                      <button class="btn btn-outline btn-primary dim btn-place-order" id="btnConfirmOrder"
+                        type="button">
+                        <i class="fa fa-shopping-cart"></i>
+                        <span id="btnOrderText">Đặt Hàng</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <div class="ibox float-e-margins modern-customer-card">
+          <div class="ibox-title modern-card-title">
+            <h5><i class="fa fa-user text-primary"></i> Thông Tin Khách Hàng</h5>
+          </div>
+          <div class="ibox-content modern-card-content">
+            <div class="customer-info-container">
+              <div class="customer-info-list">
+                <div class="customer-info-item">
+                  <div class="info-icon navy-bg">
+                    <i class="fa fa-id-card"></i>
+                  </div>
+                  <div class="info-content">
+                    <input type="text" id="userId" th:value="${user.id}" hidden>
+                    <div class="info-label">Họ và tên</div>
+                    <span class="info-value" th:text="${user.fullName}" id="userFullName">
+                      Trương Tiến Dũng
+                    </span>
+                  </div>
+                  <i class="fa fa-edit edit-btn" onclick="enableEdit('userFullName')"></i>
+                </div>
+
+                <div class="customer-info-item">
+                  <div class="info-icon blue-bg">
+                    <i class="fa fa-phone"></i>
+                  </div>
+                  <div class="info-content">
+                    <div class="info-label">Số điện thoại</div>
+                    <span class="info-value" id="shippingPhone" th:text="${user.phone}"></span>
+                  </div>
+                  <i class="fa fa-edit edit-btn" onclick="enableEdit('shippingPhone')"></i>
+                </div>
+
+                <div class="customer-info-item">
+                  <div class="info-icon lazur-bg">
+                    <i class="fa fa-envelope"></i>
+                  </div>
+                  <div class="info-content">
+                    <div class="info-label">Email</div>
+                    <span class="info-value" th:text="${user.email}">
+                      dungttph29951@fpt.edu.vn
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ibox float-e-margins payment-method-card">
+          <div class="ibox-title modern-card-title">
+            <h5><i class="fa fa-credit-card text-success"></i> Phương Thức Thanh Toán</h5>
+          </div>
+          <div class="ibox-content">
+            <small class="section-subtitle text-muted mb-3 d-block">Chọn cách thức thanh toán phù hợp</small>
+            <div class="payment-methods-container">
+              <div class="payment-options">
+                <div class="payment-option">
+                  <label class="payment-radio-label">
+                    <input type="radio" id="cod" value="CASH" name="paymentMethod" checked="">
+                    <span class="radio-custom"></span>
+                    <div class="payment-content">
+                      <i class="fa fa-money text-warning"></i>
+                      <div class="payment-text">
+                        <span class="payment-title">Thanh Toán Khi Nhận Hàng</span>
+                        <small class="payment-desc">Thanh toán bằng tiền mặt khi nhận hàng</small>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+                <div class="payment-option">
+                  <label class="payment-radio-label">
+                    <input type="radio" id="vnpay" value="VNPAY" name="paymentMethod">
+                    <span class="radio-custom"></span>
+                    <div class="payment-content">
+                      <i class="fa fa-credit-card text-success"></i>
+                      <div class="payment-text">
+                        <span class="payment-title">VNPay</span>
+                        <small class="payment-desc">Thanh toán trực tuyến qua VNPay (Visa, Mastercard, ATM...)</small>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OTP waiting area (ẩn ban đầu) -->
+        <div id="otpWaitingArea" class="ibox float-e-margins otp-card" style="display: none;">
+          <div class="ibox-title modern-card-title">
+            <h5><i class="fa fa-clock-o text-warning"></i> Đang chờ xác nhận OTP</h5>
+          </div>
+          <div class="ibox-content">
+            <div class="otp-waiting-container">
+              <div class="otp-status-card">
+                <div class="otp-content">
+                  <p class="otp-message">
+                    Mã OTP đã được gửi đến email của bạn.<br>
+                    Vui lòng kiểm tra và nhập mã để hoàn tất đơn hàng.
+                  </p>
+                  <div class="otp-timer-display">
+                    <i class="fa fa-hourglass-half text-info"></i>
+                    <span class="timer-label">Thời gian còn lại:</span>
+                    <span id="otpTimeRemaining" class="timer-value">10:00</span>
+                  </div>
+                </div>
+                <div class="otp-actions">
+                  <button type="button" class="btn-enter-otp" id="btnReopenOtpModal">
+                    <i class="fa fa-keyboard-o"></i>
+                    <span>Nhập OTP</span>
+                  </button>
+                  <button type="button" class="btn-resend-otp" id="btnResendOtp">
+                    <i class="fa fa-refresh"></i>
+                    <span>Gửi lại OTP</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="modal fade" id="voucherModal" tabindex="-1" aria-labelledby="voucherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header voucher-modal-header">
+          <h5 class="modal-title voucher-modal-title" id="voucherModalLabel">
+            <i class="fa fa-ticket text-warning"></i>
+            Chọn Mã Giảm Giá
+          </h5>
+          <button type="button" class="close voucher-close-btn" data-dismiss="modal" aria-label="Đóng">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="voucherGrid" class="voucher-grid"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modern-modal">
+      <div class="modal-content modern-modal-content">
+        <div class="modal-header modern-modal-header">
+          <h5 class="modal-title modern-modal-title" id="otpModalLabel">
+            <i class="fa fa-shield text-success"></i>
+            Xác nhận OTP
+          </h5>
+          <button type="button" class="close modern-close-btn" data-dismiss="modal" aria-label="Đóng">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body modern-modal-body">
+          <div class="otp-input-container">
+            <div class="otp-message-card">
+              <div class="otp-icon">
+                <i class="fa fa-envelope-o text-primary"></i>
+              </div>
+              <div class="otp-message-content">
+                <h6>Mã OTP đã được gửi!</h6>
+                <p>Vui lòng kiểm tra email của bạn và nhập mã OTP gồm 6 số để hoàn tất thanh toán.</p>
+              </div>
+            </div>
+
+            <div class="otp-input-section">
+              <label class="otp-label">
+                <i class="fa fa-keyboard-o text-info"></i>
+                Nhập mã OTP
+              </label>
+              <input type="hidden" id="otpOrderId">
+              <input type="hidden" id="otpEmail">
+              <input type="text" id="otpCode" class="form-control modern-otp-input" maxlength="6"
+                placeholder="Nhập 6 số OTP" autocomplete="off" />
+              <div class="input-helper">
+                <small class="text-muted">
+                  <i class="fa fa-info-circle"></i>
+                  Mã OTP có hiệu lực trong 10 phút
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer modern-modal-footer">
+          <button type="button" class="btn btn-secondary modern-btn-secondary" data-dismiss="modal">
+            <i class="fa fa-times-circle"></i>
+            Hủy bỏ
+          </button>
+          <button type="button" id="btnVerifyOtp" class="btn btn-success modern-btn-primary">
+            <i class="fa fa-check-circle"></i>
+            Xác nhận OTP
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Checkout Styling -->
+  <style>
+    /* ===== MODERN PAGE HEADER ===== */
+    .modern-page-header {
+      text-align: center;
+      margin: 40px 0;
+      position: relative;
+    }
+
+    .header-decoration {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #1ab394, transparent);
+      margin: 20px auto;
+      width: 200px;
+      border-radius: 2px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .page-title i {
+      font-size: 36px;
+    }
+
+    .page-subtitle {
+      color: #6c757d;
+      font-size: 16px;
+      margin: 10px 0 0 0;
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .page-title i {
+        font-size: 28px;
+      }
+
+      .page-subtitle {
+        font-size: 14px;
+      }
+
+      .header-decoration {
+        width: 150px;
+      }
+    }
+
+    /* ===== PAYMENT SUMMARY STYLING ===== */
+    .payment-summary-section {
+      background: #ffffff;
+      border: 1px solid #e6e9ef;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-top: 10px;
+    }
+
+    .summary-title {
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-weight: 600;
+      border-bottom: 2px solid #f1f1f1;
+      padding-bottom: 10px;
+    }
+
+    .summary-title i {
+      margin-right: 8px;
+    }
+
+    .modern-summary-list .list-group-item {
+      border: none;
+      border-bottom: 1px solid #f1f1f1;
+      padding: 12px 15px;
+      background: transparent;
+    }
+
+    .modern-summary-list .list-group-item:last-child {
+      border-bottom: none;
+    }
+
+    .modern-summary-list .final-total {
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .btn-place-order {
+      background: linear-gradient(135deg, #1ab394, #18a085);
+      border: none;
+      color: white;
+      padding: 12px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(26, 179, 148, 0.3);
+    }
+
+    .btn-place-order:hover {
+      background: linear-gradient(135deg, #18a085, #149a80);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 179, 148, 0.4);
+      color: white;
+    }
+
+    .btn-place-order:active {
+      transform: translateY(0);
+    }
+
+    /* ===== RESPONSIVE FOR PAYMENT SUMMARY ===== */
+    @media (max-width: 768px) {
+      .payment-summary-section {
+        padding: 20px;
+        margin: 15px 0;
+      }
+
+      .summary-title {
+        font-size: 16px;
+      }
+
+      .btn-place-order {
+        width: 100%;
+        padding: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-title {
+        font-size: 20px;
+      }
+
+      .page-subtitle {
+        font-size: 13px;
+      }
+
+      .modern-page-header {
+        margin: 20px 0;
+      }
+
+      .payment-summary-section {
+        padding: 15px;
+        margin: 10px 0;
+      }
+
+      .summary-title {
+        font-size: 14px;
+        margin-bottom: 15px;
+      }
+
+      .modern-summary-list .list-group-item {
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+
+      .btn-place-order {
+        font-size: 14px;
+        padding: 12px;
+      }
+    }
+
+    /* ===== MODERN OTP MODAL STYLING ===== */
+    .modern-modal .modal-content {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .modern-modal-content {
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    .modern-modal-header {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-bottom: none;
+      padding: 15px 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .modern-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      text-align: left;
+    }
+
+    .modern-modal-title i {
+      font-size: 18px;
+    }
+
+    .modern-close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.3s ease;
+      opacity: 1;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .modern-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+      color: white;
+    }
+
+    /* ===== VOUCHER MODAL HEADER STYLING ===== */
+    .voucher-modal-header {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-bottom: none;
+      padding: 15px 20px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .voucher-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      text-align: left;
+    }
+
+    .voucher-modal-title i {
+      font-size: 18px;
+    }
+
+    .voucher-close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.3s ease;
+      opacity: 1;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    .voucher-close-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+      color: white;
+    }
+
+    .modern-modal-body {
+      padding: 30px;
+      background: white;
+    }
+
+    .otp-input-container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .otp-message-card {
+      background: linear-gradient(135deg, #e8f5e8, #f0fff0);
+      border: 2px solid #28a745;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .otp-icon {
+      width: 50px;
+      height: 50px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .otp-icon i {
+      font-size: 20px;
+    }
+
+    .otp-message-content h6 {
+      margin: 0 0 8px 0;
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 16px;
+    }
+
+    .otp-message-content p {
+      margin: 0;
+      color: #6c757d;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .otp-input-section {
+      margin-bottom: 20px;
+    }
+
+    .otp-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .modern-otp-input {
+      width: 100%;
+      padding: 15px 20px;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 3px;
+      font-family: 'Courier New', monospace;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .modern-otp-input:focus {
+      outline: none;
+      border-color: #1ab394;
+      box-shadow: 0 0 0 4px rgba(26, 179, 148, 0.1);
+      background: white;
+      transform: scale(1.02);
+    }
+
+    .modern-otp-input::placeholder {
+      color: #adb5bd;
+      font-weight: 400;
+      letter-spacing: 2px;
+    }
+
+    .input-helper {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .input-helper i {
+      margin-right: 5px;
+    }
+
+    .modern-modal-footer {
+      background: #f8f9fa;
+      border-top: 1px solid #e9ecef;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .modern-btn-secondary {
+      background: linear-gradient(135deg, #6c757d, #5a6268);
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .modern-btn-secondary:hover {
+      background: linear-gradient(135deg, #5a6268, #495057);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+      color: white;
+    }
+
+    .modern-btn-primary {
+      background: linear-gradient(135deg, #28a745, #20c997) !important;
+      border: none !important;
+      color: white !important;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    .modern-btn-primary:hover {
+      background: linear-gradient(135deg, #218838, #17a2b8) !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      color: white !important;
+    }
+
+    /* ===== RESPONSIVE FOR OTP MODAL ===== */
+    @media (max-width: 768px) {
+      .modern-modal-header,
+      .voucher-modal-header {
+        padding: 12px 15px;
+      }
+
+      .modern-modal-title,
+      .voucher-modal-title {
+        font-size: 16px;
+      }
+
+      .modern-modal-title i,
+      .voucher-modal-title i {
+        font-size: 16px;
+      }
+
+      .modern-modal-body {
+        padding: 20px;
+      }
+
+      .modern-modal-footer {
+        padding: 15px 20px;
+        flex-direction: column;
+      }
+
+      .modern-btn-secondary,
+      .modern-btn-primary {
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      .otp-message-card {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .otp-icon {
+        margin: 0 auto;
+      }
+
+      .modern-modal-title {
+        font-size: 18px;
+      }
+
+      .modal-subtitle {
+        margin-left: 0;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modern-otp-input {
+        font-size: 16px;
+        padding: 12px 15px;
+        letter-spacing: 2px;
+      }
+
+      .otp-message-card {
+        margin-bottom: 20px;
+      }
+
+      .modern-modal-title {
+        font-size: 16px;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .modern-modal-title i {
+        font-size: 20px;
+      }
+    }
+  </style>
+
+</section>
+
+</html>

@@ -7140,10 +7140,12 @@ body.landing-page {
   width: 100%;
 }
 .landing-page .header-back.one {
-  background: url("../img/landing/header_one.jpg") 50% 0 no-repeat;
+  background: url("../img/landing/Gemini_Generated_Image_ezan7wezan7wezan.png")
+    50% 0 no-repeat;
 }
 .landing-page .header-back.two {
-  background: url("../img/landing/header_two.jpg") 50% 0 no-repeat;
+  background: url("../img/landing/Gemini_Generated_Image_5clqud5clqud5clq.png")
+    50% 0 no-repeat;
 }
 .landing-page .carousel {
   height: 470px;
@@ -8753,4 +8755,50 @@ body.md-skin {
   #page-wrapper {
     margin: 0;
   }
+}
+
+.btn-primary.btn-outline.no-landing-style {
+  color: #1ab394;
+  border-color: #1ab394;
+  background-color: transparent;
+  transition: all 0.5s;
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+  font-weight: 400;
+}
+
+.btn-primary.details {
+  height: 30px;
+  font-size: 12px;
+  font-weight: 400;
+  justify-content: center;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+a.cart {
+  display: flex; /* bật flex */
+  align-items: center; /* căn giữa theo chiều dọc */
+  justify-content: center; /* căn giữa theo chiều ngang */
+  height: 30px;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 5px 10px;
+  line-height: 1.5;
+}
+
+button.cart {
+  display: flex; /* bật flex */
+  align-items: center; /* căn giữa theo chiều dọc */
+  justify-content: center; /* căn giữa theo chiều ngang */
+  gap: 6px;
+  height: 30px;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 5px 10px;
+  line-height: 1.5;
 }

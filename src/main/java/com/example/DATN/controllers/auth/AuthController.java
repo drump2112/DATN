@@ -8,9 +8,13 @@ import com.example.DATN.repositories.UserRepository;
 import com.example.DATN.repositories.VerificationTokenRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class AuthController {
@@ -36,7 +40,31 @@ public class AuthController {
 	}
 
 	@GetMapping("/login")
-	public String showLoginPage() {
+	public String showLoginPage(@RequestParam(value = "error", required = false) String error,
+			Model model,
+			HttpSession session,
+			Authentication authentication) {
+
+		if (authentication != null && authentication.isAuthenticated()) {
+			return "redirect:/admin/home";
+		}
+
+		Object lastUsername = session.getAttribute("lastUsername");
+		if (lastUsername != null) {
+			model.addAttribute("lastUsername", lastUsername);
+			session.removeAttribute("lastUsername"); // clear tránh lặp lại
+		}
+
+		Object errorMsg = session.getAttribute("error");
+		if (errorMsg != null) {
+			model.addAttribute("errorMsg", errorMsg);
+			session.removeAttribute("error"); // clear sau khi render
+		}
+		if ("disabled".equals(error)) {
+			model.addAttribute("errorMsg", "Tài khoản của bạn chưa được kích hoạt.");
+		} else if ("bad".equals(error)) {
+			model.addAttribute("errorMsg", "Sai tên đăng nhập hoặc mật khẩu.");
+		}
 		return "admin/auth/login";
 	}
 }

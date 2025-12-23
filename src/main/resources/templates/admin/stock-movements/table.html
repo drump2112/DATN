@@ -1,0 +1,97 @@
+<th:block th:fragment="table">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Mã SP</th>
+        <th>Tên Sản Phẩm</th>
+        <th>Màu/Size</th>
+        <th>Loại Biến Động</th>
+        <th>Số Lượng</th>
+        <th>Tồn Kho Hiện Tại</th>
+        <th>Ghi Chú</th>
+        <th>Thời Gian</th>
+        <th>Người Thực Hiện</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="movement : ${movements}">
+        <td th:text="${movement.id}"></td>
+        <td th:text="${movement.variantCode}"></td>
+        <td th:text="${movement.productName}"></td>
+        <td>
+          <span th:text="${movement.colorName}"></span> /
+          <span th:text="${movement.sizeName}"></span>
+        </td>
+        <td>
+          <span th:switch="${movement.movementType}">
+            <span th:case="'IN'" class="badge badge-success">Nhập kho</span>
+            <span th:case="'OUT'" class="badge badge-warning">Xuất kho</span>
+            <span th:case="'SALE'" class="badge badge-primary">Bán hàng</span>
+            <span th:case="'RETURN'" class="badge badge-info">Hoàn trả</span>
+            <span th:case="'DAMAGE'" class="badge badge-danger">Hàng hỏng</span>
+            <span th:case="'MANUAL_IN'" class="badge badge-secondary">Cập nhật tăng</span>
+            <span th:case="'MANUAL_OUT'" class="badge badge-dark">Cập nhật giảm</span>
+            <span th:case="*" class="badge badge-light" th:text="${movement.movementTypeDisplay}"></span>
+          </span>
+        </td>
+        <td>
+          <span th:switch="${movement.movementType}">
+            <span th:case="'IN'" class="text-success">+<span th:text="${movement.quantity}"></span></span>
+            <span th:case="'RETURN'" class="text-success">+<span th:text="${movement.quantity}"></span></span>
+            <span th:case="'OUT'" class="text-danger">-<span th:text="${movement.quantity}"></span></span>
+            <span th:case="'SALE'" class="text-danger">-<span th:text="${movement.quantity}"></span></span>
+            <span th:case="'DAMAGE'" class="text-danger">-<span th:text="${movement.quantity}"></span></span>
+            <span th:case="*" th:text="${movement.quantity}"></span>
+          </span>
+        </td>
+        <td>
+          <strong th:text="${movement.currentStock}"></strong>
+        </td>
+        <td th:text="${movement.note ?: 'Không có ghi chú'}"></td>
+        <td th:text="${#temporals.format(movement.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+        <td>
+          <span th:if="${movement.createdBy == 'system'}" class="badge badge-warning">System</span>
+          <span th:if="${movement.createdBy != 'system'}" class="badge badge-info" th:text="${movement.createdBy}"></span>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(movements)}">
+        <td colspan="10" class="text-center">
+          <em>Không có dữ liệu biến động kho</em>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="text-center" th:if="${totalPages > 1}">
+    <ul class="pagination">
+      <li th:class="${currentPage == 0} ? 'disabled' : ''">
+        <a th:if="${currentPage > 0}" href="#" th:onclick="'searchMovements(' + (${currentPage - 1}) + ')'">
+          <i class="fa fa-angle-left"></i> Trước
+        </a>
+        <span th:if="${currentPage == 0}" class="disabled">
+          <i class="fa fa-angle-left"></i> Trước
+        </span>
+      </li>
+
+      <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+          th:class="${i == currentPage} ? 'active' : ''">
+        <a href="#" th:onclick="'searchMovements(' + ${i} + ')'" th:text="${i + 1}">1</a>
+      </li>
+
+      <li th:class="${currentPage == totalPages - 1} ? 'disabled' : ''">
+        <a th:if="${currentPage < totalPages - 1}" href="#" th:onclick="'searchMovements(' + (${currentPage + 1}) + ')'">
+          Sau <i class="fa fa-angle-right"></i>
+        </a>
+        <span th:if="${currentPage == totalPages - 1}" class="disabled">
+          Sau <i class="fa fa-angle-right"></i>
+        </span>
+      </li>
+    </ul>
+    <p class="text-muted">
+      Hiển thị trang <strong th:text="${currentPage + 1}">1</strong>
+      / <strong th:text="${totalPages}">1</strong>
+      (Tổng <strong th:text="${totalItems}">0</strong> biến động)
+    </p>
+  </div>
+</th:block>

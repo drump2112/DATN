@@ -1,0 +1,575 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  th:replace="shop/fragments/base :: base"
+>
+  <section class="container features" th:fragment="content">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="modern-page-header">
+          <h1 class="page-title">
+            <i class="fa fa-info-circle text-info"></i>
+            CHI TIẾT SẢN PHẨM
+          </h1>
+          <p class="page-subtitle">Thông tin chi tiết và lựa chọn sản phẩm</p>
+          <div class="header-decoration"></div>
+        </div>
+        <div class="ibox product-detail">
+          <div class="ibox-content">
+            <div class="row">
+              <div class="col-md-5">
+                <div class="product-images"></div>
+              </div>
+              <div class="col-md-7">
+                <h2 class="font-bold m-b-xs">
+                  <span th:text="${product.name}">Desktop publishing software</span>
+                  <small class="variant-code text-muted" id="current-variant-code">- Mã: </small>
+                </h2>
+                <small th:text="${product.categoryName}"
+                  >Many desktop publishing packages and web page editors
+                  now.</small
+                >
+                <div class="m-t-md">
+                  <h2 class="product-main-price" id="variant-price">
+                    406.602 <small class="text-muted">VNĐ</small>
+                  </h2>
+                </div>
+                <hr/>
+                <h4>Màu Sắc</h4>
+                <div class="small text-muted" id="color">
+                  <div class="color"></div>
+                </div>
+                <br />
+                <h4>Kích Cỡ</h4>
+                <div class="small text-muted" id="size">
+                  <div class="size"></div>
+                </div>
+
+                <div class="quantity-section">
+                  <h4>Số Lượng Mua</h4>
+                  <div class="quantity-controls">
+                    <button type="button" class="quantity-btn minus" id="decrease-qty">-</button>
+                    <input type="number" class="quantity-input" id="quantity-input" value="1" min="1" max="1">
+                    <button type="button" class="quantity-btn plus" id="increase-qty">+</button>
+                  </div>
+                  <div class="stock-info">
+                    <small id="variant-quantity" class="text-muted">Còn lại: 0 sản phẩm</small>
+                  </div>
+                </div>
+                <hr/>
+                <div class="product-actions">
+                  <div class="action-buttons">
+                    <button
+                      id="add-to-cart"
+                      class="btn-add-to-cart">
+                      <i class="fa fa-cart-plus"></i>
+                      Thêm Vào Giỏ Hàng
+                    </button>
+                    <button class="btn-wishlist">
+                      <i class="fa fa-heart"></i>
+                      Yêu Thích
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ibox-footer">
+            <div id="variant-data" th:data-variants="${variants}"></div>
+          </div>
+        </div>
+        <div class="ibox float-e-margins">
+          <div class="ibox-title" style="border: none">
+            <h5>Mô Tả</h5>
+            <div class="ibox-tools">
+              <a class="collapse-link">
+                <i class="fa fa-chevron-up"></i>
+              </a>
+            </div>
+          </div>
+          <div class="ibox-content">
+            <!-- <h2>This is standard IN+ Panel<br /></h2> -->
+            <p th:text="${product.description}"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modern Product Detail Styling -->
+    <style>
+      /* ===== MODERN PAGE HEADER ===== */
+      .modern-page-header {
+        text-align: center;
+        margin: 40px 0;
+        position: relative;
+      }
+
+      .header-decoration {
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #1ab394, transparent);
+        margin: 20px auto;
+        width: 200px;
+        border-radius: 2px;
+      }
+
+      .page-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        font-size: 32px;
+      }
+
+      .page-title i {
+        font-size: 36px;
+      }
+
+      .page-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+        margin: 10px 0 0 0;
+        font-style: italic;
+      }
+
+      /* ===== MODERN PRODUCT CARD ===== */
+      .product-detail .ibox {
+        border-radius: 8px;
+        box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+        border: 1px solid #e8f4f8;
+        overflow: hidden;
+        margin-bottom: 25px;
+        background: white;
+      }
+
+      .product-detail .ibox-content {
+        padding: 35px;
+        background: white;
+      }
+
+      /* ===== PRODUCT INFO STYLING ===== */
+      .product-main-price {
+        color: #1ab394 !important;
+        font-weight: 700;
+        font-size: 32px;
+        margin: 25px 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .product-main-price small {
+        color: #6c757d !important;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      /* ===== VARIANT CODE STYLING ===== */
+      .variant-code {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1ab394 !important;
+        margin-top: 8px;
+        font-style: italic;
+        background: linear-gradient(135deg, rgba(26, 179, 148, 0.1), rgba(26, 179, 148, 0.05));
+        padding: 6px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #1ab394;
+      }
+
+      /* ===== COLOR & SIZE SELECTION ===== */
+      #color h4, #size h4 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 12px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      #color h4:before {
+        content: "🎨";
+        font-size: 18px;
+      }
+
+      #size h4:before {
+        content: "📏";
+        font-size: 18px;
+      }
+
+      .color input[type="radio"],
+      .size input[type="radio"] {
+        display: none;
+      }
+
+      .color label,
+      .size label {
+        display: inline-block;
+        padding: 8px 14px;
+        margin: 4px 6px 4px 0;
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        color: #2c3e50;
+        min-width: 45px;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .color label:hover,
+      .size label:hover {
+        border-color: #1ab394;
+        background: #f0fff4;
+        transform: translateY(-1px);
+      }
+
+      .color input[type="radio"]:checked + label,
+      .size input[type="radio"]:checked + label {
+        background: #1ab394;
+        color: white;
+        border-color: #1ab394;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(26, 179, 148, 0.25);
+      }
+
+      /* ===== PRODUCT ACTIONS ===== */
+      .product-actions {
+        margin-top: 30px;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+
+      .btn-add-to-cart {
+        background: linear-gradient(135deg, #1ab394, #17a085);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 12px rgba(26, 179, 148, 0.25);
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        justify-content: center;
+      }
+
+      .btn-add-to-cart:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 18px rgba(26, 179, 148, 0.35);
+        background: linear-gradient(135deg, #17a085, #138496);
+      }
+
+      .btn-add-to-cart:disabled {
+        background: #6c757d !important;
+        cursor: not-allowed;
+        transform: none !important;
+        box-shadow: none !important;
+        opacity: 0.7;
+      }
+
+      .btn-wishlist {
+        background: white;
+        color: #e74c3c;
+        border: 2px solid #e74c3c;
+        padding: 12px 18px;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 110px;
+        justify-content: center;
+        font-size: 15px;
+      }
+
+      .btn-wishlist:hover {
+        background: #e74c3c;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 12px rgba(231, 76, 60, 0.25);
+      }
+
+      /* ===== QUANTITY SECTION ===== */
+      .quantity-section {
+        margin: 25px 0;
+      }
+
+      .quantity-section h4 {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 12px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .quantity-section h4:before {
+        content: "🔢";
+        font-size: 18px;
+      }
+
+      .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 10px;
+        width: fit-content;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+      }
+
+      .quantity-btn {
+        background: #f8f9fa;
+        border: none;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 18px;
+        color: #6c757d;
+        transition: all 0.3s ease;
+      }
+
+      .quantity-btn:hover:not(:disabled) {
+        background: #1ab394;
+        color: white;
+      }
+
+      .quantity-btn:disabled {
+        background: #e9ecef;
+        color: #adb5bd;
+        cursor: not-allowed;
+      }
+
+      .quantity-input {
+        border: none;
+        width: 80px;
+        height: 40px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 16px;
+        color: #2c3e50;
+        background: white;
+        outline: none;
+      }
+
+      .quantity-input::-webkit-outer-spin-button,
+      .quantity-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .quantity-input[type=number] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+
+      .stock-info {
+        background: linear-gradient(135deg, rgba(26, 179, 148, 0.05), rgba(26, 179, 148, 0.02));
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid #1ab394;
+        display: inline-block;
+      }
+
+      .stock-info small {
+        color: #1ab394 !important;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      /* ===== DESCRIPTION SECTION ===== */
+      .ibox.float-e-margins {
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border: 1px solid #e3f2fd;
+        overflow: hidden;
+      }
+
+      .ibox-title {
+        background: linear-gradient(135deg, #e6e7e8, #e5eaef);
+        color: white;
+        padding: 18px 25px;
+        border: none;
+        margin: 0;
+      }
+
+      .ibox-title h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 18px;
+        color: rgb(44, 37, 37);
+      }
+
+      .ibox-content {
+        padding: 25px;
+        background: white;
+      }
+
+      .product-images {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        min-height: 450px;
+      }
+
+      .product-images .slick-dots {
+        bottom: 15px;
+      }
+
+      .product-images .slick-dots li button:before {
+        color: #1ab394;
+        font-size: 12px;
+      }
+
+      .product-images .slick-dots li.slick-active button:before {
+        color: #1ab394;
+      }
+
+      /* ===== RESPONSIVE DESIGN ===== */
+      @media (max-width: 768px) {
+        .page-title {
+          font-size: 24px;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .page-title i {
+          font-size: 28px;
+        }
+
+        .page-subtitle {
+          font-size: 14px;
+        }
+
+        .header-decoration {
+          width: 150px;
+        }
+
+        .product-detail .ibox-content {
+          padding: 20px;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .btn-add-to-cart,
+        .btn-wishlist {
+          width: 100%;
+          flex: none;
+        }
+
+        .color label,
+        .size label {
+          padding: 8px 12px;
+          margin: 3px 5px 3px 0;
+          min-width: 40px;
+        }
+
+        .product-main-price {
+          font-size: 24px;
+        }
+
+        .product-images {
+          min-height: 300px;
+        }
+
+        .variant-code {
+          font-size: 12px;
+          padding: 4px 8px;
+          margin-top: 5px;
+        }
+
+        .quantity-controls {
+          transform: scale(0.9);
+        }
+
+        .quantity-section h4 {
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .page-title {
+          font-size: 20px;
+        }
+
+        .page-subtitle {
+          font-size: 13px;
+        }
+
+        .modern-page-header {
+          margin: 20px 0;
+        }
+
+        .product-main-price {
+          font-size: 20px;
+        }
+
+        .btn-add-to-cart,
+        .btn-wishlist {
+          padding: 12px 20px;
+          font-size: 14px;
+        }
+
+        .product-images {
+          min-height: 250px;
+        }
+
+        .variant-code {
+          font-size: 11px;
+          padding: 3px 6px;
+        }
+
+        .quantity-controls {
+          transform: scale(0.85);
+        }
+
+        .quantity-section h4 {
+          font-size: 13px;
+        }
+      }
+
+      /* ===== SUCCESS POPUP ANIMATION ===== */
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </section>
+  <th:block th:fragment="script">
+    <script th:src="@{/js/shop/cart.js}"></script>
+    <script th:src="@{/js/shop/product-detail.js}"></script>
+  </th:block>
+</html>

@@ -1,0 +1,243 @@
+<th:block th:fragment="orderItems">
+  <style>
+    /* Info Item - Label trên, Value dưới (xuống dòng) */
+    .order-detail-container .info-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px 12px;
+      background: #fff;
+      border-radius: 6px;
+      border: 1px solid #e7eaec;
+      height: 100%;
+    }
+
+    .order-detail-container .detail-label {
+      font-weight: 600;
+      color: #676a6c;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    .order-detail-container .detail-label i {
+      margin-right: 6px;
+      color: #1ab394;
+      width: 14px;
+      text-align: center;
+    }
+
+    .order-detail-container .detail-value {
+      color: #2c3e50;
+      font-size: 14px;
+      font-weight: 600;
+      word-break: break-word;
+      line-height: 1.4;
+      padding-left: 20px;
+    }
+
+    .order-detail-container .mb-3 {
+      margin-bottom: 12px !important;
+    }
+
+    .order-detail-container .detail-section {
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    /* Info Item Inline - Badge xuống dòng và căn giữa */
+    .order-detail-container .info-item-inline {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 100%;
+      text-align: center;
+    }
+
+    .order-detail-container .info-item-inline .detail-label {
+      margin-bottom: 0;
+    }
+
+    .order-detail-container .info-item-inline .detail-value {
+      padding-left: 0;
+    }
+  </style>
+  <div class="order-detail-container">
+    <!-- Header with icon -->
+    <div class="detail-header">
+      <h4>
+        <i class="fa fa-shopping-cart"></i> Chi Tiết Đơn Hàng
+      </h4>
+    </div>
+
+    <!-- Order Info Grid -->
+    <div class="detail-section" style="background: #fafafa;">
+      <div class="row">
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="info-item">
+            <div class="detail-label">
+              <i class="fa fa-barcode"></i> MÃ ĐƠN HÀNG
+            </div>
+            <div class="detail-value" th:text="${order?.orderCode ?: 'N/A'}">N/A</div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="info-item">
+            <div class="detail-label">
+              <i class="fa fa-user"></i> KHÁCH HÀNG
+            </div>
+            <div class="detail-value" th:text="${order?.customerName ?: 'N/A'}">N/A</div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="info-item">
+            <div class="detail-label">
+              <i class="fa fa-phone"></i> SỐ ĐIỆN THOẠI
+            </div>
+            <div class="detail-value" th:text="${order?.shippingPhone ?: 'N/A'}">N/A</div>
+          </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="info-item">
+            <div class="detail-label">
+              <i class="fa fa-calendar"></i> NGÀY ĐẶT HÀNG
+            </div>
+            <div class="detail-value"
+              th:text="${order?.orderDate != null ? #temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm') : 'N/A'}">
+              N/A
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" th:if="${order?.shippingAddress}">
+        <div class="col-md-6 mb-3">
+          <div class="info-item">
+            <div class="detail-label">
+              <i class="fa fa-map-marker"></i> ĐỊA CHỈ GIAO HÀNG
+            </div>
+            <div class="detail-value" th:text="${order?.shippingAddress}">N/A</div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="info-item info-item-inline">
+            <div class="detail-label">
+              <i class="fa fa-credit-card"></i> PHƯƠNG THỨC THANH TOÁN
+            </div>
+            <div class="detail-value">
+              <span th:if="${order?.paymentMethod == 'CASH'}" class="badge badge-primary">
+                <i class="fa fa-money"></i> Tiền Mặt
+              </span>
+              <span th:if="${order?.paymentMethod == 'TRANSFER'}" class="badge badge-info">
+                <i class="fa fa-bank"></i> Chuyển Khoản
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products List Section -->
+    <div class="detail-section">
+      <div class="row">
+        <!-- Left Column: Products List -->
+        <div class="col-md-6">
+          <div class="section-title">
+            <i class="fa fa-list"></i> DANH SÁCH SẢN PHẨM
+          </div>
+
+          <div th:if="${items == null or #lists.isEmpty(items)}" class="empty-state">
+            <i class="fa fa-inbox fa-3x"></i>
+            <p>Không có sản phẩm trong đơn hàng</p>
+          </div>
+
+          <div class="products-list" th:if="${items != null and !#lists.isEmpty(items)}">
+            <div th:each="it : ${items}" class="product-item">
+              <div class="product-image-wrapper">
+                <img th:src="@{${it.productVariant?.product?.thumbnail ?: '/assets/img/no-image.png'}}"
+                  alt="Product Image" class="product-image" />
+              </div>
+
+              <div class="product-details">
+                <div class="product-name" th:text="${it.productVariant?.product?.name ?: 'N/A'}">
+                  Tên sản phẩm
+                </div>
+                <div class="product-info-row">
+                  <span class="info-badge">
+                    <i class="fa fa-tag"></i> <span th:text="${it.productVariant?.variantCode ?: 'N/A'}">PV-001</span>
+                  </span>
+                  <span class="info-badge" th:if="${it.productVariant?.color}">
+                    <i class="fa fa-circle" th:style="'color: ' + ${it.productVariant.color.colorCode}"></i>
+                    <span th:text="${it.productVariant.color.name}">Đỏ</span>
+                  </span>
+                  <span class="info-badge" th:if="${it.productVariant?.size}">
+                    <i class="fa fa-arrows-alt"></i>
+                    <span th:text="${it.productVariant.size.name}">35</span>
+                  </span>
+                  <span class="info-separator">|</span>
+                  <span class="quantity-badge">SL: <strong th:text="${it.quantity}">1</strong></span>
+                  <span class="info-separator">|</span>
+                  <span class="unit-price-badge"
+                    th:text="${#numbers.formatDecimal(it.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                  <span class="info-separator">|</span>
+                  <span class="total-price-badge">Tổng: <strong
+                      th:text="${#numbers.formatDecimal(it.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0
+                      ₫</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Order Summary -->
+        <div class="col-md-6">
+          <div class="section-title">
+            <i class="fa fa-calculator"></i> TỔNG KẾT ĐƠN HÀNG
+          </div>
+
+          <div class="order-summary-box">
+            <div class="summary-row">
+              <span>Tổng tiền hàng:</span>
+              <span
+                th:text="${order?.totalAmount != null ? (#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : '0 ₫'}">
+                0 ₫
+              </span>
+            </div>
+
+            <div class="summary-row" th:if="${order?.shippingFee != null and order.shippingFee > 0}">
+              <span><i class="fa fa-truck"></i> Phí vận chuyển:</span>
+              <span th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+            </div>
+
+            <div class="summary-row discount-row" th:if="${order?.discountAmount != null and order.discountAmount > 0}">
+              <span>
+                <i class="fa fa-gift"></i> Giảm giá
+                <span th:if="${order?.voucherCode}" class="voucher-code" th:text="${order.voucherCode}">CODE</span>
+              </span>
+              <span class="discount-amount">
+                - <span th:text="${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0
+                  ₫</span>
+              </span>
+            </div>
+
+            <div class="summary-row total-row">
+              <span><i class="fa fa-money"></i> TỔNG THANH TOÁN:</span>
+              <span class="final-amount"
+                th:text="${order?.finalAmount != null ? (#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫') : '0 ₫'}">
+                0 ₫
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</th:block>

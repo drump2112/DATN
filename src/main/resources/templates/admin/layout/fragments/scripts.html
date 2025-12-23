@@ -2,9 +2,10 @@
   <script th:src="@{/assets/js/jquery-3.1.1.min.js}"></script>
   <script th:src="@{/assets/js/bootstrap.min.js}"></script>
   <script th:src="@{/assets/js/plugins/metisMenu/jquery.metisMenu.js}"></script>
-  <script
-    th:src="@{/assets/js/plugins/slimscroll/jquery.slimscroll.min.js}"
-  ></script>
+  <script th:src="@{/js/admin/layout.js}"></script>
+  <script th:src="@{/assets/js/plugins/slimscroll/jquery.slimscroll.min.js}"></script>
+
+  <script th:src="@{/assets/js/plugins/footable/footable.all.min.js}"></script>
 
   <!-- Peity -->
   <script th:src="@{/assets/js/plugins/peity/jquery.peity.min.js}"></script>
@@ -21,19 +22,27 @@
 
   <!-- sweetalert2 -->
   <script th:src="'https://cdn.jsdelivr.net/npm/sweetalert2@11'"></script>
+  <!-- SweetAlert Config - phải load sau SweetAlert2 -->
+  <script th:src="@{/js/sweetalert-config.js}"></script>
 
   <!-- select2 -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"
-  ></script>
+  <!-- <script -->
+  <!--   src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" -->
+  <!-- ></script> -->
 
+  <script th:src="@{/assets/js/plugins/select2/select2.full.min.js}"></script>
   <!-- dropzone -->
   <script th:src="@{/assets/js/plugins/dropzone/dropzone.js}"></script>
   <script th:src="@{/assets/js/plugins/dataTables/datatables.min.js}"></script>
-  <script th:src="@{/assets/js/plugins/iCheck/icheck.min.js}"></script>
+  <script th:src="@{/assets/js/plugins/toastr/toastr.min.js}"></script>
+  <script th:src="@{/assets/js/plugins/steps/jquery.steps.min.js}"></script>
+  <script th:src="@{/assets/js/plugins/validate/jquery.validate.min.js}"></script>
+  <script th:src="@{/assets/js/plugins/touchspin/jquery.bootstrap-touchspin.min.js}"></script>
+  <script th:src="@{/js/main.js}"></script>
+
   <script>
     $(document).ready(function () {
-      $(".i-checks").iCheck({
+      $(".i-checks input").iCheck({
         checkboxClass: "icheckbox_square-green",
         radioClass: "iradio_square-green",
       });

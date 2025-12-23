@@ -1,0 +1,281 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<section class="container features" th:fragment="content"
+  style="max-width: 1200px; margin: 30px auto; padding: 0 15px;">
+  <div class="wrapper wrapper-content animated fadeInUp">
+
+    <div class="text-center" style="margin-bottom: 40px;">
+      <h1 style="color: #333; font-size: 2.4rem; font-weight: 700; margin-bottom: 10px;">
+        <i class="fa fa-file-text-o" style="color: #1bb394;"></i> CHI TIẾT ĐƠN HÀNG
+      </h1>
+      <p style="color: #666; font-size: 1.5rem;">
+        Mã đơn hàng: <strong th:text="${order.orderCode}">ONL-20250101-0001</strong>
+      </p>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-10 col-md-12" style="margin: 0 auto; float: none;">
+        <div class="ibox"
+          style="border: none; box-shadow: 0 0 20px rgba(0,0,0,0.08); border-radius: 12px; margin-bottom: 20px;">
+          <div class="ibox-title" style="background: linear-gradient(135deg, #0dbc96 0%, #05b895 100%);
+                                         border: none; padding: 20px; color: white; border-radius: 12px 12px 0 0;">
+            <div class="row">
+              <div class="col-md-6">
+                <h3 style="color: white; margin: 0; font-size: 1.7rem;">
+                  <i class="fa fa-info-circle"></i> Thông tin đơn hàng
+                </h3>
+              </div>
+              <div class="col-md-6 text-right">
+                <span style="font-size: 1.6rem;">
+                  <i class="fa fa-calendar"></i>
+                  <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">28/10/2025 15:30</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ibox-content" style="padding: 25px;">
+            <div class="row">
+              <div class="col-md-6" style="margin-bottom: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; height: 100%;">
+                  <h3 style="color: #667eea; font-size: 1.7rem; margin-bottom: 15px; font-weight: 600;">
+                    <i class="fa fa-user"></i> Thông tin khách hàng
+                  </h3>
+                  <p style="margin-bottom: 8px; line-height: 1.8;">
+                    <strong>Tên:</strong>
+                    <span th:text="${order.customerName}">Nguyễn Văn A</span>
+                  </p>
+                  <p style="margin-bottom: 8px; line-height: 1.8;">
+                    <strong>Số điện thoại:</strong>
+                    <span th:text="${order.customerPhone}">0123456789</span>
+                  </p>
+                  <p style="margin-bottom: 0; line-height: 1.8;">
+                    <strong>Địa chỉ giao hàng:</strong><br />
+                    <span th:text="${order.shippingAddress}">123 Đường ABC, Quận XYZ</span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-md-6" style="margin-bottom: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; height: 100%;">
+                  <h4 style="color: #667eea; font-size: 1.7rem; margin-bottom: 15px; font-weight: 600;">
+                    <i class="fa fa-info-circle"></i> Trạng thái đơn hàng
+                  </h4>
+                  <p style="margin-bottom: 12px; line-height: 1.8;">
+                    <strong>Trạng thái:</strong>
+                    <span th:if="${order.status == 'WAITING_OTP'}" class="label label-warning" style="font-size: 13px;">
+                      <i class="fa fa-clock-o"></i> Chờ xác nhận OTP
+                    </span>
+                    <span th:if="${order.status == 'PENDING'}" class="label label-info" style="font-size: 13px;">
+                      <i class="fa fa-hourglass-half"></i> Chờ xử lý
+                    </span>
+                    <span th:if="${order.status == 'WAITING_PICKUP'}" class="label label-info" style="font-size: 13px;">
+                      <i class="fa fa-clock-o"></i> Chờ lấy hàng
+                    </span>
+                    <span th:if="${order.status == 'PROCESSING'}" class="label label-primary" style="font-size: 13px;">
+                      <i class="fa fa-cog"></i> Đang xử lý
+                    </span>
+                    <span th:if="${order.status == 'SHIPPING'}" class="label label-warning" style="font-size: 13px;">
+                      <i class="fa fa-truck"></i> Đang giao hàng
+                    </span>
+                    <span th:if="${order.status == 'COMPLETED'}" class="label label-success" style="font-size: 13px;">
+                      <i class="fa fa-check"></i> Hoàn thành
+                    </span>
+                    <span th:if="${order.status == 'CANCELLED'}" class="label label-danger" style="font-size: 13px;">
+                      <i class="fa fa-times"></i> Đã hủy
+                    </span>
+                  </p>
+                  <p style="margin-bottom: 12px; line-height: 1.8;">
+                    <strong>Phương thức thanh toán:</strong>
+                    <span th:if="${order.paymentMethod == 'CASH'}" class="label label-default" style="font-size: 13px;">
+                      <i class="fa fa-money"></i> Tiền mặt (COD)
+                    </span>
+                    <span th:if="${order.paymentMethod == 'TRANSFER'}" class="label label-info"
+                      style="font-size: 13px;">
+                      <i class="fa fa-bank"></i> Chuyển khoản
+                    </span>
+                  </p>
+                  <p style="margin-bottom: 0; line-height: 1.8;">
+                    <strong>Loại đơn hàng:</strong>
+                    <span th:if="${order.orderType == 'ONLINE'}" class="label label-primary" style="font-size: 13px;">
+                      <i class="fa fa-globe"></i> Online
+                    </span>
+                    <span th:if="${order.orderType == 'COUNTER'}" class="label label-success" style="font-size: 13px;">
+                      <i class="fa fa-shopping-cart"></i> Tại quầy
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ibox"
+          style="border: none; box-shadow: 0 0 20px rgba(0,0,0,0.08); border-radius: 12px; margin-bottom: 20px;">
+          <div class="ibox-title"
+            style="background: #f8f9fa; border: none; padding: 20px; border-radius: 12px 12px 0 0;">
+            <h3 style="color: #333; margin: 0; font-size: 1.7rem; font-weight: 600;">
+              <i class="fa fa-shopping-bag"></i>    Sản phẩm đã đặt
+            </h3>
+          </div>
+          <div class="ibox-content" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="table table-hover" style="margin-bottom: 0;">
+                <thead style="background: #f8f9fa;">
+                  <tr>
+                    <th style="padding: 15px;">Sản phẩm</th>
+                    <th class="text-center" style="padding: 15px;">Màu sắc</th>
+                    <th class="text-center" style="padding: 15px;">Size</th>
+                    <th class="text-center" style="padding: 15px;">Đơn giá</th>
+                    <th class="text-center" style="padding: 15px;">Số lượng</th>
+                    <th class="text-right" style="padding: 15px;">Thành tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="item : ${order.items}">
+                    <td style="padding: 15px;">
+                      <strong th:text="${item.productName}">Áo thun nam</strong><br />
+                      <small class="text-muted" th:text="'Mã: ' + ${item.variantCode}">SKU: ABC123</small>
+                    </td>
+                    <td class="text-center" style="padding: 15px;">
+                      <span th:text="${item.color}">Đen</span>
+                    </td>
+                    <td class="text-center" style="padding: 15px;">
+                      <span class="label label-info" th:text="${item.size}">L</span>
+                    </td>
+                    <td class="text-center" style="padding: 15px;">
+                      <span th:text="${#numbers.formatDecimal(item.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                        250,000 VNĐ
+                      </span>
+                    </td>
+                    <td class="text-center" style="padding: 15px;">
+                      <strong th:text="${item.quantity}">2</strong>
+                    </td>
+                    <td class="text-right" style="padding: 15px;">
+                      <strong class="text-success"
+                        th:text="${#numbers.formatDecimal(item.totalPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                        500,000 VNĐ
+                      </strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="ibox"
+          style="border: none; box-shadow: 0 0 20px rgba(0,0,0,0.08); border-radius: 12px; margin-bottom: 20px;">
+          <div class="ibox-content"
+            style="padding: 25px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 12px;">
+            <h4 style="color: #333; font-size: 1.1rem; margin-bottom: 20px; font-weight: 600;">
+              <i class="fa fa-calculator"></i> Tổng kết đơn hàng
+            </h4>
+
+            <div class="row" style="margin-bottom: 10px;">
+              <div class="col-xs-6">
+                <span style="font-size: 1rem;">Tổng tiền hàng:</span>
+              </div>
+              <div class="col-xs-6 text-right">
+                <strong style="font-size: 1.1rem;"
+                  th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                  500,000 VNĐ
+                </strong>
+              </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 10px;"
+              th:if="${order.discountAmount != null && order.discountAmount > 0}">
+              <div class="col-xs-6">
+                <span style="font-size: 1rem; color: #e74c3c;">
+                  <i class="fa fa-tag"></i> Giảm giá:
+                </span>
+              </div>
+              <div class="col-xs-6 text-right">
+                <strong style="font-size: 1.1rem; color: #e74c3c;"
+                  th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                  -50,000 VNĐ
+                </strong>
+              </div>
+            </div>
+
+            <hr style="margin: 15px 0; border-top: 2px dashed #666;">
+
+            <div class="row">
+              <div class="col-xs-6">
+                <span style="font-size: 1.4rem; font-weight: 700; color: #333;">Tổng thanh toán:</span>
+              </div>
+              <div class="col-xs-6 text-right">
+                <strong style="font-size: 1.6rem; color: #667eea; font-weight: 700;"
+                  th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                  480,000 VNĐ
+                </strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center" style="margin-top: 30px; margin-bottom: 30px;">
+          <a th:href="@{/orders}" class="btn btn-primary btn-lg"
+            style="border-radius: 8px; padding: 12px 30px; margin: 0 5px;">
+            <i class="fa fa-list"></i> Quay lại danh sách
+          </a>
+          <a th:href="@{/}" class="btn btn-success btn-lg" style="height: 45px; padding: 12px 30px; margin: 0 5px; font-size: 14px;
+    font-weight: 600; border-radius: 8px;">
+            <i class="fa fa-shopping-cart"></i> Tiếp tục mua sắm
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <style>
+    .animated.fadeInUp {
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn {
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .table>tbody>tr>td {
+      vertical-align: middle;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.6rem !important;
+      }
+
+      .btn-lg {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0 !important;
+      }
+    }
+  </style>
+
+</section>
+
+</html>

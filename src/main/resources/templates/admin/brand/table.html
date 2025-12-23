@@ -1,24 +1,112 @@
 <th:block th:fragment="table">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Mã Màu</th>
-        <th>Tên</th>
-        <th>Hành Động</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr th:each="item : ${colors}">
-        <td th:text="${item.id}"></td>
-        <td th:text="${item.colorCode}"></td>
-        <td th:text="${item.colorName}"></td>
-        <td>
-          <button class="btn btn-default dim" type="button">
-            <i class="fa fa-info"></i>
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+    <div class="row">
+        <div class="col-sm-4 m-b-xs">
+            <select class="input-sm form-control input-s-sm inline" id="statusFilter">
+                <option value="">Chọn Trang Thái</option>
+                <option value="1">Hoạt Động</option>
+                <option value="0">Ngừng Hoạt Động</option>
+            </select>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group">
+                <input type="text" placeholder="Tìm Kiếm(Mã, Tên)" class="input-sm form-control" id="searchInput">
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="triggerSearch()">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+        <div class="col-sm-1">
+            <button id="resetFilterBtn" class="btn btn-info" type="button"><i class="fa fa-mail-reply-all"></i></button>
+        </div>
+        <div class="col-sm-3">
+            <div class="input-group">
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-sm btn-primary pull-right" id="btnAdd"
+                        onclick="openAddModal()">
+                        <i class="fa fa-plus-circle"></i> Thêm
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Ảnh</th>
+                    <th>Mã Thương Hiệu</th>
+                    <th>Tên</th>
+                    <th>Trạng Thái</th>
+                    <th>Hành Động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${brands}">
+                    <td th:text="${item.id}"></td>
+                    <td>
+                        <img th:src="@{${item.logoUrl}}" alt="Avatar" style="
+                width: 50px;
+                height: 50px;
+                object-fit: cover;
+                border-radius: 50%;
+              " />
+                    </td>
+                    <td th:text="${item.brandCode}"></td>
+                    <td th:text="${item.name}"></td>
+                    <td th:switch="${item.isActive}">
+                        <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+                        <span th:case="false" class="badge badge-danger">Ngừng</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-info dim" type="button" th:attr="data-id=${item.id},
+                 data-code=${item.brandCode},
+                 data-name=${item.name},
+                 data-isActive=${item.isActive}" th:title="'Thông tin và cập nhật'" onclick="handleDetailClick(this)">
+                            <i class="fa fa-eye"></i>
+                        </button>
+                        <button th:id="'btn-status-' + ${item.id}"
+                            th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
+                            th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
+                            th:title="${item.isActive} ? 'Khóa Thương Hiệu' : 'Mở khóa thương hiệu'">
+                            <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="text-center" th:if="${totalPages > 1}">
+        <ul class="pagination">
+            <li th:class="${currentPage == 0} ? 'disabled' : ''">
+                <a th:if="${currentPage > 0}" href="#" th:onclick="'searchBrand(' + (${currentPage - 1}) + ')'">
+                    <i class="fa fa-angle-left"></i> Trước
+                </a>
+                <span th:if="${currentPage == 0}" class="disabled">
+                    <i class="fa fa-angle-left"></i> Trước
+                </span>
+            </li>
+
+            <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:class="${i == currentPage} ? 'active' : ''">
+                <a href="#" th:onclick="'searchBrand(' + (${i}) + ')'" th:text="${i + 1}">1</a>
+            </li>
+
+            <li th:class="${currentPage == totalPages - 1} ? 'disabled' : ''">
+                <a th:if="${currentPage < totalPages - 1}" href="#" th:onclick="'searchBrand(' + (${currentPage + 1}) + ')'">
+                    Sau <i class="fa fa-angle-right"></i>
+                </a>
+                <span th:if="${currentPage == totalPages - 1}" class="disabled">
+                    Sau <i class="fa fa-angle-right"></i>
+                </span>
+            </li>
+        </ul>
+        <p class="text-muted">
+            Hiển thị trang <strong th:text="${currentPage + 1}">1</strong>
+            / <strong th:text="${totalPages}">1</strong>
+            (Tổng <strong th:text="${totalItems}">0</strong> thương hiệu)
+        </p>
+    </div>
 </th:block>

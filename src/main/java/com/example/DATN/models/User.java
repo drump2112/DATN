@@ -24,19 +24,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Table(name = "Users")
-@Builder
+@Builder(toBuilder = true)
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@Column(name = "UserCode", nullable = false, unique = true, length = 10)
+	@Column(name = "UserCode", length = 10)
 	private String userCode;
 
-	@Column(name = "UserName", nullable = false, unique = true, length = 100)
+	@Column(name = "UserName", length = 100)
 	private String userName;
 
-	@Column(name = "Password", nullable = false, length = 100)
+	@Column(name = "Password", length = 100)
 	private String password;
 
 	@Column(name = "Email", length = 100)
@@ -45,13 +45,14 @@ public class User {
 	@Column(name = "FullName", length = 100)
 	private String fullName;
 
-	@Column(name = "Address", columnDefinition = "nvarchar(max)")
-	private String address;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "AddressID")
+	private Address address;
 
 	@Column(name = "Phone", length = 10)
 	private String phone;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "RoleID")
 	private Role role;
 
@@ -70,4 +71,5 @@ public class User {
 
 	@Column(name = "avatar")
 	private String avatar;
+
 }

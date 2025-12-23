@@ -17,4 +17,7 @@ public class BrandDTO {
 	private String name;
 
 	private String logoUrl;
+
+    private Boolean isActive;
+
 }

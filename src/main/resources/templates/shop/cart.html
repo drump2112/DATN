@@ -1,0 +1,652 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<section class="container features" th:fragment="content" style="width: 95%; max-width: 1600px;">
+  <div class="wrapper wrapper-content animated fadeInRight">
+    <div class="modern-page-header">
+      <div class="header-decoration"></div>
+      <h1 class="page-title">
+        <i class="fa fa-shopping-cart text-primary"></i>
+        <span>Giỏ Hàng</span>
+      </h1>
+      <p class="page-subtitle">Quản lý và xem lại các sản phẩm bạn đã chọn</p>
+      <div class="header-decoration"></div>
+    </div>
+    <div class="row m-t-md">
+      <div class="col-lg-9">
+        <div class="ibox modern-cart-card">
+          <div class="ibox-title modern-card-title">
+            <div class="title-content">
+              <h5><i class="fa fa-list text-white"></i> Danh Sách Sản Phẩm</h5>
+              <span class="product-count">(<strong>5</strong>) sản phẩm</span>
+            </div>
+          </div>
+          <div class="ibox-content modern-card-content">
+            <div class="cart-items-container">
+              <div class="table-responsive" id="cartTableContainer">
+                <table class="table modern-cart-table shoping-cart-table">
+                  <thead>
+                    <tr>
+                      <th>Sản Phẩm</th>
+                      <th>Thông Tin</th>
+                      <th>Đơn Giá</th>
+                      <th>Số Lượng</th>
+                      <th>Thành Tiền</th>
+                      <th>Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody class="cart-items-list" id="cartItemsContainer">
+                    <!-- Cart items will be dynamically loaded here -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Empty Cart State -->
+              <div class="empty-cart-state" id="emptyCartState" style="display: none;">
+                <div class="empty-cart-icon">
+                  <i class="fa fa-shopping-cart"></i>
+                </div>
+                <h3 class="empty-cart-text">Giỏ hàng của bạn đang trống</h3>
+                <p class="empty-cart-subtitle">Hãy thêm sản phẩm để bắt đầu mua sắm!</p>
+                <a th:href="@{/}" class="btn-start-shopping">
+                  <i class="fa fa-shopping-bag"></i>
+                  <span>Bắt Đầu Mua Sắm</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3">
+        <div class="cart-summary-container">
+          <!-- Order Summary Card -->
+          <div class="ibox modern-summary-card">
+            <div class="ibox-title modern-card-title">
+              <h5><i class="fa fa-calculator text-white"></i> Tóm Tắt Đơn Hàng</h5>
+            </div>
+            <div class="ibox-content modern-card-content">
+              <div class="summary-details">
+                <div class="summary-row">
+                  <span class="summary-label">Tạm tính:</span>
+                  <span class="summary-value" id="subtotalAmount">0 VNĐ</span>
+                </div>
+                <div class="summary-row">
+                  <span class="summary-label">Giảm giá:</span>
+                  <span class="summary-value discount-value" id="discountAmount">0 VNĐ</span>
+                </div>
+                <div class="summary-divider"></div>
+                <div class="summary-row total-row">
+                  <span class="summary-label total-label">Tổng cộng:</span>
+                  <h2 class="summary-total cart-summary-total">0 VNĐ</h2>
+                </div>
+              </div>
+
+              <div class="cart-actions">
+                <button type="button" id="btnProceedCheckout" class="btn-checkout" data-checkout-url="/customer/auth/?redirectUrl=/checkout">
+                  <i class="fa fa-credit-card"></i>
+                  <span>Đặt Hàng</span>
+                </button>
+                <button class="btn-continue-shopping">
+                  <i class="fa fa-shopping-bag"></i>
+                  Tiếp Tục Mua Sắm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      /* ===== MODERN PAGE HEADER ===== */
+      .modern-page-header {
+        text-align: center;
+        margin: 40px 0;
+        position: relative;
+      }
+
+      .header-decoration {
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #1ab394, transparent);
+        margin: 20px auto;
+        width: 200px;
+        border-radius: 2px;
+      }
+
+      .page-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        font-size: 32px;
+      }
+
+      .page-title i {
+        font-size: 36px;
+      }
+
+      .page-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+        margin: 10px 0 0 0;
+        font-style: italic;
+      }
+
+      /* ===== MODERN CARD BASE STYLING ===== */
+      .modern-cart-card .ibox-content,
+      .modern-summary-card .ibox-content,
+      .modern-coupon-card .ibox-content {
+        padding: 25px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        border: 1px solid #e3f2fd;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      }
+
+      .modern-card-title {
+        background: linear-gradient(135deg, #1ab394, #17a085);
+        color: white;
+        border-radius: 12px 12px 0 0;
+        padding: 15px 20px;
+        border: none;
+      }
+
+      .modern-card-title h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .modern-card-content {
+        border-radius: 0 0 12px 12px;
+      }
+
+      .title-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .product-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      /* ===== MODERN CART TABLE ===== */
+      .cart-items-container {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .modern-cart-table {
+        margin: 0;
+      }
+
+      .modern-cart-table thead th {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border: none;
+        padding: 18px 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .modern-cart-table tbody td {
+        padding: 20px 15px;
+        border: 1px solid #f8f9fa;
+        vertical-align: middle;
+        text-align: center;
+      }
+
+      .modern-cart-table tbody tr {
+        transition: all 0.3s ease;
+      }
+
+      .modern-cart-table tbody tr:hover {
+        background: #f8f9ff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      /* ===== CART SUMMARY STYLING ===== */
+      .cart-summary-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .summary-details {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+      }
+
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .summary-label {
+        color: #6c757d;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .summary-value {
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .discount-value {
+        color: #28a745;
+      }
+
+      .summary-divider {
+        height: 2px;
+        background: linear-gradient(90deg, #1ab394, transparent);
+        margin: 15px 0;
+        border-radius: 2px;
+      }
+
+      .total-row {
+        margin-bottom: 0;
+        padding-top: 10px;
+      }
+
+      .total-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+      }
+
+      .summary-total {
+        color: #1ab394;
+        font-weight: 700;
+        font-size: 24px;
+        margin: 0;
+      }
+
+      /* ===== CART ACTIONS ===== */
+      .cart-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 25px;
+      }
+
+      .btn-checkout {
+        background: linear-gradient(135deg, #1ab394, #0eb493);
+        color: white;
+        text-decoration: none;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 16px;
+      }
+
+      .btn-checkout:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        background: linear-gradient(135deg, #218838, #17a2b8);
+      }
+
+      .btn-continue-shopping {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        color: white;
+        text-decoration: none;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+
+      .btn-continue-shopping:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        background: linear-gradient(135deg, #5a6268, #495057);
+      }
+
+      /* ===== COUPON FORM STYLING ===== */
+      .coupon-form {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+      }
+
+      .coupon-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .coupon-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .coupon-input:focus {
+        outline: none;
+        border-color: #1ab394;
+        box-shadow: 0 0 0 3px rgba(26, 179, 148, 0.1);
+      }
+
+      .btn-apply-coupon {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+      }
+
+      .btn-apply-coupon:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
+        background: linear-gradient(135deg, #138496, #117a8b);
+      }
+
+      .coupon-hint {
+        color: #6c757d;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #f8f9fa;
+        transition: all 0.3s ease;
+      }
+
+      .product-image:hover {
+        border-color: #1ab394;
+        transform: scale(1.05);
+      }
+
+      .product-info {
+        text-align: left;
+      }
+
+      .product-name {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        font-size: 16px;
+      }
+
+      .product-variant {
+        color: #6c757d;
+        font-size: 12px;
+      }
+
+      .stock-info {
+        margin-top: 4px;
+      }
+
+      .stock-info small {
+        color: #1ab394 !important;
+        font-weight: 600;
+        font-size: 11px;
+      }
+
+      .price-display {
+        font-weight: 600;
+        color: #1ab394;
+        font-size: 16px;
+      }
+
+      .quantity-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .quantity-btn {
+        width: 32px;
+        height: 32px;
+        border: 2px solid #e9ecef;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+      }
+
+      .quantity-btn:hover {
+        border-color: #1ab394;
+        background: #1ab394;
+        color: white;
+      }
+
+      .quantity-input {
+        width: 60px;
+        text-align: center;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        padding: 6px;
+        font-weight: 600;
+      }
+
+      .quantity-input:focus {
+        outline: none;
+        border-color: #1ab394;
+      }
+
+      .total-price {
+        font-weight: 700;
+        color: #28a745;
+        font-size: 18px;
+      }
+
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .btn-remove {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .btn-remove:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .page-title {
+          font-size: 24px;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .cart-actions {
+          gap: 8px;
+        }
+
+        .coupon-input-group {
+          flex-direction: column;
+        }
+
+        .modern-cart-table thead {
+          display: none;
+        }
+
+        .modern-cart-table tbody tr {
+          display: block;
+          border: 1px solid #e9ecef;
+          border-radius: 8px;
+          margin-bottom: 15px;
+          padding: 15px;
+        }
+
+        .modern-cart-table tbody td {
+          display: block;
+          text-align: left;
+          padding: 8px 0;
+          border: none;
+        }
+
+        .modern-cart-table tbody td:before {
+          content: attr(data-label) ": ";
+          font-weight: 600;
+          color: #2c3e50;
+        }
+      }
+
+      /* ===== ANIMATIONS ===== */
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .modern-cart-card,
+      .modern-summary-card,
+      .modern-coupon-card {
+        animation: slideInUp 0.6s ease;
+      }
+
+      .empty-cart-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+        border: 2px dashed #e9ecef;
+      }
+
+      .empty-cart-icon {
+        font-size: 64px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+      }
+
+      .empty-cart-text {
+        color: #2c3e50;
+        font-size: 20px;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .empty-cart-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+        margin-bottom: 25px;
+      }
+
+      .btn-start-shopping {
+        background: linear-gradient(135deg, #1ab394, #17a085);
+        color: white;
+        text-decoration: none;
+        padding: 15px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-start-shopping:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(26, 179, 148, 0.4);
+      }
+    </style>
+
+    <!-- Cart JavaScript -->
+    <script>
+      $(document).ready(function () {
+        $('.btn-apply-coupon').click(function () {
+          const couponCode = $('#couponCode').val().trim();
+          if (couponCode) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Thông báo',
+              text: 'Chức năng áp dụng mã giảm giá đang được phát triển!',
+              confirmButtonText: 'OK'
+            });
+          } else {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Cảnh báo',
+              text: 'Vui lòng nhập mã giảm giá!',
+              confirmButtonText: 'OK'
+            });
+          }
+        });
+      });
+    </script>
+    <script th:src="@{/js/shop/cart-page.js}"></script>
+</section>
+
+</html>

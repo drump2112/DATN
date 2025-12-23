@@ -13,6 +13,11 @@ public class WebConfig implements WebMvcConfigurer {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/uploads/**")
 				.addResourceLocations("file:" + PRODUCT_IMAGE_DIR);
+
+		// Thêm handler cho .well-known để tránh lỗi Chrome DevTools
+		registry.addResourceHandler("/.well-known/**")
+				.addResourceLocations("classpath:/static/.well-known/")
+				.resourceChain(false);
 	}
 
 }

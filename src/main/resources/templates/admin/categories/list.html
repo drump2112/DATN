@@ -1,97 +1,56 @@
 <!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  th:replace="admin/layout/base :: base"
->
-  <th:block th:fragment="content">
-    <div class="row">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
+<th:block th:fragment="content">
+    <div class="row col-lg-6" style="margin-left: 300px">
         <div class="ibox float-e-margins">
-          <div class="ibox-title">
-            <h5>Danh Mục</h5>
-            <div class="ibox-tools">
-              <a class="collapse-link">
-                <i class="fa fa-chevron-up"></i>
-              </a>
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                <i class="fa fa-wrench"></i>
-              </a>
-              <a class="close-link">
-                <i class="fa fa-times"></i>
-              </a>
+            <div class="ibox-title">
+                <h5>Danh Sách Danh Mục</h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                </div>
             </div>
-          </div>
-          <div class="ibox-content">
-			<form role="form" class="form-inline">
-				<div class="row" style="margin-top: 15px;">
-					<div class="form-group col-lg-4" style="margin-left: 340px;">
-						<label for="roleInput">Danh Mục</label>
-						<input type="text" placeholder="" id="cateInput" class="form-control" style="width: 410px; margin-left: 9px;">
-					</div>
-					<div class="col-lg-4">
-						<button type="button" id="addCateBtn" class="btn btn-outline btn-primary dim"><i class="fa fa-plus"></i></button>
-						<button type="button" class="btn btn-outline btn-warning  dim">
-							<i class="fa fa-refresh"></i></button>
-					</div>
-				</div>
-			</form>
-		  </div>
+            <div class="ibox-content" id="categoryTableContainer">
+                <th:block th:replace="admin/categories/table :: table"></th:block>
+            </div>
         </div>
     </div>
-    <div class="row col-lg-6" style="margin-left: 300px;">
-        <div class="ibox float-e-margins">
-          <div class="ibox-title">
-            <h5>Danh Sách Danh Mục</h5>
-            <div class="ibox-tools">
-              <a class="collapse-link">
-                <i class="fa fa-chevron-up"></i>
-              </a>
-              <a class="dropdown-toggle" data-toggle="dropdown" href="">
-                <i class="fa fa-wrench"></i>
-              </a>
-              <a class="close-link">
-                <i class="fa fa-times"></i>
-              </a>
+    <div class="modal inmodal" id="myModal" tabindex="-1" role="dialog" aria-hidden="true" style="padding-right: 15px;">
+        <div class="modal-dialog">
+            <div class="modal-content animated bounceInRight">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span
+                            class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="modalTitle">Modal title</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="hidden" id="id">
+                                <label>Mã danh mục</label>
+                                <input type="text" id="code" placeholder="category Code" class="form-control" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label>Tên danh mục</label>
+                                <input type="text" id="name" class="form-control">
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary pull-right m-t-n-xs" id="btnAddCategory"
+                                    type="button"><strong>Thêm</strong></button>
+                                <button class="btn btn-sm btn-success pull-right m-t-n-xs" id="btnUpdate"
+                                    type="button"><strong>Cập nhật</strong></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="ibox-content">
-            <th:block th:replace="admin/categories/table :: table"></th:block>
-          </div>
-		  <th:block th:fragment="script">
-			<script>
-				console.log("")
-				$("#addCateBtn").click(function () {
-					Swal.fire({
-						title: "Xác nhận thêm danh mục",
-						icon: "question",
-						showCancleButton: true,
-						confirmButtontext:"Thêm",
-						cancelButtonText: "Hủy"
-					}).then((result) => {
-						if(result.isConfirmed){
-							const nameCate = $("#cateInput").val();
-							$.ajax({
-								url: "/admin/category/add",
-								method: "POST",
-								processData: false,
-								contentType: 'application/json',
-								data:JSON.stringify({ name: nameCate }),
-								success: function (response){
-									Swal.fire("Thành công!", response.message, "success");
-								},
-								error: function (xhr) {
-									Swal.fire(
-									"Lỗi!",
-									xhr.responseJSON?.message || "Thêm thất bại",
-									"error",
-									);
-								},
-							})
-						}
-					})
-				}
-			</script>
-		  </th:block>
         </div>
-      </div>
-  </th:block>
+    </div>
+    <th:block th:fragment="script">
+        <script th:src="@{/js/admin/categories.js}"></script>
+    </th:block>
+</th:block>
+
 </html>

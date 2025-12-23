@@ -2,8 +2,10 @@
   <table class="table table-striped">
     <thead>
       <tr>
+        <th></th>
         <th>ID</th>
         <th>Mã Khách Hàng</th>
+        <th>Ảnh Đại Diện</th>
         <th>Tên Đăng Nhập</th>
         <th>Email</th>
         <th>Họ Tên</th>
@@ -18,34 +20,76 @@
     </thead>
     <tbody>
       <tr th:each=" item : ${listUsers}">
+        <td>
+          <div class="icheckbox_square-green checked" style="position: relative;"><input type="checkbox" checked=""
+              class="i-checks" name="input[]" style="position: absolute; opacity: 0;"><ins class="iCheck-helper"
+              style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+          </div>
+        </td>
         <td th:text="${item.id}"></td>
+        <td>
+          <img th:src="@{${item.avatar}}" alt="Avatar" style="
+              width: 50px;
+              height: 50px;
+              object-fit: cover;
+              border-radius: 50%;
+            " />
+        </td>
         <td th:text="${item.userCode}"></td>
         <td th:text="${item.userName}"></td>
         <td th:text="${item.email}"></td>
         <td th:text="${item.fullName}"></td>
-        <td th:text="${item.address}"></td>
+        <td th:text="${item.fullAddress}"></td>
         <td th:text="${item.phone}"></td>
         <td th:switch="${item.gender}">
           <span th:case="true">Nam</span>
           <span th:case="false">Nữ</span>
         </td>
-        <td th:text="${item.dateOfBirth}"></td>
-        <td th:text="${item.roleName}"></td>
+        <td th:text="${#temporals.format(item.dateOfBirth, 'dd/MM/yyyy')}"></td>
+        <td th:switch="${item.roleName}">
+          <span th:case="'Quản Trị Viên'" class="badge badge-success">Quản Trị Viên</span>
+          <span th:case="'Nhân Viên Bán Hàng'" class="badge badge-info">Nhân Viên Bán Hàng</span>
+          <span th:case="'Khách Hàng'" class="badge badge-warning">Khách Hàng</span>
+          <span th:case="*" class="badge badge-secondary" th:text="${item.roleName}"></span>
+        </td>
         <td th:switch="${item.isActive}">
-          <span th:case="true">Hoạt Động</span>
-          <span th:case="false">Ngừng</span>
+          <span th:case="true" class="badge badge-primary">Hoạt Động</span>
+          <span th:case="false" class="badge badge-danger">Ngừng</span>
         </td>
         <td>
-          <button class="btn btn-info dim" type="button">
-            <i class="fa fa-paste"></i>
+          <button class="btn btn-info dim" type="button" th:attr="data-id=${item.id},
+           data-usercode=${item.userCode},
+           data-fullname=${item.fullName},
+           data-email=${item.email},
+           data-username=${item.userName},
+           data-phone=${item.phone},
+           data-address=${item.address},
+           data-provincecode=${item.provinceCode},
+           data-provincename=${item.provinceName},
+           data-communecode=${item.communeCode},
+           data-communename=${item.communeName},
+           data-specificaddress=${item.specificAddress},
+           data-role=${item.roleId},
+data-avatar=${item.avatar},
+data-gender=${item.gender},
+  data-dob=${item.dateOfBirth}
+" th:title="'Thông tin và cập nhật'" onclick="handleDetailClick(this)">
+            <i class="fa fa-pencil-square"></i>
           </button>
-          <button
-            th:id="'btn-status-' + ${item.id}"
+          <button th:id="'btn-status-' + ${item.id}"
             th:class="'btn ' + (${item.isActive} ? 'btn-danger dim' : 'btn-primary dim')"
             th:onclick="|toggleStatus( ${item.id}, ${item.isActive} )|"
-            th:title="${item.isActive} ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'"
-          >
+            th:title="${item.isActive} ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'">
             <i th:class="${item.isActive} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+          </button>
+          <button class="btn btn-warning dim" type="button" th:attr="data-id=${item.id},
+           data-usercode=${item.userCode},
+           data-fullname=${item.fullName},
+           data-email=${item.email},
+           data-username=${item.userName},
+           data-phone=${item.phone},
+           data-password=${item.password}" th:title="'Reset mật khẩu'" onclick="handleResetpMatKhau(this)">
+            <i class="fa fa-user-circle-o"></i>
           </button>
         </td>
       </tr>

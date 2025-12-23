@@ -1,0 +1,100 @@
+<th:block th:fragment="orderDetail(orderId, orderStatus)">
+  <div class="order-detail-container">
+
+    <!-- Header Bar with Status & Quick Actions -->
+    <div class="order-header-bar">
+      <div class="order-info">
+        <h4 class="order-title">
+          <i class="fa fa-shopping-cart"></i>
+          Đơn hàng #<span th:text="${orderId}">000</span>
+        </h4>
+        <span th:class="'status-pill status-' + ${#strings.toLowerCase(orderStatus)}"
+              class="status-pill">
+          <th:block th:switch="${orderStatus}">
+            <th:block th:case="'PENDING'">Chờ xử lý</th:block>
+            <th:block th:case="'WAITING_PICKUP'">Chờ lấy hàng</th:block>
+            <th:block th:case="'WAITING_OTP'">Xác nhận OTP</th:block>
+            <th:block th:case="'PROCESSING'">Đang xử lý</th:block>
+            <th:block th:case="'SHIPPING'">Đang giao hàng</th:block>
+            <th:block th:case="'COMPLETED'">Hoàn thành</th:block>
+            <th:block th:case="'CANCELLED'">Đã hủy</th:block>
+            <th:block th:case="'RETURN'">Đổi/trả</th:block>
+            <th:block th:case="*" th:text="${orderStatus}">Trạng thái</th:block>
+          </th:block>
+        </span>
+      </div>
+
+      <!-- Inline Quick Actions -->
+      <div class="quick-actions">
+        <!-- PENDING Actions -->
+        <div th:if="${orderStatus == 'PENDING'}" class="action-group">
+          <button class="btn btn-success btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='confirm'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Xác nhận đơn hàng">
+            <i class="fa fa-check"></i> Xác nhận
+          </button>
+          <button class="btn btn-danger btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='cancel'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Hủy đơn hàng">
+            <i class="fa fa-times"></i> Hủy
+          </button>
+        </div>
+
+        <!-- WAITING_PICKUP Actions -->
+        <div th:if="${orderStatus == 'WAITING_PICKUP'}" class="action-group">
+          <button class="btn btn-primary btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='pickup'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Đã lấy hàng">
+            <i class="fa fa-truck"></i> Đã lấy hàng
+          </button>
+          <button class="btn btn-danger btn-action"
+                  th:attr="data-order-id=${orderId}, data-action='cancel'"
+                  onclick="handleAdminOrderAction(this)"
+                  title="Hủy đơn hàng">
+            <i class="fa fa-times"></i> Hủy
+          </button>
+        </div>
+
+        <!-- RETURN Actions -->
+        <div th:if="${orderStatus == 'RETURN'}" class="action-group">
+          <button class="btn btn-success btn-action" title="Chấp nhận đổi/trả">
+            <i class="fa fa-check"></i> Chấp nhận
+          </button>
+          <button class="btn btn-danger btn-action" title="Từ chối đổi/trả">
+            <i class="fa fa-times"></i> Từ chối
+          </button>
+        </div>
+
+        <!-- Status Info for other states -->
+        <div th:if="${orderStatus == 'SHIPPING'}" class="status-info-pill">
+          <i class="fa fa-truck"></i> Đang giao hàng
+        </div>
+        <div th:if="${orderStatus == 'COMPLETED'}" class="status-info-pill">
+          <i class="fa fa-check-circle"></i> Đã hoàn thành
+        </div>
+        <div th:if="${orderStatus == 'CANCELLED'}" class="status-info-pill">
+          <i class="fa fa-ban"></i> Đã hủy
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Items Section -->
+    <div class="order-items-section">
+      <div class="section-header">
+        <h5><i class="fa fa-list"></i> Chi tiết sản phẩm</h5>
+      </div>
+      <div class="section-content">
+        <div id="order-items-content">
+          <div class="loading-placeholder">
+            <i class="fa fa-spinner fa-spin"></i>
+            <span>Đang tải danh sách sản phẩm...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</th:block>

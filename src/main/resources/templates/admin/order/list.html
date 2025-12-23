@@ -1,0 +1,136 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="admin/layout/base :: base">
+<th:block th:fragment="content">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <h5>Danh Sách Đơn Hàng Đã Hoàn Thành</h5>
+                </div>
+                <div class="ibox-content">
+                    <style>
+                        .filter-row .form-group {
+                            margin-bottom: 0;
+                        }
+                        .filter-row .control-label {
+                            font-size: 12px;
+                            margin-bottom: 2px;
+                            display: block;
+                        }
+                        .filter-row .form-control {
+                            height: 34px;
+                        }
+                    </style>
+                    <div class="row filter-row">
+                        <div class="col-sm-3 m-b-xs">
+                            <div class="input-group">
+                                <input type="text" id="orderInput" name="orderInput" value=""
+                                    placeholder="Tìm kiếm(Mã đơn hàng,Tên KH,SĐT) " class="form-control">
+                                <span class="input-group-btn">
+                                    <button class="btn btn btn-primary" onclick="searchOrder(0)">
+                                        <i class="fa fa-search"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <Select id="orderTypeTilter" name="orderTypeTilter" class="form-control">
+                                    <option value="" selected>Tất cả kênh</option>
+                                    <option value="Online">Online</option>
+                                    <option value="Offline">Tại Quầy</option>
+                                </Select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <Select id="orderPaymentFilter" name="orderPaymentFilter" class="form-control">
+                                    <option value="" selected>Thanh toán</option>
+                                    <option value="Chuyển Khoản">Chuyển Khoản</option>
+                                    <option value="Tiền Mặt">Tiền Mặt</option>
+                                    <option value="VNPay">VNPay</option>
+                                </Select>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <input id="dateStartFilter" type="date" class="form-control" value=""
+                                       title="Chọn ngày bắt đầu">
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <input id="dateEndFilter" type="date" class="form-control" value=""
+                                       title="Chọn ngày kết thúc">
+                            </div>
+                        </div>
+                        <div class="col-sm-1">
+                            <div class="form-group">
+                                <button class="btn btn-warning btn-sm" onclick="clearDateFilters()"
+                                        title="Xóa bộ lọc ngày" style="margin-top: 0;">
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="ibox">
+                                <div class="ibox-content">
+                                    <div class="table-responsive" id="productTableContainer">
+                                        <th:block th:replace="admin/order/table :: table"></th:block>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <th:block th:fragment="script">
+        <style>
+            .error-input {
+                border-color: #ed5565 !important;
+                box-shadow: 0 0 5px rgba(237, 85, 101, 0.3) !important;
+            }
+
+            .input-group-addon {
+                background-color: #f5f5f6;
+                border: 1px solid #e5e6e7;
+                color: #676a6c;
+            }
+
+            .date-filter-container {
+                background: #f9f9f9;
+                padding: 10px;
+                border-radius: 4px;
+                margin-bottom: 10px;
+            }
+
+            .control-label {
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            /* Ensure all form controls have same height */
+            .form-control, .btn {
+                height: 34px;
+            }
+
+            .form-group {
+                margin-bottom: 0;
+            }
+
+            .date-input-group {
+                display: flex;
+                align-items: center;
+            }
+        </style>
+        <script th:src="@{/js/admin/order.js}">
+            $('.footable').footable();
+        </script>
+    </th:block>
+</th:block>
+
+</html>

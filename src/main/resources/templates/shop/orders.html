@@ -1,0 +1,1370 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<section class="container features" th:fragment="content" style="width: 90%; margin-top: 30px;">
+  <div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1 class="page-title">
+        <i class="fa fa-history"></i>
+        Lịch sử đơn hàng
+      </h1>
+      <p class="page-subtitle">Theo dõi và quản lý tất cả đơn hàng của bạn</p>
+    </div>
+
+    <div class="row m-t-md">
+      <div class="col-lg-12">
+        <div class="ibox modern-orders-card">
+          <div class="ibox-title modern-card-title">
+            <h5><i class="fa fa-list text-white"></i> Danh Sách Đơn Hàng</h5>
+          </div>
+          <div class="ibox-content">
+
+            <div th:if="${#lists.isEmpty(listorders)}" class="empty-orders-state">
+              <div class="empty-icon">
+                <i class="fa fa-shopping-bag"></i>
+              </div>
+              <h3 class="empty-title">Bạn chưa có đơn hàng nào</h3>
+              <p class="empty-subtitle">Hãy khám phá và mua sắm ngay!</p>
+              <a th:href="@{/}" class="btn-empty-shopping">
+                <i class="fa fa-shopping-cart"></i>
+                Khám phá sản phẩm
+              </a>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(listorders)}">
+
+              <div class="order-list">
+                <div th:each="order, iterStat : ${listorders}" class="order-card panel panel-default"
+                  style="margin-bottom: 15px; border-radius: 8px; border: 1px solid #e7eaec; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+
+                  <div class="panel-heading"
+                    style="background: #fff; border-radius: 8px 8px 0 0; padding: 15px 20px; cursor: pointer;"
+                    data-toggle="collapse" th:attr="data-target='#order-' + ${order.id}">
+                    <div class="row" style="align-items: center;">
+                      <div class="col-md-2 col-sm-6 col-xs-12" style="margin-bottom: 10px;">
+                        <strong style="color: #138496; font-size: 1.9rem;"
+                          th:text="${order.orderCode}">ONL-20250101-0001</strong>
+                        <br />
+                        <small class="text-muted" style="color: #676a6c; font-size: 1.6rem;"
+                          th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">28/10/2025 15:30</small>
+                      </div>
+
+                      <div class="col-md-2 col-sm-6 col-xs-12 text-center" style="margin-bottom: 10px;">
+                        <span th:if="${order.status == 'WAITING_OTP'}" class="label label-warning">
+                          <i class="fa fa-clock-o"></i> Chờ OTP
+                        </span>
+                        <span th:if="${order.status == 'PENDING'}" class="label label-info">
+                          <i class="fa fa-hourglass-half"></i> Chờ xử lý
+                        </span>
+                        <span th:if="${order.status == 'WAITING_PICKUP'}" class="label label-info">
+                          <i class="fa fa-clock-o"></i> Chờ lấy hàng
+                        </span>
+                        <span th:if="${order.status == 'PROCESSING'}" class="label label-primary">
+                          <i class="fa fa-cog"></i> Đang xử lý
+                        </span>
+                        <span th:if="${order.status == 'SHIPPING'}" class="label label-warning">
+                          <i class="fa fa-truck"></i> Đang giao
+                        </span>
+                        <span th:if="${order.status == 'COMPLETED'}" class="label label-success">
+                          <i class="fa fa-check"></i> Hoàn thành
+                        </span>
+                        <span th:if="${order.status == 'CANCELLED'}" class="label label-danger">
+                          <i class="fa fa-times"></i> Đã hủy
+                        </span>
+                      </div>
+
+                      <div class="col-md-2 col-sm-6 col-xs-12 text-center" style="margin-bottom: 10px;">
+                        <span th:if="${order.paymentMethod == 'CASH'}" class="label label-default">
+                          <i class="fa fa-money"></i> COD
+                        </span>
+                        <span th:if="${order.paymentMethod == 'TRANSFER'}" class="label label-info">
+                          <i class="fa fa-bank"></i> Chuyển khoản
+                        </span>
+                          <span th:if="${order.paymentMethod == 'VNPAY'}" class="label label-info">
+                          <i class="fa fa-paypal"></i> VNPAY
+                        </span>
+                      </div>
+
+                      <div class="col-md-3 col-sm-6 col-xs-12 text-right" style="margin-bottom: 10px;">
+                        <div style="font-size: 12px; color: #676a6c; margin-bottom: 3px;">
+                          <span style="font-weight:600; color:#2c3e50;"></span>Tổng:</span>
+                          <span style="color:#1ab394; font-weight:600;"
+                            th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">500,000
+                            VNĐ</span>
+                        </div>
+                        <div style="font-size: 12px; color: #e74c3c;" th:if="${order.discountAmount > 0}">
+                          <span style="font-weight:600; color:#e74c3c;">Giảm:</span>
+                          <span style="color:#e74c3c; font-weight:600;"
+                            th:text="${#numbers.formatDecimal(order.discountAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">50,000
+                            VNĐ</span>
+                        </div>
+                        <div style="font-size: 12px; color: #138496; font-weight:600; margin-bottom: 3px;"
+                          th:if="${order.shippingFee != null}">
+                          <span style="font-weight:600; color:#138496;">Phí ship:</span>
+                          <span style="color:#138496; font-weight:600;"
+                            th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">20,000
+                            VNĐ</span>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 700; color: #ff9800; margin-top: 4px;">
+                          <span>Thành tiền:</span>
+                          <span
+                            th:text="${#numbers.formatDecimal(order.finalAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">480,000
+                            VNĐ</span>
+                        </div>
+                      </div>
+
+                      <div class="col-md-3 col-sm-12 col-xs-12 text-right" style="margin-bottom: 10px;">
+                        <div class="order-actions-container">
+
+                          <!-- Status-based Actions Section -->
+                          <div class="status-actions-row">
+                            <!-- Actions cho PENDING: Chỉ có Hủy -->
+                            <button th:if="${order.status == 'PENDING'}"
+                              class="btn btn-danger btn-sm customer-action-btn status-action"
+                              th:attr="data-order-id=${order.id}, data-action='cancel'"
+                              onclick="handleCustomerOrderAction(this)" title="Hủy đơn hàng">
+                              <i class="fa fa-times"></i> Hủy đơn hàng
+                            </button>
+
+                            <!-- Actions cho SHIPPING: Đã nhận hàng -->
+                            <button th:if="${order.status == 'SHIPPING'}"
+                              class="btn btn-success btn-sm customer-action-btn status-action"
+                              th:attr="data-order-id=${order.id}, data-action='confirm-received'"
+                              onclick="handleCustomerOrderAction(this)" title="Xác nhận đã nhận hàng">
+                              <i class="fa fa-check-circle"></i> Đã nhận hàng
+                            </button>
+
+                            <!-- Actions cho COMPLETED: Mua lại hoặc Đổi/Trả -->
+                            <div th:if="${order.status == 'COMPLETED'}" class="completed-actions">
+                              <button class="btn btn-primary btn-sm customer-action-btn status-action"
+                                th:attr="data-order-code=${order.orderCode}" onclick="reorderItems(this)"
+                                title="Mua lại đơn hàng này">
+                                <i class="fa fa-refresh"></i> Mua lại
+                              </button>
+                              <button class="btn btn-warning btn-sm customer-action-btn status-action"
+                                th:attr="data-order-id=${order.id}, data-action='return'"
+                                onclick="handleCustomerOrderAction(this)" title="Yêu cầu đổi/trả hàng">
+                                <i class="fa fa-undo"></i> Đổi/Trả
+                              </button>
+                            </div>
+
+                            <!-- Placeholder for inactive statuses -->
+                            <div th:if="${order.status == 'PROCESSING' || order.status == 'CANCELLED'}"
+                              class="status-placeholder">
+                              <span class="status-message" th:switch="${order.status}">
+                                <span th:case="'PROCESSING'" class="text-info">
+                                  <i class="fa fa-cog fa-spin"></i> Đang xử lý
+                                </span>
+                                <span th:case="'CANCELLED'" class="text-muted">
+                                  <i class="fa fa-ban"></i> Đã hủy
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+
+                          <!-- Common Actions Row -->
+                          <div class="common-actions-row">
+                            <button class="btn btn-info btn-sm toggle-details-btn-single"
+                              th:attr="data-target='#order-details-' + ${order.id}" onclick="toggleOrderDetails(this)"
+                              title="Xem chi tiết đơn hàng">
+                              <i class="fa fa-chevron-down"></i> Chi tiết
+                            </button>
+                          </div>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div class="panel-body order-details-content collapse" th:id="'order-details-' + ${order.id}">
+                    <div class="row" style="margin-bottom: 20px;">
+                      <div class="col-md-6"><!--  -->
+                        <div class="info-section">
+                          <h4 class="info-title">
+                            <i class="fa fa-user text-primary"></i> Thông tin khách hàng
+                          </h4>
+                          <div class="info-item">
+                            <span class="info-label">Tên:</span>
+                            <span class="info-value" th:text="${order.customerName}">Nguyễn Văn A</span>
+                          </div>
+                          <div class="info-item">
+                            <span class="info-label">SĐT:</span>
+                            <span class="info-value" th:text="${order.shippingPhone}">0123456789</span>
+                          </div>
+                          <div class="info-item">
+                            <span class="info-label">Địa chỉ:</span>
+                            <span class="info-value" th:text="${order.shippingAddress}">123 Đường ABC</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-md-6">
+                        <div class="info-section">
+                          <h4 class="info-title">
+                            <i class="fa fa-info-circle text-success"></i> Thông tin đơn hàng
+                          </h4>
+                          <div class="info-item">
+                            <span class="info-label">Loại:</span>
+                            <span th:if="${order.orderType == 'ONLINE'}"
+                              class="modern-badge badge-primary">Online</span>
+                            <span th:if="${order.orderType == 'COUNTER'}" class="modern-badge badge-success">Tại
+                              quầy</span>
+                          </div>
+                          <div class="info-item" th:if="${order.voucherCode != null}">
+                            <span class="info-label">Mã giảm giá:</span>
+                            <span class="modern-badge badge-warning" th:text="${order.voucherCode}">SALE10</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="order-items-section">
+                      <h4 class="info-title">
+                        <i class="fa fa-shopping-bag text-warning"></i> Sản phẩm trong đơn hàng
+                      </h4>
+                      <div class="order-items-container" th:attr="data-order-code=${order.orderCode}">
+                        <div class="items-loading text-center">
+                          <div class="loading-spinner">
+                            <i class="fa fa-spinner fa-spin"></i>
+                            <span>Đang tải sản phẩm...</span>
+                          </div>
+                        </div>
+                        <div class="items-content" style="display: none;"></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="text-center" th:if="${totalPages > 1}">
+              <ul class="pagination">
+                <li th:class="${currentPage == 0} ? 'disabled' : ''">
+                  <a th:if="${currentPage > 0}" th:href="@{/orders(page=${currentPage - 1}, size=10)}">
+                    <i class="fa fa-angle-left"></i> Trước
+                  </a>
+                  <span th:if="${currentPage == 0}" class="disabled">
+                    <i class="fa fa-angle-left"></i> Trước
+                  </span>
+                </li>
+
+                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                  th:class="${i == currentPage} ? 'active' : ''">
+                  <a th:href="@{/orders(page=${i}, size=10)}" th:text="${i + 1}">1</a>
+                </li>
+
+                <li th:class="${currentPage == totalPages - 1} ? 'disabled' : ''">
+                  <a th:if="${currentPage < totalPages - 1}" th:href="@{/orders(page=${currentPage + 1}, size=10)}">
+                    Sau <i class="fa fa-angle-right"></i>
+                  </a>
+                  <span th:if="${currentPage == totalPages - 1}" class="disabled">
+                    Sau <i class="fa fa-angle-right"></i>
+                  </span>
+                </li>
+              </ul>
+              <p class="text-muted">
+                Hiển thị trang <strong th:text="${currentPage + 1}">1</strong>
+                / <strong th:text="${totalPages}">1</strong>
+                (Tổng <strong th:text="${totalItems}">0</strong> đơn hàng)
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Continue Shopping Button -->
+  <div class="row">
+    <div class="col-lg-12 text-center" style="margin-top: 30px;">
+      <a th:href="@{/}" class="btn-continue-shopping">
+        <i class="fa fa-shopping-cart"></i>
+        Tiếp tục mua sắm
+      </a>
+    </div>
+  </div>
+  </div>
+
+  <style>
+    .modern-card-title {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      padding: 15px 20px;
+      border: none;
+    }
+
+    .modern-card-title h5 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ibox-content {
+      padding: 25px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-radius: 0 0 12px 12px;
+      border: 1px solid #e3f2fd;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ===== MODERN PAGE HEADER ===== */
+    .modern-page-header {
+      text-align: center;
+      margin: 40px 0;
+      position: relative;
+    }
+
+    .header-decoration {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #1ab394, transparent);
+      margin: 20px auto;
+      width: 200px;
+      border-radius: 2px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .page-title i {
+      font-size: 36px;
+    }
+
+    .page-subtitle {
+      color: #6c757d;
+      font-size: 16px;
+      margin: 10px 0 0 0;
+      font-style: italic;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-orders-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-radius: 12px;
+      border: 1px solid #e3f2fd;
+      margin: 20px 0;
+    }
+
+    .empty-icon {
+      margin-bottom: 20px;
+    }
+
+    .empty-icon i {
+      font-size: 80px;
+      color: #1ab394;
+      opacity: 0.7;
+    }
+
+    .empty-title {
+      color: #2c3e50;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .empty-subtitle {
+      color: #6c757d;
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+
+    .btn-empty-shopping {
+      background: linear-gradient(135deg, #1ab394, #17a2b8);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(26, 179, 148, 0.3);
+      font-size: 16px;
+    }
+
+    .btn-empty-shopping:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 179, 148, 0.4);
+      color: white;
+      text-decoration: none;
+      background: linear-gradient(135deg, #17a085, #138496);
+    }
+
+    /* ===== CONTINUE SHOPPING BUTTON ===== */
+    .btn-continue-shopping {
+      background: linear-gradient(135deg, #1ab394, #17a2b8);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 12px rgba(26, 179, 148, 0.3);
+      font-size: 14px;
+    }
+
+    .btn-continue-shopping:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 16px rgba(26, 179, 148, 0.4);
+      color: white;
+      text-decoration: none;
+      background: linear-gradient(135deg, #17a085, #138496);
+    }
+
+    /* ===== ORDER DETAILS STYLING ===== */
+    .order-details-content {
+      padding: 25px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-top: 1px solid #e7eaec;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .info-section {
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-title {
+      font-size: 16px;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f1f2f3;
+    }
+
+    .info-item {
+      margin-bottom: 10px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #495057;
+      min-width: 80px;
+    }
+
+    .info-value {
+      color: #6c757d;
+      flex: 1;
+    }
+
+    .modern-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: white;
+    }
+
+    .badge-primary {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+    }
+
+    .badge-success {
+      background: linear-gradient(135deg, #28a745, #1e7e34);
+    }
+
+    .badge-warning {
+      background: linear-gradient(135deg, #ffc107, #e0a800);
+      color: #212529;
+    }
+
+    .order-items-section {
+      margin-top: 20px;
+    }
+
+    .order-items-container {
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .loading-spinner {
+      padding: 30px;
+      color: #6c757d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .loading-spinner i {
+      font-size: 24px;
+      color: #1ab394;
+    }
+
+    .items-content table {
+      margin-bottom: 0;
+    }
+
+    .items-content .table th {
+      background: #f8f9fa;
+      border-color: #dee2e6;
+      color: #495057;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 15px;
+    }
+
+    .items-content .table td {
+      border-color: #dee2e6;
+      font-size: 14px;
+      vertical-align: middle;
+      padding: 15px;
+    }
+
+    .items-content .table>tbody>tr>td {
+      vertical-align: middle;
+    }
+
+    .items-content .table-hover>tbody>tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .items-content .label {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 4px;
+    }
+
+    .items-content .text-success {
+      color: #28a745 !important;
+    }
+
+    /* ===== ORDER ACTION BUTTONS - REDESIGNED ===== */
+    .order-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-end;
+      min-height: 80px;
+      justify-content: space-between;
+    }
+
+    /* Status Actions Row - Always takes same height */
+    .status-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      min-height: 36px;
+      width: 100%;
+    }
+
+    .completed-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-height: 32px;
+      padding: 6px 12px;
+    }
+
+    .status-message {
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* Common Actions Row - Always at bottom */
+    .common-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      width: 100%;
+    }
+
+    .btn-group-horizontal {
+      display: flex;
+      gap: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .customer-action-btn {
+      font-weight: 500;
+      padding: 8px 16px;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: none;
+      min-width: 110px;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    /* Status Action Buttons - Uniform styling */
+    .status-action {
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    .customer-action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .customer-action-btn:active {
+      transform: translateY(0);
+    }
+
+    .customer-action-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Specific button colors */
+    .customer-action-btn.btn-danger {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      border-color: #dc3545;
+    }
+
+    .customer-action-btn.btn-danger:hover {
+      background: linear-gradient(135deg, #c82333, #bd2130);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+
+    .customer-action-btn.btn-success {
+      background: linear-gradient(135deg, #28a745, #218838);
+      border-color: #28a745;
+    }
+
+    .customer-action-btn.btn-success:hover {
+      background: linear-gradient(135deg, #218838, #1e7e34);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    }
+
+    .customer-action-btn.btn-primary {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      border-color: #007bff;
+    }
+
+    .customer-action-btn.btn-primary:hover {
+      background: linear-gradient(135deg, #0056b3, #004085);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+    }
+
+    .customer-action-btn.btn-warning {
+      background: linear-gradient(135deg, #ffc107, #e0a800);
+      border-color: #ffc107;
+      color: #212529;
+    }
+
+    .customer-action-btn.btn-warning:hover {
+      background: linear-gradient(135deg, #e0a800, #d39e00);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+      color: #212529;
+    }
+
+    .btn-group {
+      display: inline-flex;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-details-btn,
+    .toggle-details-btn-single {
+      background: linear-gradient(135deg, #17a2b8, #138496);
+      color: white;
+      border: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      position: relative;
+      min-width: 120px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+    }
+
+    .toggle-details-btn {
+      border-radius: 8px 0 0 8px;
+    }
+
+    .toggle-details-btn-single {
+      border-radius: 20px;
+    }
+
+    .toggle-details-btn:hover,
+    .toggle-details-btn-single:hover {
+      background: linear-gradient(135deg, #138496, #117a8b);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+    }
+
+    .toggle-details-btn:focus,
+    .toggle-details-btn-single:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.3);
+      color: white;
+    }
+
+    .toggle-details-btn:disabled,
+    .toggle-details-btn-single:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .toggle-details-btn i {
+      transition: transform 0.3s ease;
+      margin-right: 4px;
+    }
+
+    .toggle-details-btn.expanded i {
+      transform: rotate(180deg);
+    }
+
+    /* Removed btn-outline-primary styles - no longer needed */
+
+    .order-details-content {
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .order-details-content.show {
+      animation: slideDown 0.4s ease;
+    }
+
+    .order-details-content.collapsing {
+      height: 0;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== EXISTING ORDER CARD STYLES ===== */
+    .order-card {
+      transition: all 0.3s ease;
+    }
+
+    .order-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .panel-heading:hover {
+      background: #f9f9f9 !important;
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .page-title i {
+        font-size: 28px;
+      }
+
+      .page-subtitle {
+        font-size: 14px;
+      }
+
+      .header-decoration {
+        width: 150px;
+      }
+
+      .empty-title {
+        font-size: 20px;
+      }
+
+      .empty-subtitle {
+        font-size: 14px;
+      }
+
+      .empty-icon i {
+        font-size: 60px;
+      }
+
+      .order-card .col-md-2,
+      .order-card .col-md-3 {
+        text-align: left !important;
+      }
+
+      .order-actions-container {
+        align-items: stretch;
+        min-height: auto;
+        gap: 8px;
+      }
+
+      .status-actions-row {
+        justify-content: center;
+        min-height: auto;
+      }
+
+      .completed-actions {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .customer-action-btn {
+        flex: 1;
+        font-size: 12px;
+        padding: 8px 12px;
+        margin: 2px;
+        min-width: auto;
+      }
+
+      .common-actions-row {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .toggle-details-btn-single {
+        min-width: 140px;
+        font-size: 14px;
+        padding: 10px 16px;
+      }
+
+      .toggle-details-btn,
+      .btn-outline-primary {
+        flex: 1;
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+
+      .info-section {
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+
+      .info-title {
+        font-size: 14px;
+      }
+
+      .info-item {
+        font-size: 13px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+
+      .info-label {
+        min-width: auto;
+      }
+
+      .order-items-container {
+        padding: 15px;
+      }
+
+      .items-content table {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-title {
+        font-size: 20px;
+      }
+
+      .page-subtitle {
+        font-size: 13px;
+      }
+
+      .modern-page-header {
+        margin: 20px 0;
+      }
+
+      .empty-orders-state {
+        padding: 40px 15px;
+      }
+
+      .btn-empty-shopping {
+        padding: 12px 20px;
+        font-size: 14px;
+      }
+
+      .toggle-details-btn-single {
+        width: 80%;
+        max-width: 180px;
+        min-width: auto;
+        font-size: 13px;
+        padding: 8px 12px;
+      }
+
+      .status-message {
+        font-size: 12px;
+        padding: 4px 8px;
+      }
+    }
+
+    /* ===== BUTTON LOADING STATE ===== */
+    .toggle-details-btn:disabled::after,
+    .toggle-details-btn-single:disabled::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      margin: auto;
+      border: 2px solid transparent;
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: button-loading-spinner 0.8s ease infinite;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    @keyframes button-loading-spinner {
+      from {
+        transform: translateY(-50%) rotate(0turn);
+      }
+
+      to {
+        transform: translateY(-50%) rotate(1turn);
+      }
+    }
+  </style>
+
+  <script>
+    // Toggle order details function
+    function toggleOrderDetails(button) {
+      // Prevent multiple clicks during animation
+      if (button.disabled) return;
+      button.disabled = true;
+
+      const targetId = button.getAttribute('data-target');
+      const detailsPanel = document.querySelector(targetId);
+      const icon = button.querySelector('i');
+
+      if (detailsPanel.classList.contains('show')) {
+        // Collapse
+        detailsPanel.style.height = detailsPanel.scrollHeight + 'px';
+        detailsPanel.classList.add('collapsing');
+        detailsPanel.classList.remove('show');
+
+        setTimeout(() => {
+          detailsPanel.style.height = '0';
+        }, 10);
+
+        setTimeout(() => {
+          detailsPanel.classList.remove('collapsing');
+          detailsPanel.style.height = '';
+          button.disabled = false; // Re-enable button
+        }, 400);
+
+        button.classList.remove('expanded');
+        icon.className = 'fa fa-chevron-down';
+        button.innerHTML = '<i class="fa fa-chevron-down"></i> Chi tiết';
+      } else {
+        // Expand
+        detailsPanel.classList.add('collapsing');
+        detailsPanel.style.height = '0';
+
+        setTimeout(() => {
+          detailsPanel.style.height = detailsPanel.scrollHeight + 'px';
+        }, 10);
+
+        setTimeout(() => {
+          detailsPanel.classList.add('show');
+          detailsPanel.classList.remove('collapsing');
+          detailsPanel.style.height = '';
+
+          // Load order items if not loaded yet
+          const container = detailsPanel.querySelector('.order-items-container');
+          if (container && container.dataset.loaded !== 'true') {
+            loadOrderItems(container);
+          }
+
+          button.disabled = false; // Re-enable button
+        }, 400);
+
+        button.classList.add('expanded');
+        icon.className = 'fa fa-chevron-up';
+        button.innerHTML = '<i class="fa fa-chevron-up"></i> Ẩn';
+      }
+    }
+
+    // Define loadOrderItems function in global scope
+    function loadOrderItems(container) {
+      // Check if already loaded
+      if (container.dataset.loaded === 'true') {
+        console.log('Items already loaded, skipping...');
+        return;
+      }
+
+      // Mark as loading to prevent multiple calls
+      container.dataset.loaded = 'loading';
+      console.log('Loading items for order:', container.getAttribute('data-order-code'));
+
+      const orderCode = container.getAttribute('data-order-code');
+      const loading = container.querySelector('.items-loading');
+      const content = container.querySelector('.items-content');
+
+      console.log('Elements found:', {
+        container: !!container,
+        loading: !!loading,
+        content: !!content,
+        orderCode: orderCode
+      });
+
+      // Reset states
+      if (loading) {
+        loading.style.display = 'block';
+        console.log('Loading shown');
+      }
+      if (content) {
+        content.style.display = 'none';
+        console.log('Content hidden');
+      }
+
+      // Call real API to get order items
+      fetch('/api/orders/detail/' + orderCode)
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.items && data.items.length > 0) {
+            let html = '<div class="table-responsive">';
+            html += '<table class="table table-hover" style="margin-bottom: 0;">';
+            html += '<thead style="background: #f8f9fa;"><tr>';
+            html += '<th style="padding: 15px;">Sản phẩm</th>';
+            html += '<th class="text-center" style="padding: 15px;">Màu sắc</th>';
+            html += '<th class="text-center" style="padding: 15px;">Size</th>';
+            html += '<th class="text-center" style="padding: 15px;">Đơn giá</th>';
+            html += '<th class="text-center" style="padding: 15px;">Số lượng</th>';
+            html += '<th class="text-right" style="padding: 15px;">Thành tiền</th>';
+            html += '</tr></thead><tbody>';
+
+            data.items.forEach(item => {
+              html += `<tr>
+                  <td style="padding: 15px;">
+                    <strong>${item.productName}</strong><br />
+                    <small class="text-muted">Mã: ${item.variantCode || 'N/A'}</small>
+                  </td>
+                  <td class="text-center" style="padding: 15px;">
+                    <span>${item.color}</span>
+                  </td>
+                  <td class="text-center" style="padding: 15px;">
+                    <span class="label label-info">${item.size}</span>
+                  </td>
+                  <td class="text-center" style="padding: 15px;">
+                    <span>${formatMoney(item.unitPrice)} VNĐ</span>
+                  </td>
+                  <td class="text-center" style="padding: 15px;">
+                    <strong>${item.quantity}</strong>
+                  </td>
+                  <td class="text-right" style="padding: 15px;">
+                    <strong class="text-success">${formatMoney(item.totalPrice)} VNĐ</strong>
+                  </td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            content.innerHTML = html;
+            content.style.display = 'block';
+          } else {
+            content.innerHTML = '<p class="text-center text-muted">Không có sản phẩm trong đơn hàng.</p>';
+            content.style.display = 'block';
+          }
+
+          if (loading) {
+            loading.style.display = 'none';
+          }
+          container.dataset.loaded = 'true';
+        })
+        .catch(error => {
+          console.error('Error loading order items:', error);
+          content.innerHTML = '<div class="alert alert-danger text-center">Không thể tải danh sách sản phẩm.</div>';
+          content.style.display = 'block';
+          if (loading) {
+            loading.style.display = 'none';
+          }
+          container.dataset.loaded = 'true';
+        });
+
+      // Fallback: Force hide loading after 2 seconds
+      setTimeout(function () {
+        if (loading && loading.style.display !== 'none') {
+          loading.style.display = 'none';
+          console.log('Fallback: Force hidden loading spinner');
+
+          if (content && content.style.display === 'none') {
+            content.innerHTML = '<p class="text-center text-muted">Đã tải xong nhưng không có dữ liệu hiển thị.</p>';
+            content.style.display = 'block';
+          }
+        }
+      }, 2000);
+
+
+    }
+
+    function formatMoney(num) {
+      return num.toLocaleString('vi-VN');
+    }
+
+    // Handle customer order actions
+    function handleCustomerOrderAction(button) {
+      if (button.disabled) return;
+
+      const orderId = button.getAttribute('data-order-id');
+      const action = button.getAttribute('data-action');
+
+      let confirmConfig = {};
+
+      switch (action) {
+        case 'cancel':
+          confirmConfig = {
+            title: 'Xác nhận hủy đơn hàng',
+            text: 'Bạn có chắc muốn hủy đơn hàng này? Hành động này không thể hoàn tác.',
+            icon: 'warning',
+            confirmButtonText: 'Hủy đơn hàng',
+            confirmButtonColor: '#dc3545'
+          };
+          break;
+
+        case 'confirm-received':
+          confirmConfig = {
+            title: 'Xác nhận đã nhận hàng',
+            text: 'Bạn đã nhận được hàng và hài lòng với sản phẩm?',
+            icon: 'question',
+            confirmButtonText: 'Đã nhận hàng',
+            confirmButtonColor: '#28a745'
+          };
+          break;
+
+        case 'return':
+          confirmConfig = {
+            title: 'Yêu cầu đổi/trả hàng',
+            text: 'Bạn muốn yêu cầu đổi/trả hàng cho đơn hàng này?',
+            icon: 'info',
+            confirmButtonText: 'Yêu cầu đổi/trả',
+            confirmButtonColor: '#ffc107'
+          };
+          break;
+
+        default:
+          return;
+      }
+
+      Swal.fire({
+        title: confirmConfig.title,
+        text: confirmConfig.text,
+        icon: confirmConfig.icon,
+        showCancelButton: true,
+        confirmButtonColor: confirmConfig.confirmButtonColor,
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: confirmConfig.confirmButtonText,
+        cancelButtonText: 'Hủy'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          performCustomerOrderAction(orderId, action, button);
+        }
+      });
+    }
+
+    function performCustomerOrderAction(orderId, action, button) {
+      // Disable button during request
+      button.disabled = true;
+      const originalText = button.innerHTML;
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang xử lý...';
+
+      let endpoint = '';
+      let newStatus = '';
+
+      switch (action) {
+        case 'cancel':
+          endpoint = '/customer/orders/' + orderId + '/cancel';
+          newStatus = 'CANCELLED';
+          break;
+        case 'confirm-received':
+          endpoint = '/customer/orders/' + orderId + '/confirm-received';
+          newStatus = 'COMPLETED';
+          break;
+        case 'return':
+          endpoint = '/customer/orders/' + orderId + '/return';
+          newStatus = 'RETURN';
+          break;
+      }
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Thành công!',
+              text: data.message || 'Đã cập nhật trạng thái đơn hàng thành công!',
+              timer: 2000,
+              showConfirmButton: false
+            }).then(() => {
+              // Reload page to reflect changes
+              window.location.reload();
+            });
+          } else {
+            throw new Error(data.message || 'Có lỗi xảy ra');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: error.message || 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng.'
+          });
+
+          // Restore button
+          button.disabled = false;
+          button.innerHTML = originalText;
+        });
+    }
+
+    // Handle reorder functionality
+    function reorderItems(button) {
+      const orderCode = button.getAttribute('data-order-code');
+
+      Swal.fire({
+        title: 'Mua lại đơn hàng',
+        text: 'Thêm tất cả sản phẩm từ đơn hàng này vào giỏ hàng?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Thêm vào giỏ',
+        cancelButtonText: 'Hủy'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          performReorder(orderCode, button);
+        }
+      });
+    }
+
+    function performReorder(orderCode, button) {
+      button.disabled = true;
+      const originalText = button.innerHTML;
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang thêm...';
+
+      fetch('/customer/orders/' + orderCode + '/reorder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Thành công!',
+              text: data.message || 'Đã thêm sản phẩm vào giỏ hàng!',
+              showCancelButton: true,
+              confirmButtonColor: '#28a745',
+              cancelButtonColor: '#6c757d',
+              confirmButtonText: 'Đi tới giỏ hàng',
+              cancelButtonText: 'Tiếp tục mua sắm'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = '/cart';
+              }
+            });
+          } else {
+            throw new Error(data.message || 'Có lỗi xảy ra');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: error.message || 'Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.'
+          });
+        })
+        .finally(() => {
+          button.disabled = false;
+          button.innerHTML = originalText;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // Page initialization code can go here if needed
+    });
+  </script>
+
+</section>
+
+</html>

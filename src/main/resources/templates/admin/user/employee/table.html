@@ -13,6 +13,7 @@
         <th>Giới Tính</th>
         <th>Ngày Sinh</th>
         <th>Vai Trò</th>
+        <th>Ngày Tạo</th>
         <th>Trạng Thái</th>
         <th>Hành Động</th>
       </tr>
@@ -36,14 +37,15 @@
         <td th:text="${item.userName}"></td>
         <td th:text="${item.email}"></td>
         <td th:text="${item.fullName}"></td>
-        <td th:text="${item.address}"></td>
+        <td th:text="${item.fullAddress}"></td>
         <td th:text="${item.phone}"></td>
         <td th:switch="${item.gender}">
           <span th:case="true">Nam</span>
           <span th:case="false">Nữ</span>
         </td>
-        <td th:text="${item.dateOfBirth}"></td>
+        <td th:text="${#temporals.format(item.dateOfBirth, 'dd/MM/yyyy')}"></td>
         <td th:text="${item.roleName}"></td>
+        <td th:text="${#dates.format(item.createAt, 'dd/MM/yyyy')}"></td>
         <td th:switch="${item.isActive}">
           <span th:case="true" class="badge badge-primary">Hoạt Động</span>
           <span th:case="false" class="badge badge-danger">Ngừng</span>
@@ -52,19 +54,26 @@
           <button
             class="btn btn-info dim"
             type="button"
-            th:attr="data-id=${item.id}, 
-                  data-usercode=${item.userCode}, 
-                  data-fullname=${item.fullName}, 
-                  data-email=${item.email}, 
-                  data-username=${item.userName}, 
-                  data-phone=${item.phone}, 
-                  data-address=${item.address}, 
+            th:attr="data-id=${item.id},
+                  data-usercode=${item.userCode},
+                  data-fullname=${item.fullName},
+                  data-email=${item.email},
+                  data-username=${item.userName},
+                  data-phone=${item.phone},
+                  data-address=${item.address},
+                  data-fulladdress=${item.fullAddress},
+                  data-specific-address=${item.specificAddress},
+                  data-province-code=${item.provinceCode},
+                  data-commune-code=${item.communeCode},
                   data-role=${item.roleId},
-				  data-avatar=${item.avatar}
+				  data-avatar=${item.avatar},
+				  data-gender=${item.gender},
+			      data-dob=${item.dateOfBirth}
 						"
+            th:title="'Thông tin và cập nhật'"
             onclick="handleDetailClick(this)"
           >
-            <i class="fa fa-paste"></i>
+            <i class="fa fa-eye"></i>
           </button>
 
           <button
@@ -79,60 +88,35 @@
       </tr>
     </tbody>
   </table>
-  <div
-    class="dataTables_paginate paging_simple_numbers"
-    id="DataTables_Table_0_paginate"
-    th:if="${totalPages > 0}"
-    style="text-align: right"
-  >
+  <div class="text-center" th:if="${totalPages > 1}">
     <ul class="pagination">
-      <!-- Previous -->
-      <li
-        id="DataTables_Table_0_previous"
-        class="paginate_button previous"
-        th:classappend="${currentPage == 0} ? ' disabled'"
-      >
-        <a
-          href="#"
-          aria-controls="DataTables_Table_0"
-          th:attr="data-dt-idx=${currentPage}"
-          tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage} - 1) + ')'"
-          >Previous</a
-        >
+      <li th:class="${currentPage == 0} ? 'disabled' : ''">
+        <a th:if="${currentPage > 0}" href="#" th:onclick="'searchUser(' + (${currentPage - 1}) + ')'">
+          <i class="fa fa-angle-left"></i> Trước
+        </a>
+        <span th:if="${currentPage == 0}" class="disabled">
+          <i class="fa fa-angle-left"></i> Trước
+        </span>
       </li>
 
-      <!-- Pages 1..totalPages -->
-      <li
-        class="paginate_button"
-        th:each="i : ${#numbers.sequence(1, totalPages)}"
-        th:classappend="${i - 1 == currentPage} ? ' active'"
-      >
-        <a
-          href="#"
-          aria-controls="DataTables_Table_0"
-          th:attr="data-dt-idx=${i}"
-          tabindex="0"
-          th:text="${i}"
-          th:onclick="'searchUser(' + (${i} - 1) + ')'"
-        ></a>
+      <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+          th:class="${i == currentPage} ? 'active' : ''">
+        <a href="#" th:onclick="'searchUser(' + (${i}) + ')'" th:text="${i + 1}">1</a>
       </li>
 
-      <!-- Next -->
-      <li
-        id="DataTables_Table_0_next"
-        class="paginate_button next"
-        th:classappend="${currentPage + 1 == totalPages} ? ' disabled'"
-      >
-        <a
-          href="#"
-          aria-controls="DataTables_Table_0"
-          th:attr="data-dt-idx=${currentPage + 2}"
-          tabindex="0"
-          th:onclick="'searchUser(' + (${currentPage} + 1) + ')'"
-          >Next</a
-        >
+      <li th:class="${currentPage == totalPages - 1} ? 'disabled' : ''">
+        <a th:if="${currentPage < totalPages - 1}" href="#" th:onclick="'searchUser(' + (${currentPage + 1}) + ')'">
+          Sau <i class="fa fa-angle-right"></i>
+        </a>
+        <span th:if="${currentPage == totalPages - 1}" class="disabled">
+          Sau <i class="fa fa-angle-right"></i>
+        </span>
       </li>
     </ul>
+    <p class="text-muted">
+      Hiển thị trang <strong th:text="${currentPage + 1}">1</strong>
+      / <strong th:text="${totalPages}">1</strong>
+      (Tổng <strong th:text="${totalItems}">0</strong> nhân viên)
+    </p>
   </div>
 </th:block>

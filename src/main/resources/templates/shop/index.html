@@ -1,18 +1,189 @@
 <!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  th:replace="shop/fragments/base :: base"
->
-  <section class="container features" th:fragment="content">
-    <div class="row">
-      <div class="col-lg-12 text-center">
-        <div class="navy-line"></div>
-        <h1>
-          Danh Sach San Pham<br />
-          <!-- <span class="navy"> with many custom components</span> -->
-        </h1>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<head>
+</head>
+<section class="container features" th:fragment="content">
+
+  <!-- Bộ lọc tìm kiếm sản phẩm đẹp hơn -->
+  <div class="row mb-4 justify-content-center">
+    <div class="container-fluid" style="max-width:1200px; margin:auto;">
+      <div class="shop-filter-card" style="padding:20px 16px 8px 16px;">
+        <form id="productFilterForm" th:action="@{/shop}" method="get">
+          <div class="row g-3 align-items-center">
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-money text-success"></i> Giá từ</label>
+                <input type="number" name="minPrice" class="form-control" placeholder="Tối thiểu" th:value="${minPrice}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-money text-danger"></i> Giá đến</label>
+                <input type="number" name="maxPrice" class="form-control" placeholder="Tối đa" th:value="${maxPrice}">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-paint-brush text-primary"></i> Màu sắc</label>
+                <select name="color" class="form-select">
+                  <option value="">Tất cả</option>
+                  <option th:each="c : ${colors}" th:value="${c.id}" th:text="${c.colorName}" th:selected="${color} == ${c.id}"></option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-industry text-info"></i> Thương hiệu</label>
+                <select name="brand" class="form-select">
+                  <option value="">Tất cả</option>
+                  <option th:each="b : ${brands}" th:value="${b.id}" th:text="${b.name}" th:selected="${brand} == ${b.id}"></option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label mb-1"><i class="fa fa-arrows-v text-warning"></i> Kích thước</label>
+                <select name="size" class="form-select">
+                  <option value="">Tất cả</option>
+                  <option th:each="s : ${sizes}" th:value="${s.id}" th:text="${s.name}" th:selected="${size} == ${s.id}"></option>
+                </select>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="fa fa-filter"></i> Lọc
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-    <div class="row"></div>
-  </section>
+  </div>
+    <!-- Sản phẩm bán chạy nhất -->
+    <div class="row"
+      th:if="${bestSellingVariants != null && !bestSellingVariants.isEmpty()} and ${minPrice == null} and ${maxPrice == null} and ${color == null} and ${brand == null} and ${size == null}">
+    <div class="col-lg-12">
+      <div class="navy-line"></div>
+      <h1 class="text-center">
+        <i class="fa fa-fire text-danger"></i> Sản Phẩm Bán Chạy
+      </h1>
+      <div class="navy-line"></div>
+      <br />
+      <div class="row">
+        <div class="col-md-3" th:each="variant : ${bestSellingVariants}">
+          <div class="ibox">
+            <div class="ibox-content product-box">
+              <div class="product-imitation"
+                th:style="'background-image: url(' + @{${variant.imageUrls != null && !variant.imageUrls.isEmpty() ? variant.imageUrls[0] : '/assets/img/no-image.png'}} + '); height: 200px; background-size: cover; background-position: center;'">
+                <span class="badge badge-danger" style="position: absolute; top: 10px; left: 10px;">
+                  <i class="fa fa-fire"></i> Bán Chạy
+                </span>
+              </div>
+
+              <div class="product-desc">
+                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                </span>
+                <small class="text-muted">
+                  <span th:text="${variant.brandName}">Brand</span> |
+                  <span th:text="${variant.colorName}">Color</span> -
+                  <span th:text="${variant.sizeName}">Size</span>
+                </small>
+                <a href="#" class="product-name" th:text="${variant.productName}">Product</a>
+                <div class="small m-t-xs" th:text="${variant.productDescription}"></div>
+                <div class="m-t text-right">
+                  <a th:href="@{'/details/' + ${variant.productId}}"
+                    class="btn btn-xs btn-outline btn-primary no-landing-style">Chi Tiết
+                    <i class="fa fa-long-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Sản phẩm mới nhất -->
+    <div class="row"
+      th:if="${newestVariants != null && !newestVariants.isEmpty()} and ${minPrice == null} and ${maxPrice == null} and ${color == null} and ${brand == null} and ${size == null}">
+    <div class="col-lg-12">
+      <div class="navy-line"></div>
+      <h1 class="text-center">
+        <i class="fa fa-star text-warning"></i> Sản Phẩm Mới Nhất
+      </h1>
+      <div class="navy-line"></div>
+      <br />
+      <div class="row">
+        <div class="col-md-3" th:each="variant : ${newestVariants}">
+          <div class="ibox">
+            <div class="ibox-content product-box">
+              <div class="product-imitation"
+                th:style="'background-image: url(' + @{${variant.imageUrls != null && !variant.imageUrls.isEmpty() ? variant.imageUrls[0] : '/assets/img/no-image.png'}} + '); height: 200px; background-size: cover; background-position: center;'">
+                <span class="badge badge-primary" style="position: absolute; top: 10px; left: 10px;">
+                  <i class="fa fa-star"></i> Mới
+                </span>
+              </div>
+
+              <div class="product-desc">
+                <span class="product-price" th:text="${#numbers.formatDecimal(variant.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                </span>
+                <small class="text-muted">
+                  <span th:text="${variant.brandName}">Brand</span> |
+                  <span th:text="${variant.colorName}">Color</span> -
+                  <span th:text="${variant.sizeName}">Size</span>
+                </small>
+                <a href="#" class="product-name" th:text="${variant.productName}">Product</a>
+                <div class="small m-t-xs" th:text="${variant.productDescription}"></div>
+                <div class="m-t text-right">
+                  <a th:href="@{'/details/' + ${variant.productId}}"
+                    class="btn btn-xs btn-outline btn-primary no-landing-style">Chi Tiết
+                    <i class="fa fa-long-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tất cả sản phẩm -->
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="navy-line"></div>
+      <h1 class="text-center">
+        <i class="fa fa-shopping-bag" style="color: #1ab394;"></i>
+        <span th:if="${minPrice != null or maxPrice != null or color != null or brand != null or size != null}">Kết Quả Tìm Kiếm</span>
+        <span th:if="${minPrice == null and maxPrice == null and color == null and brand == null and size == null}">Tất Cả Sản Phẩm</span>
+      </h1>
+      <div class="navy-line"></div>
+      <br />
+      <div class="row">
+        <div class="col-md-3" th:each="item : ${listProducts}">
+          <div class="ibox">
+            <div class="ibox-content product-box">
+              <div class="product-imitation"
+                th:style="'background-image: url(' + @{${item.thumbnail}} + '); height: 200px; background-size: cover; background-position: center;'">
+              </div>
+
+              <div class="product-desc">
+                <span class="product-price"
+                  th:if="${item.minPrice != null and item.maxPrice != null and item.minPrice != item.maxPrice}"
+                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 'COMMA', 0, 'POINT')} + ' - ' + ${#numbers.formatDecimal(item.maxPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                </span>
+                <span class="product-price" th:if="${item.minPrice != null and item.minPrice == item.maxPrice}"
+                  th:text="${#numbers.formatDecimal(item.minPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                </span>
+                <small class="text-muted" th:text="${item.brandName}">Category</small>
+                <a href="#" class="product-name" th:text="${item.name}">Product</a>
+                <div class="small m-t-xs" th:text="${item.description}"></div>
+                <div class="m-t text-right">
+                  <a th:href="@{'/details/' + ${item.id}}"
+                    class="btn btn-xs btn-outline btn-primary no-landing-style">Chi Tiết
+                    <i class="fa fa-long-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row"></div>
+</section>
+
 </html>

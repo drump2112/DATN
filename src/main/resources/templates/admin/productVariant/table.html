@@ -1,0 +1,107 @@
+<th:block th:fragment="table">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Ảnh</th>
+        <th>Mã Sản Phẩm CT</th>
+        <th>Tên Sản Phẩm</th>
+        <th>Thương Hiệu</th>
+        <th>Danh Mục</th>
+        <th>Màu Sắc</th>
+        <th>Kích Thước</th>
+        <th>Giá</th>
+        <th>Số Lượng</th>
+        <th>Mô Tả</th>
+        <th>Trạng Thái</th>
+        <th>Hành Động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each=" item : ${listProducts}">
+        <td th:text="${item.id}">1</td>
+        <td>
+          <img
+            th:if="${item.imageUrls != null and !item.imageUrls.isEmpty()}"
+            th:src="${item.imageUrls.get(0)}"
+            alt="Ảnh"
+            width="60"
+            height="60"
+          />
+          <span th:if="${item.imageUrls == null or item.imageUrls.isEmpty()}"
+            >No Image</span
+          >
+        </td>
+        <td th:text="${item.variantCode}">SP001</td>
+        <td th:text="${item.productName}">Sản phẩm A</td>
+        <td th:text="${item.brandName}">Thương hiệu A</td>
+        <td th:text="${item.categoryName}">Danh mục A</td>
+        <td th:text="${item.colorName}">Đỏ</td>
+        <td th:text="${item.sizeName}">L</td>
+        <td th:text="${item.price}">L</td>
+        <td th:text="${item.quantity}">L</td>
+        <td
+          th:utext="${#strings.replace(item.productDescription, '\n', '<br/>')}"
+        ></td>
+        <td th:switch="${item.status}">
+          <span th:case="true" class="badge badge-primary"
+            >Đang Kinh Doanh</span
+          >
+          <span th:case="false" class="badge badge-danger"
+            >Ngừng Kinh Doanh</span
+          >
+        </td>
+        <td>
+          <button
+            class="btn btn-info dim"
+            type="button"
+            th:attr="data-id=${item.id}"
+            th:title="'Thông tin và cập nhật'"
+            onclick="handleDetailClick(this)"
+          >
+            <i class="fa fa-eye"></i>
+          </button>
+          <button
+            th:id="'btn-status-' + ${item.id}"
+            th:class="'btn ' + (${item.status} ? 'btn-danger dim' : 'btn-primary dim')"
+            th:onclick="|toggleStatus( ${item.id}, ${item.status} )|"
+            th:title="${item.status} ? 'Khóa sản phẩm' : 'Mở khóa sản phẩm'"
+          >
+            <i th:class="${item.status} ? 'fa fa-lock' : 'fa fa-unlock'"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="text-center" th:if="${totalPages > 1}">
+    <ul class="pagination">
+      <li th:class="${currentPage == 0} ? 'disabled' : ''">
+        <a th:if="${currentPage > 0}" href="#" th:onclick="'searchProductVariants(' + (${currentPage - 1}) + ')'">
+          <i class="fa fa-angle-left"></i> Trước
+        </a>
+        <span th:if="${currentPage == 0}" class="disabled">
+          <i class="fa fa-angle-left"></i> Trước
+        </span>
+      </li>
+
+      <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+          th:class="${i == currentPage} ? 'active' : ''">
+        <a href="#" th:onclick="'searchProductVariants(' + (${i}) + ')'" th:text="${i + 1}">1</a>
+      </li>
+
+      <li th:class="${currentPage == totalPages - 1} ? 'disabled' : ''">
+        <a th:if="${currentPage < totalPages - 1}" href="#" th:onclick="'searchProductVariants(' + (${currentPage + 1}) + ')'">
+          Sau <i class="fa fa-angle-right"></i>
+        </a>
+        <span th:if="${currentPage == totalPages - 1}" class="disabled">
+          Sau <i class="fa fa-angle-right"></i>
+        </span>
+      </li>
+    </ul>
+    <p class="text-muted">
+      Hiển thị trang <strong th:text="${currentPage + 1}">1</strong>
+      / <strong th:text="${totalPages}">1</strong>
+      (Tổng <strong th:text="${totalItems}">0</strong> sản phẩm chi tiết)
+    </p>
+  </div>
+</th:block>

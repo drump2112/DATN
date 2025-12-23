@@ -1,0 +1,438 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="shop/fragments/base :: base">
+<section class="container features" th:fragment="content">
+  <div class="wrapper wrapper-content animated fadeInRight">
+    <div class="modern-page-header">
+      <div class="header-decoration"></div>
+      <h1 class="page-title">
+        <i class="fa fa-sign-in text-primary"></i>
+        <span>Đăng Nhập</span>
+      </h1>
+      <p class="page-subtitle">Chào mừng bạn quay trở lại với chúng tôi</p>
+      <div class="header-decoration"></div>
+    </div>
+        <div class="row m-t-md">
+          <div class="col-md-6">
+            <div class="ibox modern-welcome-card">
+              <div class="ibox-title modern-card-title">
+                <h5><i class="fa fa-star text-white"></i> Chào Mừng Đến Với DTD</h5>
+              </div>
+              <div class="ibox-content modern-card-content">
+                <div class="welcome-content">
+                  <div class="welcome-message">
+                    <h4 class="welcome-title">
+                      <i class="fa fa-heart text-danger"></i>
+                      Trải nghiệm mua sắm tuyệt vời
+                    </h4>
+                    <p class="welcome-text">
+                      Hy vọng bạn sẽ có những trải nghiệm tuyệt vời khi mua sắm tại cửa hàng của chúng tôi!
+                    </p>
+
+                    <h4 class="welcome-title">
+                      <i class="fa fa-gift text-warning"></i>
+                      Ưu đãi hấp dẫn
+                    </h4>
+                    <p class="welcome-text">
+                      Đăng nhập để tiếp tục mua sắm và tận hưởng những ưu đãi hấp dẫn từ chúng tôi.
+                    </p>
+
+                    <div class="welcome-footer">
+                      <i class="fa fa-sun-o text-info"></i>
+                      <small class="welcome-wishes">Chúc bạn một ngày tốt lành!</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="ibox modern-login-card">
+              <div class="ibox-title modern-card-title">
+                <h5><i class="fa fa-user text-white"></i> Đăng Nhập Tài Khoản</h5>
+              </div>
+              <div class="ibox-content modern-card-content">
+                <form class="modern-login-form" role="form" th:action="@{/customer/do-login}" method="post">
+                  <!-- Ensure redirectUrl is sent in POST so the success handler can redirect back -->
+                  <input type="hidden" name="redirectUrl" th:value="${session.REDIRECT_URL}" />
+
+                  <div class="form-field">
+                    <label class="field-label">
+                      <i class="fa fa-user text-primary"></i>
+                      Tên đăng nhập hoặc Email
+                    </label>
+                    <input type="text" class="form-input-modern" name="username" th:value="${lastUsername}"
+                      placeholder="Nhập tên đăng nhập hoặc email" required="">
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">
+                      <i class="fa fa-lock text-success"></i>
+                      Mật khẩu
+                    </label>
+                    <input type="password" class="form-input-modern" name="password" placeholder="Nhập mật khẩu" required="">
+                  </div>
+
+                  <div class="login-actions">
+                    <button type="submit" class="btn-login">
+                      <i class="fa fa-sign-in"></i>
+                      <span>Đăng Nhập</span>
+                    </button>
+
+                    <div class="login-links">
+                      <a href="#" class="forgot-password-link">
+                        <i class="fa fa-question-circle"></i>
+                        Quên mật khẩu?
+                      </a>
+                    </div>
+
+                    <div class="register-section">
+                      <p class="register-text">Chưa có tài khoản?</p>
+                      <a class="btn-register" th:href="@{/customer/auth/register}">
+                        <i class="fa fa-user-plus"></i>
+                        <span>Tạo Tài Khoản Mới</span>
+                      </a>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- SweetAlert2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <!-- Animate.css for animations -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+  <!-- Modern Login Styling -->
+  <style>
+    /* ===== MODERN PAGE HEADER ===== */
+    .modern-page-header {
+      text-align: center;
+      margin: 40px 0;
+      position: relative;
+    }
+
+    .header-decoration {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #1ab394, transparent);
+      margin: 20px auto;
+      width: 200px;
+      border-radius: 2px;
+    }
+
+    .page-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .page-title i {
+      font-size: 36px;
+    }
+
+    .page-subtitle {
+      color: #6c757d;
+      font-size: 16px;
+      margin: 10px 0 0 0;
+      font-style: italic;
+    }
+
+    /* ===== MODERN CARD STYLING ===== */
+    .modern-welcome-card .ibox-content,
+    .modern-login-card .ibox-content {
+      padding: 25px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+      border-radius: 12px;
+      border: 1px solid #e3f2fd;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .modern-card-title {
+      background: linear-gradient(135deg, #1ab394, #17a085);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      padding: 15px 20px;
+      border: none;
+    }
+
+    .modern-card-title h5 {
+      margin: 0;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modern-card-content {
+      border-radius: 0 0 12px 12px;
+    }
+
+    /* ===== WELCOME CARD CONTENT ===== */
+    .welcome-content {
+      padding: 10px 0;
+    }
+
+    .welcome-title {
+      color: #2c3e50;
+      font-size: 18px;
+      font-weight: 600;
+      margin: 20px 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .welcome-title:first-child {
+      margin-top: 0;
+    }
+
+    .welcome-text {
+      color: #555;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+
+    .welcome-footer {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 2px solid #f0f0f0;
+      text-align: center;
+    }
+
+    .welcome-wishes {
+      color: #6c757d;
+      font-style: italic;
+      margin-left: 8px;
+    }
+
+    /* ===== LOGIN FORM STYLING ===== */
+    .modern-login-form {
+      padding: 10px 0;
+    }
+
+    .form-field {
+      margin-bottom: 20px;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 8px;
+      font-size: 14px;
+      gap: 8px;
+    }
+
+    .form-input-modern {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .form-input-modern:focus {
+      outline: none;
+      border-color: #1ab394;
+      box-shadow: 0 0 0 3px rgba(26, 179, 148, 0.1);
+    }
+
+    /* ===== LOGIN ACTIONS ===== */
+    .login-actions {
+      margin-top: 25px;
+    }
+
+    .btn-login {
+      background: linear-gradient(135deg, #1ab394, #0eb493);
+      color: white;
+      border: none;
+      padding: 15px 0;
+      width: 100%;
+      border-radius: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+      background: linear-gradient(135deg, #218838, #17a2b8);
+    }
+
+    .login-links {
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .forgot-password-link {
+      color: #6c757d;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .forgot-password-link:hover {
+      color: #1ab394;
+      text-decoration: none;
+    }
+
+    .register-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #f0f0f0;
+      text-align: center;
+    }
+
+    .register-text {
+      color: #6c757d;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .btn-register {
+      background: linear-gradient(135deg, #6c757d, #5a6268);
+      color: white;
+      text-decoration: none;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .btn-register:hover {
+      color: white;
+      text-decoration: none;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+      background: linear-gradient(135deg, #5a6268, #495057);
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .modern-welcome-card,
+    .modern-login-card {
+      animation: fadeInRight 0.6s ease;
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .modern-welcome-card,
+      .modern-login-card {
+        margin-bottom: 20px;
+      }
+
+      .welcome-title {
+        font-size: 16px;
+      }
+
+      .btn-login {
+        padding: 12px 0;
+        font-size: 14px;
+      }
+    }
+  </style>
+
+  <!-- SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- SweetAlert Config -->
+  <script th:src="@{/js/sweetalert-config.js}"></script>
+
+  <!-- Error Handling Script -->
+  <script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check for error message
+      const errorMsg = /*[[${errorMsg}]]*/ null;
+
+      if (errorMsg) {
+        if (errorMsg.includes('chưa được kích hoạt')) {
+          SweetAlertUtils.warning(
+            'Tài khoản chưa kích hoạt',
+            'Tài khoản của bạn chưa được kích hoạt. Vui lòng kiểm tra email để kích hoạt tài khoản.',
+            {
+              confirmButtonText: '<i class="fa fa-check"></i> Đã hiểu'
+            }
+          );
+        } else if (errorMsg.includes('Sai tên đăng nhập') || errorMsg.includes('mật khẩu')) {
+          SweetAlertUtils.error(
+            'Đăng nhập thất bại',
+            'Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng thử lại.',
+            {
+              confirmButtonText: '<i class="fa fa-check"></i> Thử lại'
+            }
+          );
+        } else {
+          // For any other error messages
+          SweetAlertUtils.error(
+            'Đăng nhập thất bại',
+            errorMsg,
+            {
+              confirmButtonText: '<i class="fa fa-check"></i> OK'
+            }
+          );
+        }
+      }
+
+      // Check for success message (verified account)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('verified') === 'true') {
+        SweetAlertUtils.success(
+          'Xác thực thành công!',
+          'Tài khoản của bạn đã được kích hoạt. Bạn có thể đăng nhập ngay bây giờ.',
+          {
+            confirmButtonText: '<i class="fa fa-check"></i> Đăng nhập'
+          }
+        );
+      }
+    });
+  </script>
+</section>
+
+</html>

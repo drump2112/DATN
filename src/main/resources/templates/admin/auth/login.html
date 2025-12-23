@@ -4,14 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>INSPINIA | Login</title>
+    <title>DTD-DashBoard | Login</title>
 
     <link th:href="@{/assets/css/bootstrap.min.css}" rel="stylesheet" />
     <link
       th:href="@{/assets/font-awesome/css/font-awesome.css}"
       rel="stylesheet"
     />
-    <link th:href="@{/assets/css/animte.css}" rel="stylesheet" />
+    <link th:href="@{/assets/css/animate.css}" rel="stylesheet" />
     <link th:href="@{/assets/css/style.css}" rel="stylesheet" />
   </head>
 
@@ -19,22 +19,19 @@
     <div class="middle-box text-center loginscreen animated fadeInDown">
       <div>
         <div>
-          <h1 class="logo-name">IN+</h1>
+          <h1 class="logo-name" style="font-size: 150px; margin-right: 10px">
+            DTD
+          </h1>
         </div>
-        <h3>Welcome to IN+</h3>
-        <p>
-          Perfectly designed and precisely prepared admin theme with over 50
-          pages with extra new web app views.
-          <!--Continually expanded and constantly improved Inspinia Admin Them (IN+)-->
-        </p>
-        <p>Login in. To see it in action.</p>
+        <h3>Welcome to DTD-DashBoard</h3>
         <form class="m-t" role="form" th:action="@{/do-login}" method="post">
           <div class="form-group">
             <input
               type="text"
               name="username"
               class="form-control"
-              placeholder="Username"
+              placeholder="Tên đăng nhập email"
+              th:value="${lastUsername}"
             />
           </div>
           <div class="form-group">
@@ -42,29 +39,32 @@
               type="password"
               name="password"
               class="form-control"
-              placeholder="Password"
+              placeholder="Mật khẩu"
             />
           </div>
           <button type="submit" class="btn btn-primary block full-width m-b">
             Đăng Nhập
           </button>
 
-          <a href="#"><small>Forgot password?</small></a>
+          <a href="#"><small>Lấy lại mật khẩu?</small></a>
           <p class="text-muted text-center">
-            <small>Do not have an account?</small>
+            <small>Chưa có tài khoản?</small>
           </p>
-          <a class="btn btn-sm btn-white btn-block" href="register.html"
-            >Create an account</a
-          >
         </form>
         <p class="m-t">
-          <small>Inspinia we app framework base on Bootstrap 3 © 2014</small>
+          <small>Sản phẩm của DTD-Squard</small>
         </p>
       </div>
     </div>
-
-    <!-- Mainly scripts -->
     <script th:src="@{/assets/js/jquery-3.1.1.min.js}"></script>
     <script th:src="@{/assets/js/bootstrap.min.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:if="${errorMsg != null}" th:inline="javascript">
+      Swal.fire({
+          icon: 'error',
+          title: 'Lỗi đăng nhập',
+          text: [[${errorMsg}]]
+      });
+    </script>
   </body>
 </html>
