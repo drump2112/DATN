@@ -313,8 +313,8 @@ $(document).ready(function () {
           showConfirmButton: false
         });
 
-        // Reload current page
-        searchOrder(0);
+        // Cập nhật chi tiết đơn hàng mà không đóng nó lại
+        refreshOrderDetailInPlace(orderId, action);
       } else {
         throw new Error(data.message || 'Có lỗi xảy ra');
       }
@@ -334,6 +334,89 @@ $(document).ready(function () {
     });
   }
 
+  // Function để cập nhật chi tiết đơn hàng mà không đóng nó lại
+  function refreshOrderDetailInPlace(orderId, action) {
+    var $detailRow = $('#order-items-' + orderId);
+    var $mainRow = $detailRow.prev('.order-row');
+
+    // Lưu trạng thái hiển thị hiện tại
+    var isVisible = $detailRow.is(':visible');
+
+    // Xác định trạng thái mới dựa trên action
+    var newStatus = '';
+    var newStatusText = '';
+    var newStatusBadgeClass = '';
+
+    switch(action) {
+      case 'confirm':
+        newStatus = 'WAITING_PICKUP';
+        newStatusText = 'Chờ lấy hàng';
+        newStatusBadgeClass = 'badge badge-info';
+        break;
+      case 'pickup':
+        newStatus = 'SHIPPING';
+        newStatusText = 'Đang giao';
+        newStatusBadgeClass = 'badge badge-primary';
+        break;
+      case 'cancel':
+        newStatus = 'CANCELLED';
+        newStatusText = 'Đã hủy';
+        newStatusBadgeClass = 'badge badge-danger';
+        break;
+    }
+
+    // Cập nhật badge trạng thái trong hàng chính của bảng
+    if (newStatus) {
+      var $statusCell = $mainRow.find('td').eq(9); // Cột thứ 10 (index 9) là cột trạng thái
+      if ($statusCell.length) {
+        $statusCell.html('<span class="' + newStatusBadgeClass + '">' + newStatusText + '</span>');
+      }
+    }
+
+    // Cập nhật header bar trong chi tiết đơn hàng
+    $.ajax({
+      url: '/admin/order/' + orderId + '/detail-fragment',
+      type: 'GET',
+      dataType: 'html',
+      success: function(html) {
+        // Cập nhật toàn bộ nội dung chi tiết (header bar với trạng thái mới + nút action mới)
+        var $detailContainer = $detailRow.find('td').first();
+        $detailContainer.html(html);
+
+        // Load lại order items vào container mới
+        var $newContainer = $detailContainer.find('#order-items-content');
+
+        $.ajax({
+          url: '/admin/order/' + orderId + '/items',
+          type: 'GET',
+          dataType: 'html',
+          success: function(itemsHtml) {
+            $newContainer.html(itemsHtml);
+            $newContainer.data('loaded', true);
+          },
+          error: function() {
+            console.error('Lỗi load order items');
+            $newContainer.html('<div class="text-center py-4 text-danger"><i class="fa fa-exclamation-triangle"></i> Lỗi tải chi tiết sản phẩm</div>');
+          }
+        });
+
+        // Giữ trạng thái hiển thị
+        if (isVisible) {
+          $detailRow.show();
+        }
+      },
+      error: function(xhr, status, err) {
+        console.error('Lỗi cập nhật chi tiết đơn hàng:', err);
+        // Fallback: reload toàn bộ trang nhưng giữ thông báo
+        toastr.info('Đang làm mới danh sách...');
+        setTimeout(function() {
+          searchOrder(0);
+        }, 500);
+      }
+    });
+  }
+
+  window.refreshOrderDetailInPlace = refreshOrderDetailInPlace;
   window.clearDateFilters = clearDateFilters;
   window.handleAdminOrderAction = handleAdminOrderAction;
 })

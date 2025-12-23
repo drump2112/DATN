@@ -8,9 +8,20 @@
           <i class="fa fa-shopping-cart"></i>
           Đơn hàng #<span th:text="${orderId}">000</span>
         </h4>
-        <span th:text="${orderStatus}"
-              th:class="'status-pill status-' + ${#strings.toLowerCase(orderStatus)}"
-              class="status-pill">Loading...</span>
+        <span th:class="'status-pill status-' + ${#strings.toLowerCase(orderStatus)}"
+              class="status-pill">
+          <th:block th:switch="${orderStatus}">
+            <th:block th:case="'PENDING'">Chờ xử lý</th:block>
+            <th:block th:case="'WAITING_PICKUP'">Chờ lấy hàng</th:block>
+            <th:block th:case="'WAITING_OTP'">Xác nhận OTP</th:block>
+            <th:block th:case="'PROCESSING'">Đang xử lý</th:block>
+            <th:block th:case="'SHIPPING'">Đang giao hàng</th:block>
+            <th:block th:case="'COMPLETED'">Hoàn thành</th:block>
+            <th:block th:case="'CANCELLED'">Đã hủy</th:block>
+            <th:block th:case="'RETURN'">Đổi/trả</th:block>
+            <th:block th:case="*" th:text="${orderStatus}">Trạng thái</th:block>
+          </th:block>
+        </span>
       </div>
 
       <!-- Inline Quick Actions -->

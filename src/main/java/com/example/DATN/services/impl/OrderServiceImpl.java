@@ -31,6 +31,7 @@ import jakarta.validation.constraints.Email;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -406,7 +407,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderDTO> getOnlineOrders(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "orderDate"));
         Page<Order> orders = orderRepository.findByOrderType("ONLINE", pageable);
         return orders.map(this::mapToOrderDTO);
     }

@@ -43,8 +43,8 @@ public class OrderController {
 
    @GetMapping("Online/")
    public String getAllOrdersOnline(
-         @RequestParam(defaultValue = "0") int page,
-         @RequestParam(defaultValue = "5") int size,
+         @RequestParam(name = "page", defaultValue = "0") int page,
+         @RequestParam(name = "size", defaultValue = "5") int size,
          Model model) {
       Page<OrderDTO> ordersDTOS = orderService.getOnlineOrders(page, size);
       model.addAttribute("pageTitle", "Danh sách Hóa Đơn Online");
@@ -59,8 +59,8 @@ public class OrderController {
 
    @GetMapping("completed/")
    public String getAllCompletedOrders(
-         @RequestParam(defaultValue = "0") int page,
-         @RequestParam(defaultValue = "5") int size,
+         @RequestParam(name = "page", defaultValue = "0") int page,
+         @RequestParam(name = "size", defaultValue = "5") int size,
          Model model) {
       Page<OrderDTO> ordersDTOS = orderService.getCompletedOrders(page, size);
       model.addAttribute("pageTitle", "Danh sách Đơn Hàng Đã Hoàn Thành");
@@ -82,6 +82,20 @@ public class OrderController {
       return "admin/order/orderitems :: orderItems";
    }
 
+   /**
+    * Lấy chi tiết đơn hàng fragment để cập nhật inline (không reload toàn trang)
+    */
+   @GetMapping("{orderId}/detail-fragment")
+   public String getOrderDetailFragment(@PathVariable("orderId") Integer orderId, Model model) {
+      Order order = orderService.findById(orderId);
+      if (order == null) {
+         return "error";
+      }
+      model.addAttribute("orderId", orderId);
+      model.addAttribute("orderStatus", order.getStatus());
+      return "admin/order/orderDetailActions :: orderDetail";
+   }
+
    @PutMapping("/{orderId}/status")
    public ResponseEntity<?> updateOrderStatus(
          @PathVariable("orderId") Integer orderId,
@@ -96,13 +110,13 @@ public class OrderController {
 
    @GetMapping("search")
    public String searchOrders(
-         @RequestParam(defaultValue = "0") int page,
-         @RequestParam(defaultValue = "5") int size,
-         @RequestParam(required = false) String keyword,
-         @RequestParam(required = false) String orderType,
-         @RequestParam(required = false) String paymentMethod,
-         @RequestParam(required = false) String dateStart,
-         @RequestParam(required = false) String dateEnd,
+         @RequestParam(name = "page", defaultValue = "0") int page,
+         @RequestParam(name = "size", defaultValue = "5") int size,
+         @RequestParam(name = "keyword", required = false) String keyword,
+         @RequestParam(name = "orderType", required = false) String orderType,
+         @RequestParam(name = "paymentMethod", required = false) String paymentMethod,
+         @RequestParam(name = "dateStart", required = false) String dateStart,
+         @RequestParam(name = "dateEnd", required = false) String dateEnd,
          HttpServletRequest request,
          Model model) {
 
